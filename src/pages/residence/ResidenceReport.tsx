@@ -222,27 +222,38 @@ export default function ResidenceReport() {
     return Math.round((step / 10) * 100);
   };
 
-  // Calculate financial totals
+  // Calculate financial totals - matching ResidenceCard and Ledger calculations
   const calculateFinancials = (residence: Residence) => {
-    let totalAmount = residence.sale_price;
+    // Parse all values to ensure they're numbers
+    const salePrice = parseFloat(residence.sale_price as any) || 0;
     
-    // Add TAWJEEH if not included
-    if (residence.tawjeehIncluded === 0) {
-      totalAmount += (residence.tawjeeh_amount || 150);
-    }
+    // Use actual charges if available (from ledger API), otherwise use conditional logic
+    const tawjeehCharges = parseFloat((residence as any).tawjeeh_charges as any) || 
+                          (residence.tawjeehIncluded === 0 ? (parseFloat(residence.tawjeeh_amount as any) || 150) : 0);
+    const iloeCharges = parseFloat((residence as any).iloe_charges as any) || 
+                       (residence.insuranceIncluded === 0 ? (parseFloat(residence.insuranceAmount as any) || 126) : 0);
     
-    // Add ILOE Insurance if not included
-    if (residence.insuranceIncluded === 0) {
-      totalAmount += (residence.insuranceAmount || 126);
-    }
+    const iloeFine = parseFloat(residence.iloe_fine as any) || 0;
+    const totalFine = parseFloat((residence as any).total_Fine as any) || 
+                     parseFloat((residence as any).fine as any) || 0;
+    const customChargesTotal = parseFloat((residence as any).custom_charges_total as any) || 
+                              parseFloat((residence as any).custom_charges as any) || 0;
+    const cancellationCharges = parseFloat((residence as any).cancellation_charges as any) || 0;
     
-    // Always add ILOE fine
-    if (residence.iloe_fine) {
-      totalAmount += residence.iloe_fine;
-    }
+    // Calculate total amount - matching ledger calculation exactly
+    const totalAmount = salePrice + 
+                       tawjeehCharges + 
+                       iloeCharges + 
+                       iloeFine + 
+                       totalFine + 
+                       customChargesTotal + 
+                       cancellationCharges;
     
-    const totalPaid = residence.total_paid || 0;
-    const totalRemaining = totalAmount - totalPaid;
+    const totalPaid = parseFloat(residence.total_paid as any) || 0;
+    const totalFinePaid = parseFloat((residence as any).totalFinePaid as any) || 0;
+    
+    // Outstanding balance should subtract both regular payments and fine payments
+    const totalRemaining = totalAmount - totalPaid - totalFinePaid;
     
     return { totalAmount, totalPaid, totalRemaining };
   };
