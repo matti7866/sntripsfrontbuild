@@ -18,7 +18,7 @@ export default function AccountsReport() {
   const permanentResetDate = '2025-10-01';
 
   // State
-  const [fromDate, setFromDate] = useState(permanentResetDate);
+  const [fromDate, setFromDate] = useState(today);
   const [toDate, setToDate] = useState(today);
   const [accountFilter, setAccountFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -42,7 +42,7 @@ export default function AccountsReport() {
   const [showStatementModal, setShowStatementModal] = useState(false);
   const [statementAccountId, setStatementAccountId] = useState<number | null>(null);
   const [statementAccountName, setStatementAccountName] = useState('');
-  const [statementFromDate, setStatementFromDate] = useState(permanentResetDate);
+  const [statementFromDate, setStatementFromDate] = useState(today);
   const [statementToDate, setStatementToDate] = useState(today);
   const [statementData, setStatementData] = useState<any>(null);
   const [statementLoading, setStatementLoading] = useState(false);
