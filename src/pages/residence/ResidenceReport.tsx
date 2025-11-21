@@ -97,6 +97,7 @@ export default function ResidenceReport() {
   };
 
   const loadRecords = async () => {
+    console.log('=== LOADING RESIDENCE REPORT ===');
     try {
       setLoading(true);
       
@@ -182,6 +183,10 @@ export default function ResidenceReport() {
         const response = await residenceService.getResidences(params);
         setRecords(response.data);
         setTotalPages(response.totalPages);
+        
+        // Log summary of loaded records
+        console.log(`Loaded ${response.data.length} residences for ${activeTab} tab (page ${currentPage})`);
+        console.log('Search query:', searchQuery || 'none');
       }
     } catch (error: any) {
       console.error('Error loading records:', error);
@@ -224,14 +229,33 @@ export default function ResidenceReport() {
 
   // Calculate financial totals - matching ResidenceCard and Ledger calculations
   const calculateFinancials = (residence: Residence) => {
-    // Parse all values to ensure they're numbers
+    // Skip residences with 0 sale price (invalid/draft residences)
     const salePrice = parseFloat(residence.sale_price as any) || 0;
+    if (salePrice === 0) {
+      return { totalAmount: 0, totalPaid: 0, totalRemaining: 0 };
+    }
     
-    // Use actual charges if available (from ledger API), otherwise use conditional logic
-    const tawjeehCharges = parseFloat((residence as any).tawjeeh_charges as any) || 
-                          (residence.tawjeehIncluded === 0 ? (parseFloat(residence.tawjeeh_amount as any) || 150) : 0);
-    const iloeCharges = parseFloat((residence as any).iloe_charges as any) || 
-                       (residence.insuranceIncluded === 0 ? (parseFloat(residence.insuranceAmount as any) || 126) : 0);
+    // Use actual charges from API if available (from ledger API format)
+    // Only use conditional logic if actual charges are not provided
+    let tawjeehCharges = parseFloat((residence as any).tawjeeh_charges as any);
+    if (isNaN(tawjeehCharges)) {
+      // Fallback: only add if not included AND amount exists
+      if (residence.tawjeehIncluded === 0 && residence.tawjeeh_amount) {
+        tawjeehCharges = parseFloat(residence.tawjeeh_amount as any) || 0;
+      } else {
+        tawjeehCharges = 0;
+      }
+    }
+    
+    let iloeCharges = parseFloat((residence as any).iloe_charges as any);
+    if (isNaN(iloeCharges)) {
+      // Fallback: only add if not included AND amount exists
+      if (residence.insuranceIncluded === 0 && residence.insuranceAmount) {
+        iloeCharges = parseFloat(residence.insuranceAmount as any) || 0;
+      } else {
+        iloeCharges = 0;
+      }
+    }
     
     const iloeFine = parseFloat(residence.iloe_fine as any) || 0;
     const totalFine = parseFloat((residence as any).total_Fine as any) || 
@@ -249,11 +273,41 @@ export default function ResidenceReport() {
                        customChargesTotal + 
                        cancellationCharges;
     
-    const totalPaid = parseFloat(residence.total_paid as any) || 0;
-    const totalFinePaid = parseFloat((residence as any).totalFinePaid as any) || 0;
+    // Calculate total paid - matching ledger calculation exactly
+    // Ledger uses: residencePayment + finePayment + tawjeeh_payments + iloe_payments
+    const residencePayment = parseFloat(residence.total_paid as any) || 0;
+    const finePayment = parseFloat((residence as any).totalFinePaid as any) || 0;
+    const tawjeehPayments = parseFloat((residence as any).tawjeeh_payments as any) || 0;
+    const iloePayments = parseFloat((residence as any).iloe_payments as any) || 0;
     
-    // Outstanding balance should subtract both regular payments and fine payments
-    const totalRemaining = totalAmount - totalPaid - totalFinePaid;
+    const totalPaid = residencePayment + finePayment + tawjeehPayments + iloePayments;
+    
+    // Outstanding balance
+    const totalRemaining = totalAmount - totalPaid;
+    
+    // Debug logging for customer 573
+    if (residence.customer_id === 573 || (residence as any).customerID === 573) {
+      console.log('Residence Report Calculation for Customer 573:', {
+        residenceID: residence.residenceID,
+        salePrice,
+        tawjeehCharges,
+        iloeCharges,
+        iloeFine,
+        totalFine,
+        customChargesTotal,
+        cancellationCharges,
+        totalAmount,
+        residencePayment,
+        finePayment,
+        tawjeehPayments,
+        iloePayments,
+        totalPaid,
+        totalRemaining,
+        tawjeehIncluded: residence.tawjeehIncluded,
+        insuranceIncluded: residence.insuranceIncluded,
+        rawData: residence
+      });
+    }
     
     return { totalAmount, totalPaid, totalRemaining };
   };
