@@ -53,14 +53,31 @@ export default function ResidenceCard({
   isAdmin = false
 }: ResidenceCardProps) {
   // Calculate financial summary first - ensure all values are numbers
+  // Match ledger calculation: use actual charges if available, otherwise use conditional logic
   const salePrice = parseFloat(residence.sale_price as any) || 0;
-  const tawjeehAmount = residence.tawjeehIncluded === 0 ? (parseFloat(residence.tawjeeh_amount as any) || 150) : 0;
-  const insuranceAmount = residence.insuranceIncluded === 0 ? (parseFloat(residence.insuranceAmount as any) || 126) : 0;
+  
+  // Use actual charges if available (from ledger API), otherwise use conditional logic
+  const tawjeehCharges = parseFloat((residence as any).tawjeeh_charges as any) || 
+                        (residence.tawjeehIncluded === 0 ? (parseFloat(residence.tawjeeh_amount as any) || 150) : 0);
+  const iloeCharges = parseFloat((residence as any).iloe_charges as any) || 
+                     (residence.insuranceIncluded === 0 ? (parseFloat(residence.insuranceAmount as any) || 126) : 0);
+  
   const iloeFine = parseFloat(residence.iloe_fine as any) || 0;
-  const totalFine = parseFloat(residence.total_Fine as any) || 0;
+  const totalFine = parseFloat((residence as any).total_Fine as any) || 
+                   parseFloat((residence as any).fine as any) || 0;
   const totalFinePaid = parseFloat(residence.totalFinePaid as any) || 0;
-  const customChargesTotal = parseFloat((residence as any).custom_charges_total as any) || 0;
-  const totalAmount = salePrice + tawjeehAmount + insuranceAmount + iloeFine + totalFine + customChargesTotal;
+  const customChargesTotal = parseFloat((residence as any).custom_charges_total as any) || 
+                            parseFloat((residence as any).custom_charges as any) || 0;
+  const cancellationCharges = parseFloat((residence as any).cancellation_charges as any) || 0;
+  
+  // Calculate total amount - matching ledger calculation exactly
+  const totalAmount = salePrice + 
+                     tawjeehCharges + 
+                     iloeCharges + 
+                     iloeFine + 
+                     totalFine + 
+                     customChargesTotal + 
+                     cancellationCharges;
   const totalPaid = parseFloat(residence.total_paid as any) || 0;
   const totalRemaining = totalAmount - totalPaid - totalFinePaid;
 
