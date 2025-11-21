@@ -1,0 +1,31 @@
+/* Progress Circle Styles */
+.progress-circle-old {
+  transform: rotate(-90deg);
+}
+
+.progress-circle-bg-old {
+  fill: none;
+  stroke: #2d353c;
+  stroke-width: 10;
+}
+
+.progress-circle-fill-old {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.3s ease;
+}
+
+.progress-circle-text-old {
+  fill: #ffffff;
+  font-size: 20px;
+  font-weight: bold;
+  dominant-baseline: middle;
+  text-anchor: middle;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

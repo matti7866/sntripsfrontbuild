@@ -1,0 +1,114 @@
+.currency-page {
+  padding: 20px;
+}
+
+.currency-page .card {
+  margin-left: 30px;
+  margin-right: 30px;
+  margin-top: 10px;
+}
+
+.currency-page .card-header {
+  padding: 15px 20px;
+}
+
+.currency-page .card-header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.currency-page .card-body {
+  padding: 20px;
+}
+
+.currency-page .input-group-prepend {
+  margin-right: 0;
+}
+
+.currency-page .input-group-text {
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  border-right: none;
+}
+
+.currency-page .form-control {
+  border-left: none;
+}
+
+.currency-page .table {
+  margin-top: 20px;
+}
+
+.currency-page .table thead th {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.currency-page .table tbody td {
+  vertical-align: middle;
+}
+
+.currency-page .btn {
+  border: none;
+  background: transparent;
+  padding: 5px 10px;
+}
+
+.currency-page .btn:hover {
+  opacity: 0.8;
+}
+
+.currency-page .btn-dark {
+  background-color: #343a40;
+  color: white;
+  border: none;
+}
+
+.currency-page .btn-dark:hover {
+  background-color: #23272b;
+}
+
+.currency-page .btn-info {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.currency-page .btn-info:hover {
+  background-color: #138496;
+}
+
+.currency-page .btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.currency-page .btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.currency-page .float-center {
+  text-align: center;
+}
+
+.currency-page .text-capitalize {
+  text-transform: capitalize;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .currency-page .card {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .currency-page .col-md-3,
+  .currency-page .col-md-4 {
+    margin-bottom: 10px;
+  }
+
+  .currency-page .table {
+    font-size: 14px;
+  }
+}
+

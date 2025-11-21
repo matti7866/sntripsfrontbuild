@@ -1,0 +1,214 @@
+.residence-cancellation-page {
+  padding: 20px;
+}
+
+.residence-cancellation-page .card {
+  background-color: #2d353c;
+  border: 1px solid #495057;
+  border-radius: 8px;
+}
+
+.residence-cancellation-page .card-header {
+  background-color: #343a40 !important;
+  border-bottom: 1px solid #495057;
+  padding: 15px 20px;
+}
+
+.residence-cancellation-page .card-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.5rem;
+}
+
+.residence-cancellation-page .card-header .btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.residence-cancellation-page .card-header .btn-secondary:hover {
+  background-color: #5a6268;
+  border-color: #545b62;
+  color: #ffffff;
+}
+
+.residence-cancellation-page .card-body {
+  padding: 20px;
+}
+
+.residence-cancellation-page .alert {
+  margin-bottom: 20px;
+  border-radius: 6px;
+}
+
+.residence-cancellation-page .alert-info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+  color: #0c5460;
+}
+
+.residence-cancellation-page .alert-warning {
+  background-color: #fff3cd;
+  border-color: #ffeaa7;
+  color: #856404;
+}
+
+.residence-cancellation-page .form-control {
+  background-color: #343a40;
+  border: 1px solid #495057;
+  color: #ffffff;
+  border-radius: 4px;
+}
+
+.residence-cancellation-page .form-control:focus {
+  background-color: #343a40;
+  border-color: #667eea;
+  color: #ffffff;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.residence-cancellation-page label {
+  color: #ffffff;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.residence-cancellation-page .btn-primary {
+  background-color: #667eea;
+  border-color: #667eea;
+  color: #ffffff;
+}
+
+.residence-cancellation-page .btn-primary:hover {
+  background-color: #5568d3;
+  border-color: #5568d3;
+}
+
+.residence-cancellation-page .btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: #ffffff;
+}
+
+.residence-cancellation-page .btn-success:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+.residence-cancellation-page .table {
+  background-color: #2d353c;
+  color: #ffffff;
+  margin-bottom: 0;
+}
+
+.residence-cancellation-page .table thead th {
+  background-color: #343a40;
+  border-color: #495057;
+  color: #ffffff;
+  font-weight: 600;
+  padding: 12px;
+}
+
+.residence-cancellation-page .table tbody td {
+  border-color: #495057;
+  padding: 12px;
+  vertical-align: middle;
+}
+
+.residence-cancellation-page .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.residence-cancellation-page .table-hover tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.residence-cancellation-page .table-success {
+  background-color: rgba(40, 167, 69, 0.2) !important;
+}
+
+.residence-cancellation-page .table-warning {
+  background-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+.residence-cancellation-page .badge {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.residence-cancellation-page .badge.bg-success {
+  background-color: #28a745 !important;
+}
+
+.residence-cancellation-page .badge.bg-warning {
+  background-color: #ffc107 !important;
+  color: #000;
+}
+
+.residence-cancellation-page .badge.bg-info {
+  background-color: #17a2b8 !important;
+}
+
+.residence-cancellation-page .text-muted {
+  color: #6c757d !important;
+}
+
+.residence-cancellation-page .text-warning {
+  color: #ffc107 !important;
+}
+
+.residence-cancellation-page .text-info {
+  color: #17a2b8 !important;
+}
+
+.residence-cancellation-page .text-success {
+  color: #28a745 !important;
+}
+
+.residence-cancellation-page .text-danger {
+  color: #dc3545 !important;
+}
+
+.residence-cancellation-page .btn-sm {
+  padding: 4px 8px;
+  font-size: 0.875rem;
+}
+
+.residence-cancellation-page code {
+  background-color: #343a40;
+  color: #ffc107;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.875rem;
+}
+
+.residence-cancellation-page .alert-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #ffffff;
+}
+
+.residence-cancellation-page .alert-secondary h6 {
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.residence-cancellation-page .modal-footer {
+  border-top: 1px solid #495057;
+  padding: 15px 20px;
+  margin-top: 20px;
+}
+
+.residence-cancellation-page .form-group {
+  margin-bottom: 1rem;
+}
+
+.residence-cancellation-page small.text-muted {
+  display: block;
+  margin-top: 5px;
+  font-size: 0.875rem;
+}
+

@@ -1,0 +1,381 @@
+/* Surprise Login Studio Design */
+
+.login-surprise-container {
+  min-height: 100vh !important;
+  position: relative !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+  background: transparent !important;
+}
+
+/* Animated gradient background */
+.login-surprise-bg {
+  position: absolute !important;
+  inset: 0 !important;
+  background: linear-gradient(135deg, hsl(0 0% 5%) 0%, hsl(0 20% 10%) 50%, hsl(0 40% 15%) 100%) !important;
+  z-index: 0 !important;
+}
+
+/* Floating orbs */
+.login-surprise-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  animation: float 6s ease-in-out infinite;
+}
+
+.login-surprise-orb-1 {
+  top: 5rem;
+  left: 5rem;
+  width: 18rem;
+  height: 18rem;
+  background: hsl(0 84% 55% / 0.2);
+}
+
+.login-surprise-orb-2 {
+  bottom: 5rem;
+  right: 5rem;
+  width: 24rem;
+  height: 24rem;
+  background: hsl(0 90% 50% / 0.2);
+  animation: float-delayed 8s ease-in-out infinite;
+}
+
+.login-surprise-orb-3 {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: hsl(0 84% 55% / 0.1);
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* Card wrapper */
+.login-surprise-card-wrapper {
+  position: relative !important;
+  width: 100% !important;
+  max-width: 28rem !important;
+  animation: slide-up 0.8s ease-out !important;
+  z-index: 10 !important;
+}
+
+.login-surprise-card-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, hsl(0 84% 55% / 0.2), hsl(0 90% 50% / 0.2));
+  border-radius: 1.5rem;
+  filter: blur(20px);
+}
+
+.login-surprise-card {
+  position: relative !important;
+  background: hsl(0 0% 12% / 0.4) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border-radius: 1.5rem !important;
+  padding: 2rem !important;
+  box-shadow: 0 20px 60px hsl(0 0% 0% / 0.6) !important;
+  border: 1px solid hsl(0 0% 22% / 0.5) !important;
+}
+
+/* Header */
+.login-surprise-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  animation: fade-in 0.6s ease-out;
+}
+
+.login-surprise-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(135deg, hsl(0 84% 55%), hsl(0 100% 65%));
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 0 60px hsl(0 84% 55% / 0.4);
+}
+
+.login-surprise-logo i {
+  font-size: 2rem;
+  color: hsl(0 0% 100%);
+}
+
+.login-surprise-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  background: linear-gradient(to right, hsl(0 0% 98%), hsl(0 0% 98% / 0.7));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.login-surprise-subtitle {
+  color: hsl(0 0% 65%);
+  font-size: 0.875rem;
+}
+
+/* Error message */
+.login-surprise-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: hsl(0 84% 60% / 0.1);
+  border: 1px solid hsl(0 84% 60% / 0.3);
+  border-radius: 0.5rem;
+  color: hsl(0 84% 60%);
+  margin-bottom: 1.5rem;
+  animation: fade-in 0.3s ease-out;
+}
+
+.login-surprise-error i {
+  font-size: 1rem;
+}
+
+/* Form */
+.login-surprise-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Input group */
+.login-surprise-input-group {
+  position: relative;
+}
+
+.login-surprise-input-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, hsl(0 84% 55%), hsl(0 100% 65%));
+  border-radius: 0.75rem;
+  filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.login-surprise-input-glow-active {
+  opacity: 0.2;
+}
+
+.login-surprise-input-wrapper {
+  position: relative;
+}
+
+.login-surprise-input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  color: hsl(0 0% 65%);
+  transition: color 0.3s ease;
+  pointer-events: none;
+}
+
+.login-surprise-input-icon-active {
+  color: hsl(0 84% 55%);
+}
+
+.login-surprise-input {
+  width: 100%;
+  height: 3.5rem;
+  padding-left: 3rem;
+  padding-right: 3rem;
+  background: hsl(0 0% 16% / 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid hsl(0 0% 22% / 0.5);
+  border-radius: 0.75rem;
+  color: hsl(0 0% 98%);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.login-surprise-input:focus {
+  outline: none;
+  border-color: hsl(0 84% 55%);
+  box-shadow: 0 0 0 3px hsl(0 84% 55% / 0.1);
+}
+
+.login-surprise-input::placeholder {
+  color: hsl(0 0% 65%);
+}
+
+.login-surprise-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.login-surprise-password-toggle {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: hsl(0 0% 65%);
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.3s ease;
+}
+
+.login-surprise-password-toggle:hover {
+  color: hsl(0 84% 55%);
+}
+
+.login-surprise-password-toggle i {
+  font-size: 1.25rem;
+}
+
+/* Forgot password */
+.login-surprise-forgot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.login-surprise-forgot-link {
+  font-size: 0.875rem;
+  color: hsl(0 84% 55%);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.login-surprise-forgot-link:hover {
+  color: hsl(0 100% 65%);
+}
+
+/* Submit button */
+.login-surprise-submit {
+  width: 100%;
+  height: 3.5rem;
+  background: linear-gradient(to right, hsl(0 84% 55%), hsl(0 100% 65%));
+  border: none;
+  border-radius: 0.75rem;
+  color: hsl(0 0% 100%);
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px hsl(0 84% 55% / 0.3);
+}
+
+.login-surprise-submit:hover:not(:disabled) {
+  box-shadow: 0 0 60px hsl(0 84% 55% / 0.4);
+  transform: translateY(-2px);
+}
+
+.login-surprise-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-surprise-submit-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.login-surprise-submit-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, hsl(0 100% 65%), hsl(0 84% 55%));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.login-surprise-submit:hover .login-surprise-submit-glow {
+  opacity: 1;
+}
+
+/* Footer */
+.login-surprise-footer {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.login-surprise-footer p {
+  color: hsl(0 0% 65%);
+  font-size: 0.875rem;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(5deg);
+  }
+}
+
+@keyframes float-delayed {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-30px) rotate(-5deg);
+  }
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.5;
+    filter: blur(40px);
+  }
+  50% {
+    opacity: 0.8;
+    filter: blur(60px);
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .login-surprise-card {
+    padding: 1.5rem;
+  }
+  
+  .login-surprise-title {
+    font-size: 1.5rem;
+  }
+  
+  .login-surprise-orb-1,
+  .login-surprise-orb-2 {
+    display: none;
+  }
+}
+
