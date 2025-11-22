@@ -303,8 +303,8 @@ export default function ResidenceCard({
                 {totalFine > 0 && (
                   <div className="mb-2">
                     <strong className="text-white">E-Visa Fine:</strong> <span style={{ color: '#ef4444', fontWeight: '600' }}>{totalFine.toLocaleString()} {residence.sale_currency_name}</span>
-                    {totalFinePaid > 0 && (
-                      <small style={{ color: '#9ca3af' }} className="ms-2">(Paid: {totalFinePaid.toLocaleString()})</small>
+                    {finePayment > 0 && (
+                      <small style={{ color: '#9ca3af' }} className="ms-2">(Paid: {finePayment.toLocaleString()})</small>
                     )}
                   </div>
                 )}

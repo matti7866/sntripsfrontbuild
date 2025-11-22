@@ -167,7 +167,7 @@ export default function ResidenceDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Residence Info */}
         <div className="lg:col-span-1">
-          <ResidenceInfo residence={residence} />
+          <ResidenceInfo residence={residence} onUpdate={loadResidence} />
         </div>
 
         {/* Right Column - Workflow */}

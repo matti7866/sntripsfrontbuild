@@ -1264,6 +1264,25 @@ const residenceService = {
       }
     });
     return response.data;
+  },
+
+  /**
+   * Update basic residence information (sale price, insurance, tawjeeh, remarks, etc.)
+   */
+  async updateResidence(residenceID: number, data: {
+    sale_price?: number;
+    tawjeehIncluded?: number;
+    tawjeeh_amount?: number;
+    insuranceIncluded?: number;
+    insuranceAmount?: number;
+    remarks?: string;
+    salary_amount?: number;
+  }) {
+    const response = await axios.post('/residence/update-basic-info.php', {
+      residenceID,
+      ...data
+    });
+    return response.data;
   }
 };
 
