@@ -273,7 +273,7 @@ export default function AssetList() {
               <div className="d-flex justify-content-between align-items-center">
                 <div>
                   <h3 className="mb-0">
-                    {assets.reduce((sum, a) => sum + a.current_value, 0).toLocaleString()}
+                    AED {assets.reduce((sum, a) => sum + (parseFloat(String(a.current_value)) || 0), 0).toLocaleString()}
                   </h3>
                   <p className="mb-0">Total Value (AED)</p>
                 </div>
@@ -387,6 +387,31 @@ export default function AssetList() {
                         </td>
                       </tr>
                     ))}
+                    {/* Total Row */}
+                    <tr style={{ backgroundColor: '#343a40', fontWeight: 'bold' }}>
+                      <td colSpan={3} className="text-end">
+                        <strong>TOTAL:</strong>
+                      </td>
+                      <td>
+                        <strong>
+                          {(() => {
+                            const totalPurchase = assets.reduce((sum, a) => sum + (parseFloat(String(a.purchase_price)) || 0), 0);
+                            const currency = assets[0]?.purchase_currency_symbol || 'AED';
+                            return `${currency} ${totalPurchase.toLocaleString()}`;
+                          })()}
+                        </strong>
+                      </td>
+                      <td>
+                        <strong>
+                          {(() => {
+                            const totalCurrent = assets.reduce((sum, a) => sum + (parseFloat(String(a.current_value)) || 0), 0);
+                            const currency = assets[0]?.purchase_currency_symbol || 'AED';
+                            return `${currency} ${totalCurrent.toLocaleString()}`;
+                          })()}
+                        </strong>
+                      </td>
+                      <td colSpan={3}></td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
