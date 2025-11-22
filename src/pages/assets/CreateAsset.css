@@ -1,0 +1,150 @@
+.create-asset-page {
+  padding: 24px;
+  min-height: 100vh;
+  background: #1a1d23;
+}
+
+.create-asset-page .page-header {
+  margin-bottom: 24px;
+  background: transparent;
+}
+
+.create-asset-page .page-title {
+  color: #ffffff !important;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  background: transparent !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.create-asset-page .page-header .text-muted {
+  color: #9ca3af !important;
+  background: transparent !important;
+}
+
+/* Ensure all text in page header is readable */
+.create-asset-page .page-header h1,
+.create-asset-page .page-header h2,
+.create-asset-page .page-header h3,
+.create-asset-page .page-header h4,
+.create-asset-page .page-header h5,
+.create-asset-page .page-header h6 {
+  color: #ffffff !important;
+  background: transparent !important;
+}
+
+.create-asset-page .page-header p {
+  color: #9ca3af !important;
+  background: transparent !important;
+}
+
+.create-asset-page .page-header * {
+  background: transparent !important;
+}
+
+.create-asset-page .card {
+  background-color: #2d353c;
+  border: 1px solid #495057;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.create-asset-page .card-header {
+  background-color: #343a40;
+  border-bottom: 1px solid #495057;
+  padding: 16px 20px;
+}
+
+.create-asset-page .card-header h5 {
+  color: #ffffff;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.create-asset-page .card-body {
+  color: #ffffff;
+  padding: 20px;
+}
+
+.create-asset-page .form-label {
+  color: #d1d5db;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.create-asset-page .form-control,
+.create-asset-page .form-select,
+.create-asset-page textarea.form-control {
+  background-color: #ffffff;
+  color: #2d353c;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.create-asset-page .form-control:focus,
+.create-asset-page .form-select:focus,
+.create-asset-page textarea.form-control:focus {
+  background-color: #ffffff;
+  color: #2d353c;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  outline: none;
+}
+
+.create-asset-page .form-control::placeholder {
+  color: #9ca3af;
+}
+
+.create-asset-page .text-danger {
+  color: #ef4444 !important;
+}
+
+.create-asset-page .text-muted {
+  color: #9ca3af !important;
+}
+
+.create-asset-page .btn {
+  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.create-asset-page .btn-primary {
+  background: linear-gradient(to right, #dc2626, #991b1b);
+  color: #ffffff;
+  border: none;
+}
+
+.create-asset-page .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(to right, #b91c1c, #7f1d1d);
+  transform: translateY(-1px);
+}
+
+.create-asset-page .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.create-asset-page .btn-secondary {
+  background: linear-gradient(to right, #4b5563, #374151);
+  color: #ffffff;
+  border: none;
+}
+
+.create-asset-page .btn-secondary:hover:not(:disabled) {
+  background: linear-gradient(to right, #374151, #1f2937);
+  transform: translateY(-1px);
+}
+
+.create-asset-page hr {
+  border-color: #495057;
+  opacity: 0.5;
+}
+

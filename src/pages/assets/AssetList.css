@@ -1,0 +1,173 @@
+.asset-list-page {
+  padding: 24px;
+  min-height: 100vh;
+  background: #1a1d23;
+}
+
+.asset-list-page .page-header {
+  margin-bottom: 24px;
+  background: transparent !important;
+}
+
+.asset-list-page .page-title {
+  color: #ffffff !important;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  background: transparent !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Ensure all text in page header is readable */
+.asset-list-page .page-header h1,
+.asset-list-page .page-header h2,
+.asset-list-page .page-header h3,
+.asset-list-page .page-header h4,
+.asset-list-page .page-header h5,
+.asset-list-page .page-header h6 {
+  color: #ffffff !important;
+  background: transparent !important;
+}
+
+.asset-list-page .page-header p {
+  color: #9ca3af !important;
+  background: transparent !important;
+}
+
+.asset-list-page .page-header * {
+  background: transparent !important;
+}
+
+.asset-list-page .card {
+  background-color: #2d353c;
+  border: 1px solid #495057;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.asset-list-page .card-body {
+  color: #ffffff;
+}
+
+.asset-list-page .stats-card .card-body {
+  padding: 20px;
+}
+
+.asset-list-page .stats-card h3 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.asset-list-page .stats-card p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.asset-list-page .form-control,
+.asset-list-page .form-select {
+  background-color: #ffffff;
+  color: #2d353c;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.asset-list-page .form-control:focus,
+.asset-list-page .form-select:focus {
+  background-color: #ffffff;
+  color: #2d353c;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  outline: none;
+}
+
+.asset-list-page .table {
+  color: #ffffff;
+  margin-bottom: 0;
+}
+
+.asset-list-page .table thead th {
+  background-color: #343a40;
+  color: #ffffff;
+  border-bottom: 2px solid #495057;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.asset-list-page .table tbody tr {
+  border-bottom: 1px solid #495057;
+  transition: background-color 0.2s ease;
+}
+
+.asset-list-page .table tbody tr:hover {
+  background-color: #343a40;
+}
+
+.asset-list-page .table tbody td {
+  padding: 12px;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.asset-list-page .badge {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.asset-list-page .btn {
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.asset-list-page .btn-primary {
+  background: linear-gradient(to right, #dc2626, #991b1b);
+  color: #ffffff;
+  border: none;
+}
+
+.asset-list-page .btn-primary:hover {
+  background: linear-gradient(to right, #b91c1c, #7f1d1d);
+  transform: translateY(-1px);
+}
+
+.asset-list-page .btn-group .btn {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.asset-list-page .pagination .page-link {
+  background-color: #2d353c;
+  border-color: #495057;
+  color: #ffffff;
+}
+
+.asset-list-page .pagination .page-item.active .page-link {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.asset-list-page .pagination .page-link:hover {
+  background-color: #343a40;
+  border-color: #495057;
+  color: #ffffff;
+}
+
+.asset-list-page .pagination .page-item.disabled .page-link {
+  opacity: 0.5;
+}
+
+.asset-list-page .text-muted {
+  color: #9ca3af !important;
+}
+
