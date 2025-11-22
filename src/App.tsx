@@ -65,6 +65,8 @@ import Attachments from './pages/attachments/Attachments';
 import ChatRoom from './pages/chatroom/ChatRoom';
 import Currency from './pages/currency/Currency';
 import Settings from './pages/settings/Settings';
+import AssetList from './pages/assets/AssetList';
+import CreateAsset from './pages/assets/CreateAsset';
 
 function App() {
   return (
@@ -147,6 +149,12 @@ function App() {
               <Route path="accounts/report" element={<AccountsReport />} />
               <Route path="accounts/statement" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Account Statement</h1><p className="mt-4 text-gray-600">Account statement module coming soon...</p></div>} />
               <Route path="accounts/profit-loss" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Profit & Loss</h1><p className="mt-4 text-gray-600">Profit & Loss module coming soon...</p></div>} />
+              
+              {/* Assets */}
+              <Route path="assets" element={<AssetList />} />
+              <Route path="assets/create" element={<CreateAsset />} />
+              <Route path="assets/edit/:id" element={<CreateAsset />} />
+              <Route path="assets/:id" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Asset Details</h1><p className="mt-4 text-gray-600">Asset details view coming soon...</p></div>} />
               
               {/* Staff */}
               <Route path="staff" element={<StaffManagement />} />
