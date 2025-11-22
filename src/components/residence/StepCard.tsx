@@ -105,37 +105,31 @@ export default function StepCard({ step, residence, isExpanded, onToggle, onUpda
     loadLookups();
   }, []);
 
+  // Load currencies and charged entities only when step number or chargedON changes
   useEffect(() => {
     if (lookups && stepConfig) {
       // Load currencies when lookups are ready
       if (lookups.currencies && currencies.length === 0) {
         setCurrencies(lookups.currencies);
       }
+      
+      // Load currencies from API
+      loadCurrencies();
+      
       // Load charged entities from lookups immediately as fallback
       if (stepConfig.chargedType) {
-        if (chargedON === 1 && lookups.accounts && chargedEntities.length === 0) {
-          console.log('Loading accounts from lookups immediately:', lookups.accounts);
+        if (chargedON === 1 && lookups.accounts) {
           setChargedEntities(lookups.accounts);
-        } else if (chargedON === 2 && lookups.suppliers && chargedEntities.length === 0) {
-          console.log('Loading suppliers from lookups immediately:', lookups.suppliers);
+        } else if (chargedON === 2 && lookups.suppliers) {
           setChargedEntities(lookups.suppliers);
         }
-        // Also try to load from API to get selected values
-        loadChargedEntities().catch((err) => {
-          console.log('API load failed, using lookups:', err);
+        // Also try to load from API to get selected values (but don't log fallback)
+        loadChargedEntities().catch(() => {
+          // Silently use lookups fallback that's already set
         });
       }
     }
-  }, [lookups, stepConfig, chargedON]);
-
-  useEffect(() => {
-    if (stepConfig) {
-      loadCurrencies();
-      if (stepConfig.chargedType) {
-        loadChargedEntities();
-      }
-    }
-  }, [step.number, residence.residenceID, stepConfig]);
+  }, [step.number, chargedON]);
 
   useEffect(() => {
     // Initialize form data with current values
@@ -283,8 +277,6 @@ export default function StepCard({ step, residence, isExpanded, onToggle, onUpda
         chargedONValue
       );
       
-      console.log('Charged entities response:', response); // Debug log
-      
       // Handle different response formats
       let data = response;
       if (response && typeof response === 'object' && 'data' in response) {
@@ -292,20 +284,14 @@ export default function StepCard({ step, residence, isExpanded, onToggle, onUpda
       }
       
       if (Array.isArray(data) && data.length > 0) {
-        console.log('Setting charged entities:', data); // Debug log
         setChargedEntities(data);
       } else {
         // Fallback: use lookups
-        console.log('Using fallback from lookups, chargedON:', chargedONValue); // Debug log
         if (chargedONValue === 1 && lookups?.accounts) {
-          console.log('Loading accounts from lookups:', lookups.accounts); // Debug log
           setChargedEntities(lookups.accounts);
         } else if (chargedONValue === 2 && lookups?.suppliers) {
-          console.log('Loading suppliers from lookups:', lookups.suppliers); // Debug log
           setChargedEntities(lookups.suppliers);
         } else {
-          console.warn('No charged entities found in response:', response);
-          console.warn('Lookups available:', { accounts: lookups?.accounts, suppliers: lookups?.suppliers });
           setChargedEntities([]);
         }
       }
