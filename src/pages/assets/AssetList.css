@@ -171,3 +171,15 @@
   color: #9ca3af !important;
 }
 
+/* Total Row Styling */
+.asset-list-page .table tbody tr:last-child {
+  background-color: #343a40 !important;
+  border-top: 2px solid #495057;
+}
+
+.asset-list-page .table tbody tr:last-child td {
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 16px 12px;
+}
+

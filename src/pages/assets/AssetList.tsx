@@ -55,7 +55,21 @@ export default function AssetList() {
     } catch (error: any) {
       console.error('Error loading assets:', error);
       console.error('Error response:', error.response);
-      Swal.fire('Error', error.response?.data?.message || 'Failed to load assets', 'error');
+      
+      // Don't show error alert for 403 (access denied) - user shouldn't be on this page anyway
+      if (error.response?.status === 403) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Access Denied',
+          text: error.response?.data?.message || 'You do not have permission to access the Assets module.',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          navigate('/dashboard');
+        });
+      } else if (error.response?.status !== 401) {
+        // Only show error for non-auth errors (401 will be handled by interceptor)
+        Swal.fire('Error', error.response?.data?.message || 'Failed to load assets', 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -259,7 +273,7 @@ export default function AssetList() {
               <div className="d-flex justify-content-between align-items-center">
                 <div>
                   <h3 className="mb-0">
-                    {assets.reduce((sum, a) => sum + a.current_value, 0).toLocaleString()}
+                    AED {assets.reduce((sum, a) => sum + (parseFloat(String(a.current_value)) || 0), 0).toLocaleString()}
                   </h3>
                   <p className="mb-0">Total Value (AED)</p>
                 </div>
@@ -373,6 +387,31 @@ export default function AssetList() {
                         </td>
                       </tr>
                     ))}
+                    {/* Total Row */}
+                    <tr style={{ backgroundColor: '#343a40', fontWeight: 'bold' }}>
+                      <td colSpan={3} className="text-end">
+                        <strong>TOTAL:</strong>
+                      </td>
+                      <td>
+                        <strong>
+                          {(() => {
+                            const totalPurchase = assets.reduce((sum, a) => sum + (parseFloat(String(a.purchase_price)) || 0), 0);
+                            const currency = assets[0]?.purchase_currency_symbol || 'AED';
+                            return `${currency} ${totalPurchase.toLocaleString()}`;
+                          })()}
+                        </strong>
+                      </td>
+                      <td>
+                        <strong>
+                          {(() => {
+                            const totalCurrent = assets.reduce((sum, a) => sum + (parseFloat(String(a.current_value)) || 0), 0);
+                            const currency = assets[0]?.purchase_currency_symbol || 'AED';
+                            return `${currency} ${totalCurrent.toLocaleString()}`;
+                          })()}
+                        </strong>
+                      </td>
+                      <td colSpan={3}></td>
+                    </tr>
                   </tbody>
                 </table>
               </div>

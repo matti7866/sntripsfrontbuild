@@ -60,8 +60,22 @@ export default function CreateAsset() {
       const data = await assetService.getAsset(assetId);
       setFormData(data);
     } catch (error: any) {
-      Swal.fire('Error', error.response?.data?.message || 'Failed to load asset', 'error');
-      navigate('/assets');
+      if (error.response?.status === 403) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Access Denied',
+          text: error.response?.data?.message || 'You do not have permission to access the Assets module.',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          navigate('/dashboard');
+        });
+      } else if (error.response?.status === 401) {
+        // Token expired or invalid - will be handled by interceptor
+        return;
+      } else {
+        Swal.fire('Error', error.response?.data?.message || 'Failed to load asset', 'error');
+        navigate('/assets');
+      }
     } finally {
       setLoading(false);
     }
@@ -85,9 +99,26 @@ export default function CreateAsset() {
         await assetService.createAsset(formData);
         await Swal.fire('Success', 'Asset created successfully', 'success');
       }
+      // Navigate to assets list after successful save
       navigate('/assets');
     } catch (error: any) {
-      Swal.fire('Error', error.response?.data?.message || 'Failed to save asset', 'error');
+      if (error.response?.status === 403) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Access Denied',
+          text: error.response?.data?.message || 'You do not have permission to access the Assets module.',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          navigate('/dashboard');
+        });
+      } else if (error.response?.status === 401) {
+        // Token expired or invalid - will be handled by interceptor
+        // Don't navigate, let interceptor handle logout
+        return;
+      } else {
+        Swal.fire('Error', error.response?.data?.message || 'Failed to save asset', 'error');
+        // Don't navigate on error - stay on form
+      }
     } finally {
       setSaving(false);
     }
