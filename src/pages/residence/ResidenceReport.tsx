@@ -165,6 +165,7 @@ export default function ResidenceReport() {
         setRecords(combinedRecords);
         setTotalPages(maxTotalPages);
       } else {
+        // For mainland and freezone tabs
         const params: any = {
           page: currentPage,
           limit: 10 // Match old app - 10 records per page
@@ -724,7 +725,7 @@ export default function ResidenceReport() {
   const handleCancelSubmit = async (charges: number, remarks: string) => {
     if (!selectedResidence) return;
     try {
-      await residenceService.cancelResidence(selectedResidence.residenceID, remarks);
+      await residenceService.cancelResidence(selectedResidence.residenceID, remarks, charges);
       Swal.fire('Success', 'Residence cancelled successfully', 'success');
       setCancelModalOpen(false);
       setSelectedResidence(null);
@@ -1187,7 +1188,7 @@ export default function ResidenceReport() {
                                (!selectedResidence.completedStep && (selectedResidence as any).completed_step !== undefined)))}
           />
 
-          {cancelModalOpen && (
+          {cancelModalOpen && selectedResidence && (
             <CancelResidenceModal
               residence={selectedResidence}
               onCancel={handleCancelSubmit}

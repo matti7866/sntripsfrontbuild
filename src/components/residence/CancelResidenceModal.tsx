@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import type { Residence } from '../../types/residence';
-import Modal from '../common/Modal';
-import Button from '../common/Button';
+import '../modals/Modal.css';
 
 interface CancelResidenceModalProps {
-  residence: Residence;
+  residence: Residence | null;
   onCancel: (charges: number, remarks: string) => void;
   onClose: () => void;
 }
@@ -22,7 +21,7 @@ export default function CancelResidenceModal({ residence, onCancel, onClose }: C
       return;
     }
 
-    if (confirm(`Are you sure you want to cancel this residence?\n\nPassenger: ${residence.passenger_name}\nCancellation Charges: AED ${charges}\n\nThis action cannot be undone.`)) {
+    if (confirm(`Are you sure you want to cancel this residence?\n\nPassenger: ${residence?.passenger_name}\nCancellation Charges: AED ${charges}\n\nThis action cannot be undone.`)) {
       setSaving(true);
       try {
         await onCancel(charges, remarks);
@@ -32,106 +31,92 @@ export default function CancelResidenceModal({ residence, onCancel, onClose }: C
     }
   };
 
+  if (!residence) return null;
+
   return (
-    <Modal isOpen={true} onClose={onClose} title="Cancel Residence">
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-4">
-          {/* Residence Info */}
-          <div className="bg-gray-700 p-4 rounded">
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <span className="text-gray-400">Residence ID:</span>
-                <span className="ml-2 text-white font-bold">#{residence.residenceID}</span>
-              </div>
-              <div>
-                <span className="text-gray-400">Passenger:</span>
-                <span className="ml-2 text-white">{residence.passenger_name}</span>
-              </div>
-              <div>
-                <span className="text-gray-400">Customer:</span>
-                <span className="ml-2 text-white">{residence.customer_name}</span>
-              </div>
-              <div>
-                <span className="text-gray-400">Current Step:</span>
-                <span className="ml-2 text-white">{residence.completedStep}/10</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Warning */}
-          <div className="bg-red-900/30 border border-red-700 p-4 rounded">
-            <div className="flex items-start gap-3">
-              <i className="fa fa-exclamation-triangle text-red-400 mt-1"></i>
-              <div>
-                <h4 className="font-bold text-red-400 mb-1">Warning</h4>
-                <p className="text-sm text-gray-300">
-                  Cancelling this residence will permanently mark it as cancelled. 
-                  This action cannot be undone. Any costs incurred up to this point will need to be processed.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Cancellation Charges */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Cancellation Charges (AED) <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="number"
-              className="input-field w-full"
-              value={charges}
-              onChange={(e) => setCharges(parseFloat(e.target.value) || 0)}
-              min="0"
-              step="0.01"
-              required
-              placeholder="Enter cancellation charges"
-            />
-            <p className="text-xs text-gray-400 mt-1">
-              Enter the amount to charge the customer for cancellation
-            </p>
-          </div>
-
-          {/* Remarks */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Cancellation Remarks <span className="text-red-400">*</span>
-            </label>
-            <textarea
-              className="input-field w-full"
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-              required
-              rows={4}
-              placeholder="Provide reason for cancellation..."
-            />
-            <p className="text-xs text-gray-400 mt-1">
-              Explain why this residence is being cancelled
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3 justify-end pt-4 border-t border-gray-700">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-              disabled={saving}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="danger"
-              disabled={saving}
-            >
-              <i className="fa fa-times-circle mr-2"></i>
-              {saving ? 'Cancelling...' : 'Confirm Cancellation'}
-            </Button>
-          </div>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+        <div className="modal-header bg-danger text-white">
+          <h3><i className="fa fa-times-circle me-2"></i>Cancel Residence</h3>
+          <button className="modal-close" onClick={onClose} style={{ color: 'white' }}>
+            <i className="fa fa-times"></i>
+          </button>
         </div>
-      </form>
-    </Modal>
+
+        <form onSubmit={handleSubmit}>
+          <div className="modal-body">
+            <p className="mb-3">Cancelling residence for: <strong>{residence.passenger_name}</strong></p>
+
+            {/* Warning Alert */}
+            <div className="alert alert-danger mb-3">
+              <i className="fa fa-exclamation-triangle me-2"></i>
+              <strong>Warning:</strong> This action cannot be undone. The residence will be permanently marked as cancelled.
+            </div>
+
+            {/* Residence Info */}
+            <div className="row mb-3">
+              <div className="col-md-6">
+                <label className="form-label"><strong>Residence ID:</strong></label>
+                <input type="text" className="form-control" value={`#${residence.residenceID}`} readOnly />
+              </div>
+              <div className="col-md-6">
+                <label className="form-label"><strong>Customer:</strong></label>
+                <input type="text" className="form-control" value={residence.customer_name} readOnly />
+              </div>
+            </div>
+
+            {/* Cancellation Charges */}
+            <div className="mb-3">
+              <label className="form-label"><strong>Cancellation Charges (AED): <span className="text-danger">*</span></strong></label>
+              <input
+                type="number"
+                className="form-control"
+                value={charges}
+                onChange={(e) => setCharges(parseFloat(e.target.value) || 0)}
+                min="0"
+                step="0.01"
+                required
+                placeholder="Enter cancellation charges (0 if no charge)"
+              />
+              <small className="text-muted">Amount to charge the customer for cancellation</small>
+            </div>
+
+            {/* Remarks */}
+            <div className="mb-3">
+              <label className="form-label"><strong>Cancellation Reason: <span className="text-danger">*</span></strong></label>
+              <textarea
+                className="form-control"
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                required
+                rows={3}
+                placeholder="Explain why this residence is being cancelled..."
+              />
+              <small className="text-muted">This will be saved in the cancellation record</small>
+            </div>
+          </div>
+
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={saving}>
+              <i className="fa fa-times"></i> Cancel
+            </button>
+            <button type="submit" className="btn btn-danger" disabled={saving}>
+              {saving ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2"></span>
+                  Cancelling...
+                </>
+              ) : (
+                <>
+                  <i className="fa fa-times-circle me-2"></i>
+                  Confirm Cancellation
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 

@@ -15,7 +15,6 @@ const assetService = {
    */
   async getAssets(filters: AssetFilters = {}) {
     const response = await axios.get('/assets/list.php', { params: filters });
-    console.log('Raw API response:', response.data);
     // JWTHelper merges data array into response, so assets and pagination are at root level
     return {
       assets: response.data.assets || response.data.data?.assets || [],

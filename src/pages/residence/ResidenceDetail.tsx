@@ -75,7 +75,7 @@ export default function ResidenceDetail() {
     if (!residence) return;
     
     try {
-      await residenceService.cancelResidence(residence.residenceID, reason);
+      await residenceService.cancelResidence(residence.residenceID, reason, 0);
       setShowCancelModal(false);
       await loadResidence();
       alert('Residence cancelled successfully');

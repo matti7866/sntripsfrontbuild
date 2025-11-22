@@ -46,16 +46,10 @@ export default function AssetList() {
         page,
         limit: 50
       });
-      console.log('Assets loaded:', data);
-      console.log('Pagination:', pagination);
-      console.log('Total records:', pagination.total);
       setAssets(data);
       setTotalPages(pagination.totalPages);
       setTotalRecords(pagination.total);
     } catch (error: any) {
-      console.error('Error loading assets:', error);
-      console.error('Error response:', error.response);
-      
       // Don't show error alert for 403 (access denied) - user shouldn't be on this page anyway
       if (error.response?.status === 403) {
         Swal.fire({

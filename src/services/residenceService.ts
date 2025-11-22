@@ -187,10 +187,11 @@ const residenceService = {
   /**
    * Cancel residence
    */
-  async cancelResidence(residenceID: number, reason: string) {
+  async cancelResidence(residenceID: number, remarks: string, cancellationCharges: number = 0) {
     const response = await axios.post('/residence/cancel.php', {
       residenceID,
-      reason
+      remarks,
+      cancellation_charges: cancellationCharges
     });
     return response.data;
   },

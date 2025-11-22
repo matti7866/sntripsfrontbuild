@@ -164,6 +164,26 @@
   transition: all 0.2s ease;
 }
 
+/* Ensure all text elements in table cells are black */
+.residence-tasks-page .table tbody td * {
+  color: #000000 !important;
+}
+
+.residence-tasks-page .table tbody td strong {
+  color: #000000 !important;
+  font-weight: 600;
+}
+
+.residence-tasks-page .table tbody td span {
+  color: #000000 !important;
+  background-color: transparent !important;
+}
+
+/* Exception for badges - they should keep their colors */
+.residence-tasks-page .table tbody td .badge {
+  color: inherit !important;
+}
+
 .residence-tasks-page .table tbody tr.bg-hold,
 .residence-tasks-page .table tbody tr.bg-hold td {
   background-color: #fff5e6 !important;
@@ -316,8 +336,18 @@
 }
 
 .residence-tasks-page .text-primary {
-  color: #ffffff !important;
+  color: #000000 !important;
   font-weight: 600;
+}
+
+/* MOHRE Status specific styling */
+.residence-tasks-page .table tbody td strong {
+  color: #000000 !important;
+}
+
+.residence-tasks-page .table tbody td span {
+  color: #000000 !important;
+  background-color: transparent !important;
 }
 
 .residence-tasks-page .text-info {
