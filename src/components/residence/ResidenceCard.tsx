@@ -53,16 +53,56 @@ export default function ResidenceCard({
   isAdmin = false
 }: ResidenceCardProps) {
   // Calculate financial summary first - ensure all values are numbers
+  // Match ledger calculation: use actual charges if available, otherwise use conditional logic
   const salePrice = parseFloat(residence.sale_price as any) || 0;
-  const tawjeehAmount = residence.tawjeehIncluded === 0 ? (parseFloat(residence.tawjeeh_amount as any) || 150) : 0;
-  const insuranceAmount = residence.insuranceIncluded === 0 ? (parseFloat(residence.insuranceAmount as any) || 126) : 0;
+  
+  // Use actual charges from API if available (from ledger API format)
+  // Only use conditional logic if actual charges are not provided
+  let tawjeehCharges = parseFloat((residence as any).tawjeeh_charges as any);
+  if (isNaN(tawjeehCharges)) {
+    // Fallback: only add if not included AND amount exists
+    if (residence.tawjeehIncluded === 0 && residence.tawjeeh_amount) {
+      tawjeehCharges = parseFloat(residence.tawjeeh_amount as any) || 0;
+    } else {
+      tawjeehCharges = 0;
+    }
+  }
+  
+  let iloeCharges = parseFloat((residence as any).iloe_charges as any);
+  if (isNaN(iloeCharges)) {
+    // Fallback: only add if not included AND amount exists
+    if (residence.insuranceIncluded === 0 && residence.insuranceAmount) {
+      iloeCharges = parseFloat(residence.insuranceAmount as any) || 0;
+    } else {
+      iloeCharges = 0;
+    }
+  }
+  
   const iloeFine = parseFloat(residence.iloe_fine as any) || 0;
-  const totalFine = parseFloat(residence.total_Fine as any) || 0;
-  const totalFinePaid = parseFloat(residence.totalFinePaid as any) || 0;
-  const customChargesTotal = parseFloat((residence as any).custom_charges_total as any) || 0;
-  const totalAmount = salePrice + tawjeehAmount + insuranceAmount + iloeFine + totalFine + customChargesTotal;
-  const totalPaid = parseFloat(residence.total_paid as any) || 0;
-  const totalRemaining = totalAmount - totalPaid - totalFinePaid;
+  const totalFine = parseFloat((residence as any).total_Fine as any) || 
+                   parseFloat((residence as any).fine as any) || 0;
+  const customChargesTotal = parseFloat((residence as any).custom_charges_total as any) || 
+                            parseFloat((residence as any).custom_charges as any) || 0;
+  const cancellationCharges = parseFloat((residence as any).cancellation_charges as any) || 0;
+  
+  // Calculate total amount - matching ledger calculation exactly
+  const totalAmount = salePrice + 
+                     tawjeehCharges + 
+                     iloeCharges + 
+                     iloeFine + 
+                     totalFine + 
+                     customChargesTotal + 
+                     cancellationCharges;
+  
+  // Calculate total paid - matching ledger calculation exactly
+  // Ledger uses: residencePayment + finePayment + tawjeeh_payments + iloe_payments
+  const residencePayment = parseFloat(residence.total_paid as any) || 0;
+  const finePayment = parseFloat((residence as any).totalFinePaid as any) || 0;
+  const tawjeehPayments = parseFloat((residence as any).tawjeeh_payments as any) || 0;
+  const iloePayments = parseFloat((residence as any).iloe_payments as any) || 0;
+  
+  const totalPaid = residencePayment + finePayment + tawjeehPayments + iloePayments;
+  const totalRemaining = totalAmount - totalPaid;
 
   // Calculate completion percentage
   const completionPercentage = (residence.completedStep / 10) * 100;
@@ -263,8 +303,8 @@ export default function ResidenceCard({
                 {totalFine > 0 && (
                   <div className="mb-2">
                     <strong className="text-white">E-Visa Fine:</strong> <span style={{ color: '#ef4444', fontWeight: '600' }}>{totalFine.toLocaleString()} {residence.sale_currency_name}</span>
-                    {totalFinePaid > 0 && (
-                      <small style={{ color: '#9ca3af' }} className="ms-2">(Paid: {totalFinePaid.toLocaleString()})</small>
+                    {finePayment > 0 && (
+                      <small style={{ color: '#9ca3af' }} className="ms-2">(Paid: {finePayment.toLocaleString()})</small>
                     )}
                   </div>
                 )}

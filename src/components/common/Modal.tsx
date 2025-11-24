@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -57,51 +58,105 @@ const Modal: React.FC<ModalProps> = ({
     xl: 'max-w-6xl',
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+  const modalContent = (
+    <div 
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9000,
+        overflowY: 'auto'
+      }}
+    >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        style={{ 
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          zIndex: 9000
+        }}
         onClick={onClose}
       ></div>
 
       {/* Modal */}
-      <div className="flex min-h-screen items-center justify-center p-4">
+      <div 
+        style={{ 
+          display: 'flex',
+          minHeight: '100vh',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px',
+          position: 'relative',
+          zIndex: 9001
+        }}
+      >
         <div
-          className={`relative bg-white rounded-2xl shadow-2xl w-full ${sizeClasses[size]} fade-in`}
+          className={sizeClasses[size]}
+          style={{
+            position: 'relative',
+            backgroundColor: '#2d353c',
+            border: '1px solid #495057',
+            borderRadius: '16px',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            zIndex: 9001
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h3 className="text-2xl font-bold text-gray-900">{title}</h3>
+          <div 
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '24px',
+              borderBottom: '1px solid #495057',
+              backgroundColor: '#343a40'
+            }}
+          >
+            <h3 style={{ 
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: '#ffffff',
+              margin: 0
+            }}>
+              {title}
+            </h3>
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                style={{
+                  color: '#9ca3af',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '24px',
+                  padding: '0',
+                  lineHeight: '1'
+                }}
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+                <i className="fa fa-times"></i>
               </button>
             )}
           </div>
 
           {/* Content */}
-          <div className="p-6">{children}</div>
+          <div style={{ padding: '24px', color: '#ffffff' }}>{children}</div>
         </div>
       </div>
     </div>
   );
+
+  // Render modal in a portal attached to document.body
+  return createPortal(modalContent, document.body);
 };
 
 export default Modal;

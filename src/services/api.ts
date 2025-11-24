@@ -57,7 +57,10 @@ apiClient.interceptors.response.use(
           const isVerifyRequest = error.config?.url?.includes('/auth/verify.php') || 
                                   error.config?.url?.includes('/auth/me.php');
           
-          if (!isVerifyRequest) {
+          // Don't logout for Assets module access denied (it returns 403, but check anyway)
+          const isAssetsRequest = error.config?.url?.includes('/assets/');
+          
+          if (!isVerifyRequest && !isAssetsRequest) {
             // Clear auth data and redirect to login
             storage.remove(config.tokenKey);
             storage.remove(config.userKey);
@@ -69,7 +72,9 @@ apiClient.interceptors.response.use(
           }
           break;
         case 403:
-          console.error('Access forbidden');
+          // Access forbidden - don't logout, just show error
+          console.error('Access forbidden:', error.response?.data?.message || 'You do not have permission to access this resource');
+          // Don't redirect or logout for 403 errors - let the component handle it
           break;
         case 404:
           console.error('Resource not found');

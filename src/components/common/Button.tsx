@@ -16,6 +16,7 @@ const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   className,
   disabled,
+  style,
   ...props
 }) => {
   const baseClasses = 'font-semibold rounded-lg transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed';
@@ -26,6 +27,35 @@ const Button: React.FC<ButtonProps> = ({
     success: 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800',
     danger: 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700',
     warning: 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:from-yellow-600 hover:to-yellow-700',
+  };
+
+  // Inline styles to ensure visibility and override any global CSS
+  const variantStyles: Record<typeof variant, React.CSSProperties> = {
+    primary: {
+      background: 'linear-gradient(to right, #dc2626, #991b1b)',
+      color: '#ffffff',
+      border: 'none',
+    },
+    secondary: {
+      background: 'linear-gradient(to right, #4b5563, #374151)',
+      color: '#ffffff',
+      border: 'none',
+    },
+    success: {
+      background: 'linear-gradient(to right, #16a34a, #15803d)',
+      color: '#ffffff',
+      border: 'none',
+    },
+    danger: {
+      background: 'linear-gradient(to right, #ef4444, #dc2626)',
+      color: '#ffffff',
+      border: 'none',
+    },
+    warning: {
+      background: 'linear-gradient(to right, #eab308, #ca8a04)',
+      color: '#ffffff',
+      border: 'none',
+    },
   };
 
   const sizeClasses = {
@@ -43,6 +73,10 @@ const Button: React.FC<ButtonProps> = ({
         fullWidth && 'w-full',
         className
       )}
+      style={{
+        ...variantStyles[variant],
+        ...style,
+      }}
       disabled={disabled || loading}
       {...props}
     >

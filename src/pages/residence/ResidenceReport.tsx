@@ -97,6 +97,7 @@ export default function ResidenceReport() {
   };
 
   const loadRecords = async () => {
+    console.log('=== LOADING RESIDENCE REPORT ===');
     try {
       setLoading(true);
       
@@ -164,6 +165,7 @@ export default function ResidenceReport() {
         setRecords(combinedRecords);
         setTotalPages(maxTotalPages);
       } else {
+        // For mainland and freezone tabs
         const params: any = {
           page: currentPage,
           limit: 10 // Match old app - 10 records per page
@@ -182,6 +184,10 @@ export default function ResidenceReport() {
         const response = await residenceService.getResidences(params);
         setRecords(response.data);
         setTotalPages(response.totalPages);
+        
+        // Log summary of loaded records
+        console.log(`Loaded ${response.data.length} residences for ${activeTab} tab (page ${currentPage})`);
+        console.log('Search query:', searchQuery || 'none');
       }
     } catch (error: any) {
       console.error('Error loading records:', error);
@@ -222,27 +228,87 @@ export default function ResidenceReport() {
     return Math.round((step / 10) * 100);
   };
 
-  // Calculate financial totals
+  // Calculate financial totals - matching ResidenceCard and Ledger calculations
   const calculateFinancials = (residence: Residence) => {
-    let totalAmount = residence.sale_price;
-    
-    // Add TAWJEEH if not included
-    if (residence.tawjeehIncluded === 0) {
-      totalAmount += (residence.tawjeeh_amount || 150);
+    // Skip residences with 0 sale price (invalid/draft residences)
+    const salePrice = parseFloat(residence.sale_price as any) || 0;
+    if (salePrice === 0) {
+      return { totalAmount: 0, totalPaid: 0, totalRemaining: 0 };
     }
     
-    // Add ILOE Insurance if not included
-    if (residence.insuranceIncluded === 0) {
-      totalAmount += (residence.insuranceAmount || 126);
+    // Use actual charges from API if available (from ledger API format)
+    // Only use conditional logic if actual charges are not provided
+    let tawjeehCharges = parseFloat((residence as any).tawjeeh_charges as any);
+    if (isNaN(tawjeehCharges)) {
+      // Fallback: only add if not included AND amount exists
+      if (residence.tawjeehIncluded === 0 && residence.tawjeeh_amount) {
+        tawjeehCharges = parseFloat(residence.tawjeeh_amount as any) || 0;
+      } else {
+        tawjeehCharges = 0;
+      }
     }
     
-    // Always add ILOE fine
-    if (residence.iloe_fine) {
-      totalAmount += residence.iloe_fine;
+    let iloeCharges = parseFloat((residence as any).iloe_charges as any);
+    if (isNaN(iloeCharges)) {
+      // Fallback: only add if not included AND amount exists
+      if (residence.insuranceIncluded === 0 && residence.insuranceAmount) {
+        iloeCharges = parseFloat(residence.insuranceAmount as any) || 0;
+      } else {
+        iloeCharges = 0;
+      }
     }
     
-    const totalPaid = residence.total_paid || 0;
+    const iloeFine = parseFloat(residence.iloe_fine as any) || 0;
+    const totalFine = parseFloat((residence as any).total_Fine as any) || 
+                     parseFloat((residence as any).fine as any) || 0;
+    const customChargesTotal = parseFloat((residence as any).custom_charges_total as any) || 
+                              parseFloat((residence as any).custom_charges as any) || 0;
+    const cancellationCharges = parseFloat((residence as any).cancellation_charges as any) || 0;
+    
+    // Calculate total amount - matching ledger calculation exactly
+    const totalAmount = salePrice + 
+                       tawjeehCharges + 
+                       iloeCharges + 
+                       iloeFine + 
+                       totalFine + 
+                       customChargesTotal + 
+                       cancellationCharges;
+    
+    // Calculate total paid - matching ledger calculation exactly
+    // Ledger uses: residencePayment + finePayment + tawjeeh_payments + iloe_payments
+    const residencePayment = parseFloat(residence.total_paid as any) || 0;
+    const finePayment = parseFloat((residence as any).totalFinePaid as any) || 0;
+    const tawjeehPayments = parseFloat((residence as any).tawjeeh_payments as any) || 0;
+    const iloePayments = parseFloat((residence as any).iloe_payments as any) || 0;
+    
+    const totalPaid = residencePayment + finePayment + tawjeehPayments + iloePayments;
+    
+    // Outstanding balance
     const totalRemaining = totalAmount - totalPaid;
+    
+    // Debug logging for customer 573
+    if (residence.customer_id === 573 || (residence as any).customerID === 573) {
+      console.log('Residence Report Calculation for Customer 573:', {
+        residenceID: residence.residenceID,
+        salePrice,
+        tawjeehCharges,
+        iloeCharges,
+        iloeFine,
+        totalFine,
+        customChargesTotal,
+        cancellationCharges,
+        totalAmount,
+        residencePayment,
+        finePayment,
+        tawjeehPayments,
+        iloePayments,
+        totalPaid,
+        totalRemaining,
+        tawjeehIncluded: residence.tawjeehIncluded,
+        insuranceIncluded: residence.insuranceIncluded,
+        rawData: residence
+      });
+    }
     
     return { totalAmount, totalPaid, totalRemaining };
   };
@@ -659,7 +725,7 @@ export default function ResidenceReport() {
   const handleCancelSubmit = async (charges: number, remarks: string) => {
     if (!selectedResidence) return;
     try {
-      await residenceService.cancelResidence(selectedResidence.residenceID, remarks);
+      await residenceService.cancelResidence(selectedResidence.residenceID, remarks, charges);
       Swal.fire('Success', 'Residence cancelled successfully', 'success');
       setCancelModalOpen(false);
       setSelectedResidence(null);
@@ -1122,7 +1188,7 @@ export default function ResidenceReport() {
                                (!selectedResidence.completedStep && (selectedResidence as any).completed_step !== undefined)))}
           />
 
-          {cancelModalOpen && (
+          {cancelModalOpen && selectedResidence && (
             <CancelResidenceModal
               residence={selectedResidence}
               onCancel={handleCancelSubmit}

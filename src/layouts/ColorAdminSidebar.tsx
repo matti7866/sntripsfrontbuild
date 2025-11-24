@@ -108,6 +108,15 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
+    icon: 'fa fa-cube',
+    title: 'Assets',
+    adminOnly: true,
+    children: [
+      { path: '/assets', title: 'Asset List', adminOnly: true },
+      { path: '/assets/create', title: 'Add New Asset', adminOnly: true }
+    ]
+  },
+  {
     icon: 'fa fa-dollar',
     title: 'Make Payment',
     children: [

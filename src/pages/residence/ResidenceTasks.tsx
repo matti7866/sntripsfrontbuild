@@ -729,7 +729,14 @@ export default function ResidenceTasks() {
                         {residence.mb_number && <><br /><strong>MB Number: </strong>{residence.mb_number}</>}
                         {residence.mohreStatus && (
                           <><br /><strong>MOHRE Status: </strong>
-                            <span className={residence.mb_number ? 'text-primary' : 'text-danger'}>
+                            <span 
+                              className={residence.mb_number ? '' : 'text-danger'}
+                              style={{ 
+                                color: '#000000',
+                                fontWeight: '600',
+                                backgroundColor: 'transparent'
+                              }}
+                            >
                               {residence.mb_number ? residence.mohreStatus : 'Provide MB Number'}
                             </span>
                           </>

@@ -75,7 +75,7 @@ export default function ResidenceDetail() {
     if (!residence) return;
     
     try {
-      await residenceService.cancelResidence(residence.residenceID, reason);
+      await residenceService.cancelResidence(residence.residenceID, reason, 0);
       setShowCancelModal(false);
       await loadResidence();
       alert('Residence cancelled successfully');
@@ -167,7 +167,7 @@ export default function ResidenceDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Residence Info */}
         <div className="lg:col-span-1">
-          <ResidenceInfo residence={residence} />
+          <ResidenceInfo residence={residence} onUpdate={loadResidence} />
         </div>
 
         {/* Right Column - Workflow */}

@@ -178,6 +178,67 @@ export default function ResidenceLedger() {
       console.log('Ledger response:', response);
       console.log('Response data:', response.data);
       
+      // Detailed breakdown for debugging
+      if (response.data) {
+        console.log('=== LEDGER CALCULATION BREAKDOWN ===');
+        console.log('Customer ID:', id, 'Currency ID:', currencyID);
+        
+        if (response.data.totals) {
+          console.log('Backend Totals:', {
+            totalCharges: response.data.totals.totalCharges,
+            totalPaid: response.data.totals.totalPaid,
+            outstandingBalance: response.data.totals.outstandingBalance
+          });
+        }
+        
+        const records = Array.isArray(response.data.data) ? response.data.data : [];
+        console.log(`Found ${records.length} residence records`);
+        
+        let manualTotalCharges = 0;
+        let manualTotalPaid = 0;
+        
+        records.forEach((record: LedgerRecord) => {
+          const charges = parseFloat(record.sale_price?.toString() || '0') +
+                         parseFloat(record.fine?.toString() || '0') +
+                         parseFloat(record.cancellation_charges?.toString() || '0') +
+                         parseFloat(record.tawjeeh_charges?.toString() || '0') +
+                         parseFloat(record.iloe_charges?.toString() || '0') +
+                         parseFloat(record.custom_charges?.toString() || '0');
+          
+          const paid = parseFloat(record.residencePayment?.toString() || '0') +
+                      parseFloat(record.finePayment?.toString() || '0') +
+                      parseFloat(record.tawjeeh_payments?.toString() || '0') +
+                      parseFloat(record.iloe_payments?.toString() || '0');
+          
+          manualTotalCharges += charges;
+          manualTotalPaid += paid;
+          
+          console.log(`Residence ${record.residenceID} (${record.main_passenger}):`, {
+            salePrice: record.sale_price,
+            fine: record.fine,
+            cancellation: record.cancellation_charges,
+            tawjeeh: record.tawjeeh_charges,
+            iloe: record.iloe_charges,
+            custom: record.custom_charges,
+            totalCharges: charges,
+            residencePayment: record.residencePayment,
+            finePayment: record.finePayment,
+            tawjeehPayments: record.tawjeeh_payments,
+            iloePayments: record.iloe_payments,
+            totalPaid: paid,
+            balance: charges - paid
+          });
+        });
+        
+        console.log('Manual calculation totals:', {
+          totalCharges: manualTotalCharges,
+          totalPaid: manualTotalPaid,
+          outstanding: manualTotalCharges - manualTotalPaid
+        });
+        
+        console.log('=== END LEDGER BREAKDOWN ===');
+      }
+      
       if (response && response.data) {
         const responseData = response.data;
         

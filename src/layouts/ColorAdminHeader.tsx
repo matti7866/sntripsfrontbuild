@@ -73,15 +73,17 @@ export default function ColorAdminHeader() {
           </div>
         </div>
 
-        {/* Staff Attendance Status - Desktop */}
-        <div className="navbar-item d-none d-md-block">
-          <div style={{
+        {/* Staff Attendance Status - Responsive */}
+        <div className="navbar-item attendance-status-container">
+          <div className="attendance-status" style={{
             fontFamily: 'Arial, sans-serif',
-            fontSize: '12px', // Added smaller font size
+            fontSize: '12px',
             color: '#fff',
-            padding: '4px 12px', // Reduced from 5px 15px
+            padding: '4px 12px',
             position: 'relative',
-            zIndex: 1
+            zIndex: 1,
+            whiteSpace: 'nowrap',
+            overflow: 'visible'
           }}>
             <span className="badge bg-secondary me-1" style={{ fontSize: '10px' }}>Absent</span>
             <span style={{ fontSize: '11px' }}>Check-in: <strong>--:--</strong></span>
