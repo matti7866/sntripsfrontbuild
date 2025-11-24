@@ -1,6 +1,5 @@
 import apiClient from './api';
 import { config } from '../utils/config';
-import axios from 'axios';
 import logger from '../utils/logger';
 import type {
   Account,
@@ -19,7 +18,7 @@ class AccountsService {
   async getAccounts(): Promise<Account[]> {
     try {
       // Use absolute URL for API endpoint
-      const response = await axios.get(`${config.baseUrl}/api/accounts.php`, {
+      const response = await apiClient.get(`${config.baseUrl}/api/accounts.php`, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
@@ -45,7 +44,7 @@ class AccountsService {
       
       // Fallback: try accountsReportController
       try {
-        const fallbackResponse = await axios.post(`${config.baseUrl}/accountsReportController.php`, 
+        const fallbackResponse = await apiClient.post(`${config.baseUrl}/accountsReportController.php`, 
           new URLSearchParams({ action: 'getAccounts' }), 
           { 
             withCredentials: true,
@@ -65,7 +64,7 @@ class AccountsService {
   async getCurrencies(): Promise<Currency[]> {
     try {
       // Use absolute URL for API endpoint
-      const response = await axios.get(`${config.baseUrl}/api/currencies.php`, {
+      const response = await apiClient.get(`${config.baseUrl}/api/currencies.php`, {
         withCredentials: true,
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +90,7 @@ class AccountsService {
       
       // Fallback: try accountsReportController
       try {
-        const fallbackResponse = await axios.post(`${config.baseUrl}/accountsReportController.php`, 
+        const fallbackResponse = await apiClient.post(`${config.baseUrl}/accountsReportController.php`, 
           new URLSearchParams({ action: 'getCurrencies' }), 
           { 
             withCredentials: true,
@@ -118,7 +117,7 @@ class AccountsService {
     formData.append('resetDate', filters.resetDate);
 
     // Use absolute URL for root-level PHP files
-    const response = await axios.post(`${config.baseUrl}/accountsReportController.php`, formData, {
+    const response = await apiClient.post(`${config.baseUrl}/accountsReportController.php`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -133,7 +132,7 @@ class AccountsService {
     formData.append('resetDate', resetDate);
 
     // Use absolute URL for root-level PHP files
-    const response = await axios.post(`${config.baseUrl}/accountsReportController.php`, formData, {
+    const response = await apiClient.post(`${config.baseUrl}/accountsReportController.php`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -150,7 +149,7 @@ class AccountsService {
     formData.append('Remarks', data.depositRemarks);
     formData.append('Currency_Type', data.depositCurrency.toString());
 
-    const response = await axios.post(`${config.baseUrl}/depositController.php`, formData, {
+    const response = await apiClient.post(`${config.baseUrl}/depositController.php`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -171,7 +170,7 @@ class AccountsService {
     formData.append('Remarks', data.withdrawRemarks);
     formData.append('Currency_Type', data.withdrawCurrency.toString());
 
-    const response = await axios.post(`${config.baseUrl}/withdrawalController.php`, formData, {
+    const response = await apiClient.post(`${config.baseUrl}/withdrawalController.php`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -197,7 +196,7 @@ class AccountsService {
     formData.append('chargesAdd', data.transferCharges.toString());
     formData.append('exchangeRateAdd', data.transferExchangeRate.toString());
 
-    const response = await axios.post(`${config.baseUrl}/transfersController.php`, formData, {
+    const response = await apiClient.post(`${config.baseUrl}/transfersController.php`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -213,7 +212,7 @@ class AccountsService {
     formData.append('fromDate', fromDate);
     formData.append('toDate', toDate);
 
-    const response = await axios.post(`${config.baseUrl}/accountsReportController.php`, formData, {
+    const response = await apiClient.post(`${config.baseUrl}/accountsReportController.php`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -226,7 +225,7 @@ class AccountsService {
     const formData = new FormData();
     formData.append('action', 'validateTables');
 
-    const response = await axios.post(`${config.baseUrl}/accountsReportController.php`, formData, {
+    const response = await apiClient.post(`${config.baseUrl}/accountsReportController.php`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -239,7 +238,7 @@ class AccountsService {
     const formData = new FormData();
     formData.append('id', accountId.toString());
 
-    const response = await axios.post(`${config.baseUrl}/getAccountBalance.php`, formData, {
+    const response = await apiClient.post(`${config.baseUrl}/getAccountBalance.php`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',

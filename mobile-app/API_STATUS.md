@@ -127,3 +127,4 @@ curl "https://app.sntrips.com/api/calendar/flights.php?customerId=558&startDate=
 - No red error screens
 - Development mode allows testing without full backend
 
+

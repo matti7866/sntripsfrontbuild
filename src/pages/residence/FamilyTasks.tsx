@@ -534,7 +534,14 @@ export default function FamilyTasks() {
                         {family.mb_number && <><br /><strong>MB Number: </strong>{family.mb_number}</>}
                         {family.mohreStatus && (
                           <><br /><strong>MOHRE Status: </strong>
-                            <span className={family.mb_number ? 'text-primary' : 'text-danger'}>
+                            <span 
+                              className={family.mb_number ? '' : 'text-danger'}
+                              style={{ 
+                                color: '#000000',
+                                fontWeight: '600',
+                                backgroundColor: 'transparent'
+                              }}
+                            >
                               {family.mb_number ? family.mohreStatus : 'Provide MB Number'}
                             </span>
                           </>

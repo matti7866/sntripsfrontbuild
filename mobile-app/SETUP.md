@@ -170,3 +170,4 @@ eas build --platform android
 7. ✅ Set up app store accounts
 8. ✅ Build and deploy to stores
 
+

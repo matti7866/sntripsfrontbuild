@@ -302,7 +302,7 @@ html, body, #root {
 }
 
 /* Digital Clock Styling */
-.navbar-item div[style*="font-family"] {
+.navbar-item div[style*="font-family"]:not(.attendance-status) {
   background: linear-gradient(135deg, var(--primary-red) 0%, var(--secondary-red) 100%) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 20px !important; /* Reduced from 25px */
@@ -311,6 +311,100 @@ html, body, #root {
   box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3) !important;
   backdrop-filter: blur(10px) !important;
   font-size: 14px !important; /* Explicit smaller font size */
+}
+
+/* Attendance Status Styling - Red border only, responsive */
+.attendance-status-container {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  min-width: fit-content !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+.attendance-status,
+.navbar-item .attendance-status,
+.attendance-status-container .attendance-status {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: 2px solid var(--primary-red) !important;
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.3px !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  display: inline-block !important;
+  min-width: fit-content !important;
+}
+
+/* Responsive adjustments for attendance status */
+@media (max-width: 1200px) {
+  .attendance-status {
+    font-size: 11px !important;
+    padding: 3px 10px !important;
+  }
+  
+  .attendance-status span {
+    font-size: 10px !important;
+  }
+  
+  .attendance-status small {
+    font-size: 9px !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .attendance-status {
+    font-size: 10px !important;
+    padding: 3px 8px !important;
+  }
+  
+  .attendance-status span {
+    font-size: 9px !important;
+  }
+  
+  .attendance-status small {
+    font-size: 8px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .attendance-status-container {
+    order: -1 !important; /* Move to top on mobile */
+    width: 100% !important;
+    justify-content: center !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .attendance-status {
+    font-size: 10px !important;
+    padding: 4px 10px !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .attendance-status {
+    font-size: 9px !important;
+    padding: 3px 8px !important;
+  }
+  
+  .attendance-status .badge {
+    font-size: 8px !important;
+    padding: 2px 4px !important;
+  }
+  
+  .attendance-status span {
+    font-size: 8px !important;
+  }
+  
+  .attendance-status small {
+    font-size: 7px !important;
+  }
 }
 
 /* Navigation Links */

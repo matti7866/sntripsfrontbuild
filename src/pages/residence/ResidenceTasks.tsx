@@ -732,7 +732,7 @@ export default function ResidenceTasks() {
                             <span 
                               className={residence.mb_number ? '' : 'text-danger'}
                               style={{ 
-                                color: residence.mb_number ? '#000000' : undefined,
+                                color: '#000000',
                                 fontWeight: '600',
                                 backgroundColor: 'transparent'
                               }}

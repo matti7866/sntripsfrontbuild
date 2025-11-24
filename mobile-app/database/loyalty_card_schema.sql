@@ -73,3 +73,4 @@ DELIMITER ;
 -- GET /api/loyalty/transactions.php
 -- POST /api/loyalty/transactions.php (action=add)
 
+

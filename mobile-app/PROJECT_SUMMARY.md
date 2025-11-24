@@ -217,3 +217,4 @@ See `database/loyalty_card_schema.sql` for full schema.
 - The app uses modern React Native patterns and best practices
 - TypeScript is used throughout for type safety
 
+
