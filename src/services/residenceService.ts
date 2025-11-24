@@ -951,6 +951,22 @@ const residenceService = {
   },
 
   /**
+   * Send MOHRE status change notification email
+   */
+  async sendMohreStatusNotification(residenceID: number) {
+    try {
+      const response = await axios.post('/residence/mohre-status-notification.php', {
+        residenceID
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to send MOHRE status notification:', error);
+      // Don't throw error to prevent disrupting the main flow
+      return { status: 'error', message: 'Failed to send notification', emailSent: false };
+    }
+  },
+
+  /**
    * Move residence to specific step
    */
   async moveResidenceToStep(residenceID: number, targetStep: string) {

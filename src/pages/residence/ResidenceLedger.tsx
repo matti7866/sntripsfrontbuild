@@ -183,12 +183,16 @@ export default function ResidenceLedger() {
         console.log('=== LEDGER CALCULATION BREAKDOWN ===');
         console.log('Customer ID:', id, 'Currency ID:', currencyID);
         
-        if (response.data.totals) {
-          console.log('Backend Totals:', {
-            totalCharges: response.data.totals.totalCharges,
-            totalPaid: response.data.totals.totalPaid,
-            outstandingBalance: response.data.totals.outstandingBalance
-          });
+        if (response.data.data && response.data.data.totals) {
+          console.log('Backend Totals (nested):', response.data.data.totals);
+          console.log('Total Charges:', response.data.data.totals.totalCharges);
+          console.log('Total Paid:', response.data.data.totals.totalPaid);
+          console.log('Outstanding Balance:', response.data.data.totals.outstandingBalance);
+        } else if (response.data.totals) {
+          console.log('Backend Totals (top level):', response.data.totals);
+          console.log('Total Charges:', response.data.totals.totalCharges);
+          console.log('Total Paid:', response.data.totals.totalPaid);
+          console.log('Outstanding Balance:', response.data.totals.outstandingBalance);
         }
         
         const records = Array.isArray(response.data.data) ? response.data.data : [];
@@ -242,6 +246,15 @@ export default function ResidenceLedger() {
       if (response && response.data) {
         const responseData = response.data;
         
+        console.log('Response structure:', {
+          hasSuccess: !!responseData.success,
+          hasData: !!responseData.data,
+          dataIsArray: Array.isArray(responseData.data),
+          hasDataData: responseData.data && Array.isArray(responseData.data.data),
+          hasTotals: responseData.data && !!responseData.data.totals,
+          hasPagination: responseData.data && !!responseData.data.pagination
+        });
+        
         // Handle JWTHelper response format: { success: true, message: "...", data: { data: [...], pagination: {...}, totals: {...} } }
         let data = [];
         let pagination = null;
@@ -249,14 +262,20 @@ export default function ResidenceLedger() {
         
         if (responseData.success && responseData.data) {
           if (Array.isArray(responseData.data.data)) {
+            console.log('✓ Using nested data structure');
             data = responseData.data.data;
             pagination = responseData.data.pagination || null;
             totals = responseData.data.totals || null;
           } else if (Array.isArray(responseData.data)) {
-            // Fallback for old format
+            console.log('✓ Data is array, checking for top-level totals');
+            // Fallback for old format - but check if totals exist at response.data level
             data = responseData.data;
+            // Check for totals and pagination at top level (not nested under data)
+            totals = responseData.totals || null;
+            pagination = responseData.pagination || null;
           }
         } else if (Array.isArray(responseData)) {
+          console.log('⚠️ Fallback: responseData is an array');
           data = responseData;
         }
         
@@ -264,10 +283,13 @@ export default function ResidenceLedger() {
         
         // Use totals from backend if available, otherwise calculate from current page
         if (totals) {
+          console.log('✓ Using backend totals:', totals);
           setTotalCharges(totals.totalCharges || 0);
           setTotalPaid(totals.totalPaid || 0);
           setOutstandingBalance(totals.outstandingBalance || 0);
         } else {
+          console.warn('⚠️ Backend totals not found, calculating from visible page data only!');
+          console.warn('This will be incorrect for multi-page results!');
           // Fallback: calculate from current page data
           let charges = 0;
           let paid = 0;
@@ -286,6 +308,7 @@ export default function ResidenceLedger() {
                     parseFloat(record.iloe_payments?.toString() || '0');
           });
           
+          console.warn('Calculated from page:', { charges, paid, outstanding: charges - paid });
           setTotalCharges(charges);
           setTotalPaid(paid);
           setOutstandingBalance(charges - paid);
