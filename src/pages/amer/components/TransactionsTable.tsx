@@ -32,18 +32,25 @@ export default function TransactionsTable({
 
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleDateString('en-GB', {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return dateString || 'N/A';
+      }
+      return date.toLocaleDateString('en-GB', {
         day: '2-digit',
         month: 'short',
         year: 'numeric'
       });
     } catch {
-      return dateString;
+      return dateString || 'N/A';
     }
   };
 
   const formatCurrency = (amount: string | number) => {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+    if (isNaN(num)) {
+      return '0.00';
+    }
     return new Intl.NumberFormat('en-AE', {
       style: 'decimal',
       minimumFractionDigits: 2,

@@ -91,7 +91,10 @@ export default function TransactionFilters({
                   })) || [])
                 ]}
                 value={filters.customer || ''}
-                onChange={(value) => onFiltersChange({ ...filters, customer: value ? Number(value) : undefined })}
+                onChange={(value) => {
+                  const numValue = typeof value === 'number' ? value : parseInt(String(value), 10);
+                  onFiltersChange({ ...filters, customer: !isNaN(numValue) && value !== '' ? numValue : undefined });
+                }}
                 placeholder="All Customers"
               />
             </div>
@@ -110,7 +113,10 @@ export default function TransactionFilters({
                   })) || [])
                 ]}
                 value={filters.type || ''}
-                onChange={(value) => onFiltersChange({ ...filters, type: value ? Number(value) : undefined })}
+                onChange={(value) => {
+                  const numValue = typeof value === 'number' ? value : parseInt(String(value), 10);
+                  onFiltersChange({ ...filters, type: !isNaN(numValue) && value !== '' ? numValue : undefined });
+                }}
                 placeholder="All Types"
               />
             </div>
@@ -129,7 +135,10 @@ export default function TransactionFilters({
                   })) || [])
                 ]}
                 value={filters.account || ''}
-                onChange={(value) => onFiltersChange({ ...filters, account: value ? Number(value) : undefined })}
+                onChange={(value) => {
+                  const numValue = typeof value === 'number' ? value : parseInt(String(value), 10);
+                  onFiltersChange({ ...filters, account: !isNaN(numValue) && value !== '' ? numValue : undefined });
+                }}
                 placeholder="All Accounts"
               />
             </div>
