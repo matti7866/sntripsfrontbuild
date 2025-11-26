@@ -502,13 +502,6 @@ export default function AccountsReport() {
                   <option value="tawjeeh_operation">Tawjeeh Operations</option>
                   <option value="iloe_operation">ILOE Insurance Operations</option>
                   <option value="evisa_charge">eVisa Charges</option>
-                  <option value="offer_letter_charge">Offer Letter Charges</option>
-                  <option value="insurance_charge">Insurance Charges</option>
-                  <option value="labour_card_charge">Labour Card Charges</option>
-                  <option value="change_status_charge">Change Status Charges</option>
-                  <option value="medical_charge">Medical Charges</option>
-                  <option value="emirates_id_charge">Emirates ID Charges</option>
-                  <option value="visa_stamping_charge">Visa Stamping Charges</option>
                 </optgroup>
                 <optgroup label="Other Operations (Debits)">
                   <option value="amer_transaction">Amer Transactions</option>
