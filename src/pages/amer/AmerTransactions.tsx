@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import amerService from '../../services/amerService';
 import SearchableSelect from '../../components/form/SearchableSelect';
+import { TransactionFilters, TransactionsTable, TypesTable } from './components';
 import type {
   AmerTransaction,
   AmerType,
@@ -59,7 +60,7 @@ export default function AmerTransactions() {
   const queryClient = useQueryClient();
   
   // Load dropdowns
-  const { data: dropdowns, isLoading: dropdownsLoading, error: dropdownsError } = useQuery<DropdownData>({
+  const { data: dropdowns, error: dropdownsError } = useQuery<DropdownData>({
     queryKey: ['amer-dropdowns'],
     queryFn: () => amerService.getDropdowns(),
     retry: 2
@@ -79,7 +80,7 @@ export default function AmerTransactions() {
   });
   
   // Load types
-  const { data: types = [], isLoading: typesLoading, refetch: refetchTypes } = useQuery<AmerType[]>({
+  const { data: types = [], isLoading: typesLoading } = useQuery<AmerType[]>({
     queryKey: ['amer-types'],
     queryFn: () => amerService.getTypes()
   });
@@ -186,7 +187,7 @@ export default function AmerTransactions() {
     setTransactionModal({ isOpen: true, transaction: null });
   };
   
-  const handleEditTransaction = async (transaction: AmerTransaction) => {
+  const handleEditTransaction = (transaction: AmerTransaction) => {
     setTransactionModal({ isOpen: true, transaction });
   };
   
@@ -240,17 +241,6 @@ export default function AmerTransactions() {
     });
   };
   
-  const getStatusBadge = (status: string) => {
-    const badges: Record<string, string> = {
-      pending: 'bg-warning',
-      completed: 'bg-success',
-      rejected: 'bg-danger',
-      refunded: 'bg-info',
-      visit_required: 'bg-warning'
-    };
-    return badges[status] || 'bg-secondary';
-  };
-  
   const filteredTransactions = transactions.filter(t => {
     if (!searchTerm) return true;
     const search = searchTerm.toLowerCase();
@@ -265,292 +255,74 @@ export default function AmerTransactions() {
   
   return (
     <div className="amer-transactions-page">
-      <div className="page-header">
-        <h1>Amer Transactions</h1>
-        <div className="tabs">
-          <button
-            className={`tab ${activeTab === 'transactions' ? 'active' : ''}`}
-            onClick={() => setActiveTab('transactions')}
-          >
-            Transactions
-          </button>
-          <button
-            className={`tab ${activeTab === 'types' ? 'active' : ''}`}
-            onClick={() => setActiveTab('types')}
-          >
-            Transaction Types
-          </button>
+      {/* Page Header */}
+      <div className="page-header-modern">
+        <div className="page-header-content">
+          <div className="page-title-section">
+            <div className="page-icon">
+              <i className="fa fa-exchange-alt"></i>
+            </div>
+            <div className="page-title-text">
+              <h1>Amer Transactions</h1>
+              <p>Manage transactions and transaction types</p>
+            </div>
+          </div>
+          <div className="tabs-modern">
+            <button
+              className={`tab-modern ${activeTab === 'transactions' ? 'active' : ''}`}
+              onClick={() => setActiveTab('transactions')}
+            >
+              <i className="fa fa-list"></i>
+              Transactions
+            </button>
+            <button
+              className={`tab-modern ${activeTab === 'types' ? 'active' : ''}`}
+              onClick={() => setActiveTab('types')}
+            >
+              <i className="fa fa-tags"></i>
+              Transaction Types
+            </button>
+          </div>
         </div>
       </div>
       
-      {activeTab === 'transactions' && (
-        <div className="transactions-section">
-          <div className="panel">
-            <div className="panel-header">
-              <h3>Search Transactions</h3>
-              <button className="btn btn-success" onClick={handleAddTransaction}>
-                Add Transaction
-              </button>
-            </div>
-            <div className="panel-body">
-              <div className="search-filters">
-                <div className="filter-row">
-                  <div className="filter-group">
-                    <label>From Date</label>
-                    <input
-                      type="date"
-                      value={filters.start_date || ''}
-                      onChange={(e) => setFilters({ ...filters, start_date: e.target.value })}
-                      className="form-control"
-                    />
-                  </div>
-                  <div className="filter-group">
-                    <label>To Date</label>
-                    <input
-                      type="date"
-                      value={filters.end_date || ''}
-                      onChange={(e) => setFilters({ ...filters, end_date: e.target.value })}
-                      className="form-control"
-                    />
-                  </div>
-                  <div className="filter-group">
-                    <label>Customer</label>
-                    <SearchableSelect
-                      options={[
-                        { value: '', label: 'All' },
-                        ...(dropdowns?.customers?.map(c => ({
-                          value: c.customer_id,
-                          label: c.customer_name
-                        })) || [])
-                      ]}
-                      value={filters.customer || ''}
-                      onChange={(value) => setFilters({ ...filters, customer: value ? Number(value) : undefined })}
-                      placeholder="All"
-                    />
-                  </div>
-                  <div className="filter-group">
-                    <label>Type</label>
-                    <SearchableSelect
-                      options={[
-                        { value: '', label: 'All' },
-                        ...(dropdowns?.types?.map(t => ({
-                          value: t.id,
-                          label: t.name
-                        })) || [])
-                      ]}
-                      value={filters.type || ''}
-                      onChange={(value) => setFilters({ ...filters, type: value ? Number(value) : undefined })}
-                      placeholder="All"
-                    />
-                  </div>
-                  <div className="filter-group">
-                    <label>Account</label>
-                    <SearchableSelect
-                      options={[
-                        { value: '', label: 'All Accounts' },
-                        ...(dropdowns?.accounts?.map(a => ({
-                          value: a.account_ID,
-                          label: a.account_Name
-                        })) || [])
-                      ]}
-                      value={filters.account || ''}
-                      onChange={(value) => setFilters({ ...filters, account: value ? Number(value) : undefined })}
-                      placeholder="All Accounts"
-                    />
-                  </div>
-                  <div className="filter-group">
-                    <label>Status</label>
-                    <select
-                      value={filters.status || ''}
-                      onChange={(e) => setFilters({ ...filters, status: e.target.value || undefined })}
-                      className="form-control"
-                    >
-                      <option value="">All</option>
-                      <option value="pending">Pending</option>
-                      <option value="completed">Completed</option>
-                      <option value="rejected">Rejected</option>
-                      <option value="refunded">Refunded</option>
-                      <option value="visit_required">Visit Required</option>
-                    </select>
-                  </div>
-                  <div className="filter-group">
-                    <label>Search</label>
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Search..."
-                      className="form-control"
-                    />
-                  </div>
-                  <div className="filter-group">
-                    <label>&nbsp;</label>
-                    <div className="button-group">
-                      <button className="btn btn-primary" onClick={handleSearch}>
-                        <i className="fa fa-filter"></i> Search
-                      </button>
-                      <button className="btn btn-secondary" onClick={handleReset}>
-                        Reset
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* Main Content */}
+      <div className="page-content">
+        {activeTab === 'transactions' && (
+          <div className="transactions-section">
+            <TransactionFilters
+              filters={filters}
+              searchTerm={searchTerm}
+              dropdowns={dropdowns}
+              onFiltersChange={setFilters}
+              onSearchTermChange={setSearchTerm}
+              onSearch={handleSearch}
+              onReset={handleReset}
+              onAddTransaction={handleAddTransaction}
+            />
+            
+            <TransactionsTable
+              transactions={filteredTransactions}
+              isLoading={transactionsLoading}
+              onEdit={handleEditTransaction}
+              onDelete={handleDeleteTransaction}
+              onChangeStatus={handleChangeStatus}
+            />
           </div>
-          
-          <div className="panel">
-            <div className="panel-header">
-              <h3>Transactions</h3>
-            </div>
-            <div className="panel-body">
-              {transactionsLoading ? (
-                <div className="text-center p-4">Loading...</div>
-              ) : (
-                <div className="table-responsive">
-                  <table className="table table-striped table-bordered">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Customer / Passenger</th>
-                        <th>Transaction Details</th>
-                        <th>Account</th>
-                        <th>Status</th>
-                        <th>Net Cost</th>
-                        <th>Sale Cost</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTransactions.length === 0 ? (
-                        <tr>
-                          <td colSpan={8} className="text-center">No transactions found</td>
-                        </tr>
-                      ) : (
-                        filteredTransactions.map(transaction => (
-                          <tr key={transaction.id}>
-                            <td>{transaction.id}</td>
-                            <td>
-                              <strong>{transaction.customer_name}</strong>
-                              <br />
-                              {transaction.passenger_name}
-                            </td>
-                            <td>
-                              Type: <strong>{transaction.type_name}</strong>
-                              <br />
-                              Trx# {transaction.transaction_number}
-                              <br />
-                              App# {transaction.application_number}
-                              <br />
-                              Payment Date: {new Date(transaction.payment_date).toLocaleDateString()}
-                              <br />
-                              IBAN: {transaction.iban || 'N/A'}
-                            </td>
-                            <td>
-                              <strong>{transaction.account_Name || 'No Account'}</strong>
-                            </td>
-                            <td>
-                              <span className={`badge ${getStatusBadge(transaction.status)}`}>
-                                {transaction.status}
-                              </span>
-                            </td>
-                            <td>{transaction.cost_price}</td>
-                            <td>{transaction.sale_price}</td>
-                            <td>
-                              <div className="action-buttons">
-                                <button
-                                  className="btn btn-sm btn-warning"
-                                  onClick={() => handleEditTransaction(transaction)}
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  className="btn btn-sm btn-danger"
-                                  onClick={() => handleDeleteTransaction(transaction.id)}
-                                >
-                                  Delete
-                                </button>
-                                <button
-                                  className="btn btn-sm btn-primary"
-                                  onClick={() => handleChangeStatus(transaction)}
-                                >
-                                  Change Status
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+        )}
+        
+        {activeTab === 'types' && (
+          <div className="types-section">
+            <TypesTable
+              types={types}
+              isLoading={typesLoading}
+              onEdit={handleEditType}
+              onDelete={handleDeleteType}
+              onAddType={handleAddType}
+            />
           </div>
-        </div>
-      )}
-      
-      {activeTab === 'types' && (
-        <div className="types-section">
-          <div className="panel">
-            <div className="panel-header">
-              <h3>Transaction Types</h3>
-              <button className="btn btn-success" onClick={handleAddType}>
-                Add Type
-              </button>
-            </div>
-            <div className="panel-body">
-              {typesLoading ? (
-                <div className="text-center p-4">Loading...</div>
-              ) : (
-                <div className="table-responsive">
-                  <table className="table table-striped table-bordered">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Type</th>
-                        <th>Cost Price</th>
-                        <th>Sale Price</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {types.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="text-center">No types found</td>
-                        </tr>
-                      ) : (
-                        types.map(type => (
-                          <tr key={type.id}>
-                            <td>{type.id}</td>
-                            <td>{type.name}</td>
-                            <td>{type.cost_price}</td>
-                            <td>{type.sale_price}</td>
-                            <td>
-                              <button
-                                className="btn btn-sm btn-primary"
-                                onClick={() => handleEditType(type)}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                className="btn btn-sm btn-danger"
-                                onClick={() => handleDeleteType(type.id)}
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
       
       {/* Transaction Modal */}
       {transactionModal.isOpen && (
