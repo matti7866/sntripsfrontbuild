@@ -18,7 +18,7 @@ export default function AccountsReport() {
   const permanentResetDate = '2025-10-01';
 
   // State
-  const [fromDate, setFromDate] = useState(today);
+  const [fromDate, setFromDate] = useState(permanentResetDate); // Start from reset date like old version
   const [toDate, setToDate] = useState(today);
   const [accountFilter, setAccountFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
@@ -1239,9 +1239,326 @@ export default function AccountsReport() {
             </div>
             <div className="modal-body">
               <div className="alert alert-info">
-                <i className="fa fa-info-circle"></i> <strong>Purpose:</strong> This overview helps developers and administrators understand which database tables contribute to credit and debit calculations.
+                <i className="fa fa-info-circle"></i> <strong>Purpose:</strong> This overview helps developers and administrators understand which database tables contribute to credit and debit calculations, making it easier to add new features.
               </div>
-              <p className="text-muted">Please refer to the PHP documentation for detailed table information.</p>
+              
+              <div className="row">
+                {/* Credit Tables */}
+                <div className="col-md-6">
+                  <div className="card border-success mb-3">
+                    <div className="card-header bg-success text-white">
+                      <h6 className="mb-0"><i className="fa fa-plus-circle"></i> CREDIT TABLES (Money Coming In)</h6>
+                    </div>
+                    <div className="card-body">
+                      <div className="table-responsive">
+                        <table className="table table-sm table-striped">
+                          <thead>
+                            <tr>
+                              <th>Table</th>
+                              <th>Transaction Type</th>
+                              <th>Amount Column</th>
+                              <th>Key Fields</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><code>customer_payments</code></td>
+                              <td>Customer Payment (General)</td>
+                              <td>payment_amount</td>
+                              <td>customer_id, accountID<br/><small className="text-muted">Excludes categorized payments</small></td>
+                            </tr>
+                            <tr>
+                              <td><code>customer_payments</code></td>
+                              <td>Tawjeeh Payment</td>
+                              <td>tawjeeh_payment_amount</td>
+                              <td>is_tawjeeh_payment=1, PaymentFor</td>
+                            </tr>
+                            <tr>
+                              <td><code>customer_payments</code></td>
+                              <td>Insurance Payment (ILOE)</td>
+                              <td>insurance_payment_amount</td>
+                              <td>is_insurance_payment=1, PaymentFor</td>
+                            </tr>
+                            <tr>
+                              <td><code>customer_payments</code></td>
+                              <td>Insurance Fine Payment</td>
+                              <td>insurance_fine_payment_amount</td>
+                              <td>is_insurance_fine_payment=1</td>
+                            </tr>
+                            <tr>
+                              <td><code>customer_payments</code></td>
+                              <td>Residence Fine Payment</td>
+                              <td>payment_amount</td>
+                              <td>residenceFinePayment IS NOT NULL</td>
+                            </tr>
+                            <tr>
+                              <td><code>customer_payments</code></td>
+                              <td>Residence Cancellation</td>
+                              <td>payment_amount</td>
+                              <td>residenceCancelPayment IS NOT NULL</td>
+                            </tr>
+                            <tr>
+                              <td><code>deposits</code></td>
+                              <td>Deposit</td>
+                              <td>deposit_amount</td>
+                              <td>depositBy, accountID</td>
+                            </tr>
+                            <tr>
+                              <td><code>transfers</code></td>
+                              <td>Transfer In</td>
+                              <td>amount</td>
+                              <td>to_account (destination)</td>
+                            </tr>
+                            <tr>
+                              <td><code>cheques</code></td>
+                              <td>Receivable Cheque</td>
+                              <td>amount</td>
+                              <td>type='receivable'</td>
+                            </tr>
+                            <tr>
+                              <td><code>refunds</code></td>
+                              <td>Refund (e.g., eVisa Rejection)</td>
+                              <td>amount</td>
+                              <td>residence_id, account_id, refund_type</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Debit Tables */}
+                <div className="col-md-6">
+                  <div className="card border-danger mb-3">
+                    <div className="card-header bg-danger text-white">
+                      <h6 className="mb-0"><i className="fa fa-minus-circle"></i> DEBIT TABLES (Money Going Out)</h6>
+                    </div>
+                    <div className="card-body">
+                      <div className="table-responsive">
+                        <table className="table table-sm table-striped">
+                          <thead>
+                            <tr>
+                              <th>Table</th>
+                              <th>Transaction Type</th>
+                              <th>Amount Column</th>
+                              <th>Key Fields</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><code>loan</code></td>
+                              <td>Loan</td>
+                              <td>amount</td>
+                              <td>customer_id, accountID</td>
+                            </tr>
+                            <tr>
+                              <td><code>expense</code></td>
+                              <td>Expense</td>
+                              <td>expense_amount</td>
+                              <td>expense_type_id, accountID</td>
+                            </tr>
+                            <tr>
+                              <td><code>payment</code></td>
+                              <td>Supplier Payment</td>
+                              <td>payment_amount</td>
+                              <td>supp_id, accountID</td>
+                            </tr>
+                            <tr>
+                              <td><code>servicedetails</code></td>
+                              <td>Service Payment</td>
+                              <td>salePrice</td>
+                              <td>customer_id, accoundID</td>
+                            </tr>
+                            <tr>
+                              <td><code>withdrawals</code></td>
+                              <td>Withdrawal</td>
+                              <td>withdrawal_amount</td>
+                              <td>withdrawalBy, accountID</td>
+                            </tr>
+                            <tr>
+                              <td><code>salaries</code></td>
+                              <td>Salary Payment</td>
+                              <td>salary_amount</td>
+                              <td>employee_id, paymentType</td>
+                            </tr>
+                            <tr>
+                              <td><code>cheques</code></td>
+                              <td>Payable Cheque</td>
+                              <td>amount</td>
+                              <td>type='payable', paid_date</td>
+                            </tr>
+                            <tr>
+                              <td><code>transfers</code></td>
+                              <td>Transfer Out</td>
+                              <td>amount</td>
+                              <td>from_account (source)</td>
+                            </tr>
+                            <tr>
+                              <td><code>tawjeeh_charges</code></td>
+                              <td>Tawjeeh Operation</td>
+                              <td>amount</td>
+                              <td>residence_id, status='paid'<br/><small className="text-muted">Uses account_id field</small></td>
+                            </tr>
+                            <tr>
+                              <td><code>iloe_charges</code></td>
+                              <td>ILOE Insurance Operation</td>
+                              <td>amount</td>
+                              <td>charge_type='insurance', status='paid'<br/><small className="text-muted">Uses account_id field</small></td>
+                            </tr>
+                            <tr>
+                              <td><code>evisa_charges</code></td>
+                              <td>eVisa Charge (Per Application)</td>
+                              <td>amount</td>
+                              <td>residence_id, account_id, status='paid'<br/><small className="text-muted">Tracks each eVisa application attempt</small></td>
+                            </tr>
+                            <tr>
+                              <td><code>amer</code></td>
+                              <td>Amer Transaction</td>
+                              <td>cost_price</td>
+                              <td>customer_id, account_id, type_id</td>
+                            </tr>
+                            <tr>
+                              <td><code>tasheel_transactions</code></td>
+                              <td>Tasheel Transaction</td>
+                              <td>cost</td>
+                              <td>company_id, account_id, transaction_type_id</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Residence-Related Operations */}
+              <div className="row mt-4">
+                <div className="col-md-12">
+                  <div className="card border-warning">
+                    <div className="card-header bg-warning text-dark">
+                      <h6 className="mb-0"><i className="fa fa-home"></i> RESIDENCE-RELATED OPERATIONS (Debits - Money Going Out)</h6>
+                    </div>
+                    <div className="card-body">
+                      <div className="table-responsive">
+                        <table className="table table-sm table-striped">
+                          <thead>
+                            <tr>
+                              <th>Table</th>
+                              <th>Transaction Type</th>
+                              <th>Amount Column</th>
+                              <th>Account Column</th>
+                              <th>Date Column</th>
+                              <th>Key Fields</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td><code>residence</code></td>
+                              <td>Offer Letter</td>
+                              <td>offerLetterCost</td>
+                              <td>offerLetterAccount</td>
+                              <td>offerLetterDate</td>
+                              <td>offerLetterCostCur</td>
+                            </tr>
+                            <tr>
+                              <td><code>residence</code></td>
+                              <td>Insurance</td>
+                              <td>insuranceCost</td>
+                              <td>insuranceAccount</td>
+                              <td>insuranceDate</td>
+                              <td>insuranceCur</td>
+                            </tr>
+                            <tr>
+                              <td><code>residence</code></td>
+                              <td>Labour Card</td>
+                              <td>laborCardFee</td>
+                              <td>laborCardAccount</td>
+                              <td>laborCardDate</td>
+                              <td>laborCardCur</td>
+                            </tr>
+                            <tr>
+                              <td><code>residence</code></td>
+                              <td>E-Visa</td>
+                              <td>eVisaCost</td>
+                              <td>eVisaAccount</td>
+                              <td>eVisaDate</td>
+                              <td>eVisaCur</td>
+                            </tr>
+                            <tr>
+                              <td><code>residence</code></td>
+                              <td>Change Status</td>
+                              <td>changeStatusCost</td>
+                              <td>changeStatusAccount</td>
+                              <td>changeStatusDate</td>
+                              <td>changeStatusCur</td>
+                            </tr>
+                            <tr>
+                              <td><code>residence</code></td>
+                              <td>Medical</td>
+                              <td>medicalTCost</td>
+                              <td>medicalAccount</td>
+                              <td>medicalDate</td>
+                              <td>medicalTCur</td>
+                            </tr>
+                            <tr>
+                              <td><code>residence</code></td>
+                              <td>Emirates ID</td>
+                              <td>emiratesIDCost</td>
+                              <td>emiratesIDAccount</td>
+                              <td>emiratesIDDate</td>
+                              <td>emiratesIDCur</td>
+                            </tr>
+                            <tr>
+                              <td><code>residence</code></td>
+                              <td>Visa Stamping</td>
+                              <td>visaStampingCost</td>
+                              <td>visaStampingAccount</td>
+                              <td>visaStampingDate</td>
+                              <td>visaStampingCur</td>
+                            </tr>
+                            <tr>
+                              <td><code>residencefine</code></td>
+                              <td>Residence Fine</td>
+                              <td>fineAmount</td>
+                              <td>accountID</td>
+                              <td>datetime</td>
+                              <td>fineCurrencyID</td>
+                            </tr>
+                            <tr>
+                              <td><code>residence_cancellation</code></td>
+                              <td>Cancellation Transaction (Internal)</td>
+                              <td>internal_net_cost</td>
+                              <td>internal_account_id</td>
+                              <td>internal_processed_at</td>
+                              <td>Only when internal_processed = 1</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Developer Notes */}
+              <div className="row mt-4">
+                <div className="col-md-12">
+                  <div className="alert alert-warning">
+                    <h6><i className="fa fa-code"></i> <strong>For Developers - Adding New Features:</strong></h6>
+                    <ul className="mb-0">
+                      <li><strong>Credit Operations:</strong> Add new queries in the "CUSTOMER PAYMENTS" or "DEPOSITS" section of <code>getDetailedTransactions()</code></li>
+                      <li><strong>Debit Operations:</strong> Add new queries in the "LOANS", "EXPENSES", "PAYMENTS", etc. sections</li>
+                      <li><strong>Account Balances:</strong> Update the <code>getAccountBalances()</code> function to include new transaction types</li>
+                      <li><strong>Date Filtering:</strong> Ensure all new queries respect the permanent reset date (2025-10-01)</li>
+                      <li><strong>Currency Conversion:</strong> All amounts are automatically converted to AED using <code>convertToAED()</code> function</li>
+                      <li><strong>⚠️ Duplication Prevention:</strong> When adding new categorized payments to <code>customer_payments</code>, exclude them from the general customer payment query to prevent double-counting</li>
+                      <li><strong>🏦 Account Linking:</strong> Tawjeeh and ILOE operations use <code>account_id</code> field in their respective tables</li>
+                      <li><strong>🏦 Residence Cancellation Logic:</strong> Cancellation transactions appear in accounts report only after internal processing via the Residence Cancellation Management page. Uses <code>internal_net_cost</code> and <code>internal_account_id</code> from the <code>residence_cancellation</code> table when <code>internal_processed = 1</code>.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" onClick={() => setShowTableInfoModal(false)}>
