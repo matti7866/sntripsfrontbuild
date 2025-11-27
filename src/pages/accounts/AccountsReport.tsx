@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import { accountsService } from '../../services/accountsService';
+import { getDubaiToday, formatDate } from '../../utils/timezone';
 import type {
   Account,
   Currency,
@@ -14,12 +15,12 @@ import type {
 import './AccountsReport.css';
 
 export default function AccountsReport() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = getDubaiToday();
   const permanentResetDate = '2025-10-01';
 
-  // State
-  const [fromDate, setFromDate] = useState(permanentResetDate); // Start from reset date like old version
-  const [toDate, setToDate] = useState(today);
+  // State - Default to current date to avoid loading too many records
+  const [fromDate, setFromDate] = useState(today); // Start from today
+  const [toDate, setToDate] = useState(today); // End date is today
   const [accountFilter, setAccountFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [showBalances, setShowBalances] = useState(false);
@@ -45,8 +46,8 @@ export default function AccountsReport() {
   const [showStatementModal, setShowStatementModal] = useState(false);
   const [statementAccountId, setStatementAccountId] = useState<number | null>(null);
   const [statementAccountName, setStatementAccountName] = useState('');
-  const [statementFromDate, setStatementFromDate] = useState(today);
-  const [statementToDate, setStatementToDate] = useState(today);
+  const [statementFromDate, setStatementFromDate] = useState(getDubaiToday());
+  const [statementToDate, setStatementToDate] = useState(getDubaiToday());
   const [statementData, setStatementData] = useState<any>(null);
   const [statementLoading, setStatementLoading] = useState(false);
 
@@ -60,7 +61,7 @@ export default function AccountsReport() {
   const [depositData, setDepositData] = useState<Partial<DepositRequest>>({});
   const [withdrawData, setWithdrawData] = useState<Partial<WithdrawRequest>>({});
   const [transferData, setTransferData] = useState<Partial<TransferRequest>>({
-    transferDate: today,
+    transferDate: getDubaiToday(), // Use Dubai timezone
     transferCharges: 0,
     transferExchangeRate: 1
   });
@@ -232,7 +233,9 @@ export default function AccountsReport() {
       Swal.fire('Success', 'Deposit added successfully', 'success');
       setShowDepositModal(false);
       setDepositData({});
+      // Reload both transactions and balances
       loadTransactionsMutation.mutate();
+      loadBalancesMutation.mutate();
     },
     onError: (error: any) => {
       Swal.fire('Error', error.message || 'Failed to add deposit', 'error');
@@ -246,7 +249,9 @@ export default function AccountsReport() {
       Swal.fire('Success', 'Withdrawal added successfully', 'success');
       setShowWithdrawModal(false);
       setWithdrawData({});
+      // Reload both transactions and balances
       loadTransactionsMutation.mutate();
+      loadBalancesMutation.mutate();
     },
     onError: (error: any) => {
       Swal.fire('Error', error.message || 'Failed to add withdrawal', 'error');
@@ -255,25 +260,70 @@ export default function AccountsReport() {
 
   // Transfer mutation
   const transferMutation = useMutation({
-    mutationFn: (data: TransferRequest) => accountsService.addTransfer(data),
-    onSuccess: () => {
-      Swal.fire('Success', 'Transfer completed successfully', 'success');
+    mutationFn: (data: TransferRequest) => {
+      console.log('📤 Sending transfer request:', data);
+      return accountsService.addTransfer(data);
+    },
+    onSuccess: (response: any, variables: TransferRequest) => {
+      console.log('✅ Transfer successful response:', response);
+      
+      // Use the transfer date from the submitted data (should already be in Dubai timezone)
+      const transferDate = variables.transferDate || getDubaiToday();
+      console.log('📅 Transfer date:', transferDate, 'Current filter:', { fromDate, toDate });
+      
+      // If transfer date is outside current filter, update filter to include it
+      if (transferDate < fromDate || transferDate > toDate) {
+        console.log('⚠️ Transfer date outside current filter, updating filter...');
+        if (transferDate < fromDate) {
+          setFromDate(transferDate);
+        }
+        if (transferDate > toDate) {
+          setToDate(transferDate);
+        }
+        // Reload with new date range after a brief delay
+        setTimeout(() => {
+          console.log('🔄 Reloading with updated date filter...');
+          loadTransactionsMutation.mutate();
+          loadBalancesMutation.mutate();
+        }, 1000);
+      } else {
+        // Transfer date is within current filter, just reload
+        setTimeout(() => {
+          console.log('🔄 Reloading transactions and balances after transfer...');
+          loadTransactionsMutation.mutate();
+          loadBalancesMutation.mutate();
+        }, 800);
+      }
+      
+      Swal.fire({
+        title: 'Success',
+        text: 'Transfer completed successfully',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      
       setShowTransferModal(false);
       setTransferData({
-        transferDate: today,
+        transferDate: getDubaiToday(), // Use Dubai timezone
         transferCharges: 0,
         transferExchangeRate: 1
       });
-      loadTransactionsMutation.mutate();
+      setFromAccountBalance('');
+      setToAccountBalance('');
     },
     onError: (error: any) => {
-      Swal.fire('Error', error.response?.data?.message || 'Failed to process transfer', 'error');
+      console.error('❌ Transfer error:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      Swal.fire('Error', error.response?.data?.message || error.message || 'Failed to process transfer', 'error');
     }
   });
 
-  // Load transactions on mount
+  // Load transactions and balances on mount
   useEffect(() => {
     loadTransactionsMutation.mutate();
+    loadBalancesMutation.mutate(); // Auto-load balances
   }, []);
 
   // Handle balance toggle
@@ -282,6 +332,8 @@ export default function AccountsReport() {
       loadBalancesMutation.mutate();
     }
     setShowBalances(!showBalances);
+    // Also reload sidebar balances
+    loadBalancesMutation.mutate();
   };
 
   // Handle deposit submit
@@ -323,6 +375,14 @@ export default function AccountsReport() {
       Swal.fire('Error', 'Amount and Confirm Amount must be the same', 'error');
       return;
     }
+    
+    console.log('🔄 Submitting transfer:', {
+      date: data.transferDate,
+      from: data.transferFromAccount,
+      to: data.transferToAccount,
+      amount: data.transferAmount,
+      currentFilter: { fromDate, toDate }
+    });
     
     transferMutation.mutate(data);
   };
@@ -392,7 +452,7 @@ export default function AccountsReport() {
     setStatementAccountId(accountId);
     setStatementAccountName(accountName);
     setStatementFromDate(permanentResetDate); // Always start from reset date
-    setStatementToDate(today);
+    setStatementToDate(getDubaiToday()); // Use Dubai timezone
     setStatementData(null);
     setShowStatementModal(true);
     // Auto-load statement immediately
@@ -501,6 +561,49 @@ export default function AccountsReport() {
 
   return (
     <div className="accounts-report-container">
+      {/* Fixed Right Side - All Account Balances */}
+      <div className="balance-side-card all-balances-card fixed-right">
+        <div className="balance-card-header">
+          <i className="fa fa-balance-scale"></i>
+          <span>Account Balances</span>
+          <span className="balance-count">
+            {balances.length > 0 ? balances.length : '-'}
+          </span>
+        </div>
+        <div className="balance-card-body">
+          {loadBalancesMutation.isPending ? (
+            <div className="no-data">
+              <i className="fa fa-spinner fa-spin"></i>
+              <p>Loading balances...</p>
+            </div>
+          ) : balances.length === 0 ? (
+            <div className="no-data">
+              <i className="fa fa-info-circle"></i>
+              <p>Click "Show Account Balances" to load</p>
+            </div>
+          ) : (
+            <div className="balance-list">
+              {balances
+                .sort((a, b) => b.balance - a.balance) // Sort by balance descending (highest first)
+                .map((balance) => (
+                  <div key={balance.account_ID} className={`balance-item ${balance.balance >= 0 ? 'positive' : 'negative'}`}>
+                    <div className="balance-item-header">
+                      <span className="account-name" title={balance.account_Name}>{balance.account_Name}</span>
+                      <span className="balance-amount">
+                        {formatNumber(balance.balance)} {balance.currency}
+                      </span>
+                    </div>
+                    <div className="balance-item-footer">
+                      <span className="balance-label">C: {formatNumber(balance.total_credits)}</span>
+                      <span className="balance-label">D: {formatNumber(balance.total_debits)}</span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="card">
         <div className="card-header bg-gradient">
           <h2>
@@ -620,7 +723,14 @@ export default function AccountsReport() {
             <button className="btn btn-danger" onClick={() => setShowWithdrawModal(true)}>
               <i className="fa fa-minus-circle"></i> Withdraw
             </button>
-            <button className="btn btn-info" onClick={() => setShowTransferModal(true)}>
+            <button className="btn btn-info" onClick={() => {
+              setTransferData({
+                transferDate: getDubaiToday(), // Set Dubai date when opening modal
+                transferCharges: 0,
+                transferExchangeRate: 1
+              });
+              setShowTransferModal(true);
+            }}>
               <i className="fa fa-exchange"></i> Transfer
             </button>
           </div>
@@ -809,7 +919,7 @@ export default function AccountsReport() {
 
                     return (
                       <tr key={index} className={rowClass}>
-                        <td>{new Date(transaction.date).toLocaleDateString()}</td>
+                        <td>{formatDate(transaction.date)}</td>
                         <td>
                           <span className={`transaction-type ${category}`}>
                             {transaction.transaction_type}
@@ -942,7 +1052,7 @@ export default function AccountsReport() {
                         {statementData.transactions && statementData.transactions.length > 0 ? (
                           statementData.transactions.map((tx: any, idx: number) => (
                             <tr key={idx}>
-                              <td>{new Date(tx.date).toLocaleDateString()}</td>
+                              <td>{formatDate(tx.date)}</td>
                               <td>{tx.transaction_type}</td>
                               <td>{tx.description || '-'}</td>
                               <td className="text-success">
@@ -1200,7 +1310,7 @@ export default function AccountsReport() {
                     <input
                       type="date"
                       className="form-control"
-                      value={transferData.transferDate || today}
+                      value={transferData.transferDate || getDubaiToday()}
                       onChange={(e) => setTransferData({ ...transferData, transferDate: e.target.value })}
                       required
                     />

@@ -1,18 +1,17 @@
-.accounts-report-container {
-  padding: 20px;
-}
+/* Container styling moved to top with sidebar padding */
 
 .card {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .card-header {
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
-  border-radius: 8px 8px 0 0;
+  padding: 16px 20px;
+  border-bottom: 2px solid #e0e0e0;
+  border-radius: 0;
 }
 
 .card-header.bg-gradient {
@@ -27,14 +26,14 @@
 }
 
 .card-body {
-  padding: 20px;
+  padding: 16px 20px;
 }
 
 /* Alerts */
 .alert {
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 5px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  border-radius: 4px;
   border-left: 4px solid;
 }
 
@@ -66,8 +65,8 @@
 .filters-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .filter-group {
@@ -108,8 +107,8 @@ select.form-control {
 .action-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 8px;
+  margin-top: 16px;
 }
 
 .btn {
@@ -189,7 +188,363 @@ select.form-control {
   background: #545b62;
 }
 
-/* Summary Cards */
+/* Accounts Report Container - Add padding for right sidebar only */
+.accounts-report-container {
+  padding: 0;
+  padding-right: 280px; /* Space for right sidebar */
+  position: relative;
+  min-height: 100vh;
+}
+
+@media (max-width: 1400px) {
+  .accounts-report-container {
+    padding-right: 0;
+  }
+}
+
+/* Fixed Side Balance Cards */
+.balance-side-card {
+  position: fixed;
+  top: 0;
+  width: 280px;
+  height: 100vh;
+  background: white;
+  overflow: hidden;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  animation: slideIn 0.6s ease;
+}
+
+.balance-side-card.fixed-left {
+  left: 0;
+  animation: slideInLeft 0.6s ease;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.balance-side-card.fixed-right {
+  right: 0;
+  animation: slideInRight 0.6s ease;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* Hide fixed sidebar on smaller screens */
+@media (max-width: 1400px) {
+  .balance-side-card.fixed-right {
+    display: none;
+  }
+}
+
+.balance-card-header {
+  padding: 16px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid;
+  flex-shrink: 0;
+}
+
+.balance-count {
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.all-balances-card .balance-card-header {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-bottom-color: #2563eb;
+}
+
+.balance-card-body {
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+  height: calc(100vh - 60px); /* Full height minus header */
+}
+
+/* Custom scrollbar for balance cards */
+.balance-card-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.balance-card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.balance-card-body::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.balance-card-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Balance List Items */
+.balance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.balance-item {
+  padding: 10px 12px;
+  border-radius: 0;
+  transition: all 0.3s ease;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.balance-item.negative {
+  background: rgba(254, 202, 202, 0.3);
+  border-bottom-color: rgba(252, 165, 165, 0.3);
+}
+
+.balance-item.positive {
+  background: rgba(209, 250, 229, 0.3);
+  border-bottom-color: rgba(110, 231, 183, 0.3);
+}
+
+.balance-item:last-child {
+  border-bottom: none;
+}
+
+.fixed-right .balance-item:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.balance-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.balance-item .account-name {
+  font-weight: 700;
+  font-size: 11px;
+  color: #1a1a1a;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.balance-item .balance-amount {
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
+  margin-left: 6px;
+}
+
+.balance-item.negative .balance-amount {
+  color: #dc2626;
+}
+
+.balance-item.positive .balance-amount {
+  color: #059669;
+}
+
+.balance-item-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.balance-label {
+  font-size: 10px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.balance-more {
+  text-align: center;
+  padding: 10px;
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(249, 250, 251, 0.5);
+  border-radius: 0;
+  margin: 0;
+  border-top: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+/* No Data State */
+.balance-card-body .no-data {
+  text-align: center;
+  padding: 30px 16px;
+  color: #9ca3af;
+}
+
+.balance-card-body .no-data i {
+  font-size: 32px;
+  margin-bottom: 10px;
+  opacity: 0.5;
+}
+
+.balance-card-body .no-data p {
+  margin: 0;
+  font-size: 12px;
+}
+
+.balance-card-body .no-data.success {
+  color: #10b981;
+}
+
+.balance-card-body .no-data.warning {
+  color: #f59e0b;
+}
+
+/* Summary Cards Grid */
+.summary-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.summary-stat-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.8) translateY(30px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.summary-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.12);
+}
+
+.summary-stat-card .stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.summary-stat-card:hover .stat-icon {
+  transform: scale(1.1) rotate(-5deg);
+}
+
+.summary-stat-card.success .stat-icon {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.summary-stat-card.danger .stat-icon {
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+}
+
+.summary-stat-card.warning .stat-icon {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.summary-stat-card.info .stat-icon {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.summary-stat-card .stat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summary-stat-card .stat-label {
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-stat-card .stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.summary-stat-card .stat-sublabel {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* Background decoration */
+.summary-stat-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  opacity: 0.05;
+  transition: all 0.5s ease;
+}
+
+.summary-stat-card.success::before {
+  background: radial-gradient(circle, #10b981 0%, transparent 70%);
+}
+
+.summary-stat-card.danger::before {
+  background: radial-gradient(circle, #dc2626 0%, transparent 70%);
+}
+
+.summary-stat-card.warning::before {
+  background: radial-gradient(circle, #f59e0b 0%, transparent 70%);
+}
+
+.summary-stat-card.info::before {
+  background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+}
+
+.summary-stat-card:hover::before {
+  opacity: 0.1;
+  transform: scale(1.2) rotate(15deg);
+}
+
+/* Old Summary Cards (Fallback) */
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -241,7 +596,7 @@ select.form-control {
 /* Tables */
 .table-responsive {
   overflow-x: auto;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .table {
@@ -503,12 +858,22 @@ select.form-control {
 }
 
 /* Responsive Design */
+@media (max-width: 1400px) {
+  .summary-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
   .filters-row {
     grid-template-columns: 1fr;
   }
 
   .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-cards-grid {
     grid-template-columns: 1fr;
   }
 

@@ -63,8 +63,33 @@ export function formatDateTime(date: string | Date | number): string {
  */
 export function getDubaiNow(): Date {
   const now = new Date();
-  const dubaiTime = new Date(now.toLocaleString('en-US', { timeZone: DUBAI_TIMEZONE }));
-  return dubaiTime;
+  // Get Dubai time string and parse it
+  const dubaiTimeString = now.toLocaleString('en-US', { 
+    timeZone: DUBAI_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  return new Date(dubaiTimeString);
+}
+
+/**
+ * Get current Dubai date in YYYY-MM-DD format
+ */
+export function getDubaiToday(): string {
+  const now = new Date();
+  // Use Intl.DateTimeFormat to get Dubai date components
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: DUBAI_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  return formatter.format(now);
 }
 
 /**
@@ -99,8 +124,10 @@ export default {
   formatDateTime,
   formatDubaiDate,
   getDubaiNow,
+  getDubaiToday,
   toDubaiISO,
   toMySQLDateTime,
   DUBAI_TIMEZONE
 };
+
 

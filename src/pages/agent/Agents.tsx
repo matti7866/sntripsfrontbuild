@@ -29,18 +29,42 @@ export default function Agents() {
   
   const queryClient = useQueryClient();
   
-  // Load customers for dropdown
+  // Load customers for dropdown - fetch all customers
   const { data: customers } = useQuery<Customer[]>({
     queryKey: ['customers-dropdown'],
     queryFn: async () => {
       try {
-        const response = await apiClient.post('/customer/customers.php', {
-          action: 'getCustomers',
-          page: 1,
-          per_page: 1000
-        });
-        return response.data.success ? response.data.data : [];
+        let allCustomers: Customer[] = [];
+        let page = 1;
+        const perPage = 1000;
+        let hasMore = true;
+
+        // Fetch all pages until we get all customers
+        while (hasMore) {
+          const response = await apiClient.post('/customer/customers.php', {
+            action: 'getCustomers',
+            page: page,
+            per_page: perPage
+          });
+          
+          if (response.data.success && response.data.data) {
+            allCustomers = [...allCustomers, ...response.data.data];
+            
+            // Check if there are more pages
+            const pagination = response.data.pagination;
+            if (pagination && pagination.total_pages && page < pagination.total_pages) {
+              page++;
+            } else {
+              hasMore = false;
+            }
+          } else {
+            hasMore = false;
+          }
+        }
+        
+        return allCustomers;
       } catch (error) {
+        console.error('Error loading customers:', error);
         return [];
       }
     },
