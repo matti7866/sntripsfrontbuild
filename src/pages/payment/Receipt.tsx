@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import apiClient from '../../services/api';
 import './Receipt.css';
 
 // Note: Install these packages:
@@ -111,53 +112,44 @@ export default function Receipt() {
       setLoading(true);
       
       // Load receipt info
-      const infoResponse = await fetch('/api/customers/receipt/get-receipt.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'getReceiptInfo', receiptID: receiptId })
+      const infoResponse = await apiClient.post('/customers/receipt/get-receipt.php', {
+        action: 'getReceiptInfo',
+        receiptID: receiptId
       });
-      const infoData = await infoResponse.json();
       
-      if (infoData.success) {
-        setReceiptInfo(infoData.data);
+      if (infoResponse.data.success) {
+        setReceiptInfo(infoResponse.data.data);
         
         // Load transactions
-        const transResponse = await fetch('/api/customers/receipt/get-receipt.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'getReceiptDetails', receiptID: receiptId })
+        const transResponse = await apiClient.post('/customers/receipt/get-receipt.php', {
+          action: 'getReceiptDetails',
+          receiptID: receiptId
         });
-        const transData = await transResponse.json();
         
-        if (transData.success) {
-          setTransactions(transData.data);
+        if (transResponse.data.success) {
+          setTransactions(transResponse.data.data);
           
           // Calculate total paid
-          const paid = transData.data
+          const paid = transResponse.data.data
             .filter((t: Transaction) => t.transactionType === 'Payment')
             .reduce((sum: number, t: Transaction) => sum + parseFloat(t.salePrice.toString()), 0);
           setTotalPaid(paid);
           
           // Get outstanding balance
-          const balanceResponse = await fetch('/api/customers/receipt/get-receipt.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              action: 'getOutstandingBalance',
-              customerID: infoData.data.customerID,
-              currencyID: infoData.data.invoiceCurrency
-            })
+          const balanceResponse = await apiClient.post('/customers/receipt/get-receipt.php', {
+            action: 'getOutstandingBalance',
+            customerID: infoResponse.data.data.customerID,
+            currencyID: infoResponse.data.data.invoiceCurrency
           });
-          const balanceData = await balanceResponse.json();
           
-          if (balanceData.success) {
-            setOutstandingBalance(balanceData.data);
+          if (balanceResponse.data.success) {
+            setOutstandingBalance(balanceResponse.data.data);
           }
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading receipt:', error);
-      Swal.fire('Error', 'Failed to load receipt', 'error');
+      Swal.fire('Error', error.response?.data?.message || 'Failed to load receipt', 'error');
     } finally {
       setLoading(false);
     }
