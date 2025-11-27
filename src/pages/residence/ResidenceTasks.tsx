@@ -457,10 +457,6 @@ export default function ResidenceTasks() {
     };
 
     // Check which steps have financial transactions (cost + account/supplier + date)
-    // A step is considered to have a transaction if it has ALL THREE:
-    // 1. Cost > 0
-    // 2. Account OR Supplier assigned
-    // 3. Date set
     const stepsWithTransactions: Record<string, boolean> = {
       '1': !!(residenceDetails?.offerLetterCost && (residenceDetails?.offerLetterAccount || residenceDetails?.offerLetterSupplier) && residenceDetails?.offerLetterDate),
       '2': !!(residenceDetails?.insuranceCost && (residenceDetails?.insuranceAccount || residenceDetails?.insuranceSupplier) && residenceDetails?.insuranceDate),
@@ -472,19 +468,19 @@ export default function ResidenceTasks() {
       '8': !!(residenceDetails?.visaStampingCost && (residenceDetails?.visaStampingAccount || residenceDetails?.visaStampingSupplier) && residenceDetails?.visaStampingDate),
     };
 
-    // Define all available steps
+    // Define all available steps (ORIGINAL completedStep values)
     const allSteps = [
-      { value: '1', label: '1 - Offer Letter', completedStep: 0, hasTransaction: stepsWithTransactions['1'] },
-      { value: '1a', label: '1a - Offer Letter (Submitted)', completedStep: 1, hasTransaction: false },
-      { value: '2', label: '2 - Insurance', completedStep: 1, hasTransaction: stepsWithTransactions['2'] },
-      { value: '3', label: '3 - Labour Card', completedStep: 2, hasTransaction: stepsWithTransactions['3'] },
-      { value: '4', label: '4 - E-Visa', completedStep: 3, hasTransaction: stepsWithTransactions['4'] },
-      { value: '4a', label: '4a - E-Visa (Submitted)', completedStep: 4, hasTransaction: false },
-      { value: '5', label: '5 - Change Status', completedStep: 4, hasTransaction: stepsWithTransactions['5'] },
-      { value: '6', label: '6 - Medical', completedStep: 5, hasTransaction: stepsWithTransactions['6'] },
-      { value: '7', label: '7 - Emirates ID', completedStep: 6, hasTransaction: stepsWithTransactions['7'] },
-      { value: '8', label: '8 - Visa Stamping', completedStep: 7, hasTransaction: stepsWithTransactions['8'] },
-      { value: '9', label: '9 - Contract Submission', completedStep: 8, hasTransaction: false },
+      { value: '1', label: '1 - Offer Letter', completedStep: 1, hasTransaction: stepsWithTransactions['1'] },
+      { value: '1a', label: '1a - Offer Letter (Submitted)', completedStep: 2, hasTransaction: false },
+      { value: '2', label: '2 - Insurance', completedStep: 3, hasTransaction: stepsWithTransactions['2'] },
+      { value: '3', label: '3 - Labour Card', completedStep: 4, hasTransaction: stepsWithTransactions['3'] },
+      { value: '4', label: '4 - E-Visa', completedStep: 5, hasTransaction: stepsWithTransactions['4'] },
+      { value: '4a', label: '4a - E-Visa (Submitted)', completedStep: 5, hasTransaction: false },
+      { value: '5', label: '5 - Change Status', completedStep: 6, hasTransaction: stepsWithTransactions['5'] },
+      { value: '6', label: '6 - Medical', completedStep: 7, hasTransaction: stepsWithTransactions['6'] },
+      { value: '7', label: '7 - Emirates ID', completedStep: 8, hasTransaction: stepsWithTransactions['7'] },
+      { value: '8', label: '8 - Visa Stamping', completedStep: 9, hasTransaction: stepsWithTransactions['8'] },
+      { value: '9', label: '9 - Contract Submission', completedStep: 10, hasTransaction: false },
       { value: '10', label: '10 - Completed', completedStep: 10, hasTransaction: false }
     ];
 
