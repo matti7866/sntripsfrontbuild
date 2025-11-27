@@ -291,7 +291,13 @@ export default function FamilyTasks() {
     }
     
     buttons.push(
-      <button key="move" className="btn btn-sm btn-primary" onClick={() => handleMoveToStep(family.familyResidenceID, step)}>
+      <button 
+        key="move" 
+        className="btn btn-sm btn-warning" 
+        onClick={() => handleMoveToStep(family.familyResidenceID, step)}
+        style={{ color: '#000', fontWeight: '600' }}
+      >
+        <i className="fa fa-arrow-right me-1"></i>
         Move
       </button>
     );
