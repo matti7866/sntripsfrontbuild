@@ -10,6 +10,7 @@ import './ResidenceTasks.css';
 interface FamilyTask {
   familyResidenceID: number;
   residenceID: number; // Reference to main residence
+  main_residence_passenger_name?: string; // Main residence passenger name
   datetime: string;
   passenger_name: string;
   customer_name: string;
@@ -230,7 +231,7 @@ export default function FamilyTasks() {
   };
 
   const getActionButtons = (family: FamilyTask) => {
-    const buttons: JSX.Element[] = [];
+    const buttons: React.ReactElement[] = [];
     const step = currentStep;
 
     if (step === '1') {
@@ -501,10 +502,32 @@ export default function FamilyTasks() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginatedFamilies.map((family) => (
+                  {paginatedFamilies.map((family) => {
+                    const formatDate = (dateStr: string) => {
+                      if (!dateStr) return 'N/A';
+                      const date = new Date(dateStr);
+                      if (isNaN(date.getTime())) return 'N/A';
+                      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    };
+                    
+                    return (
                     <tr key={family.familyResidenceID} className={family.hold === 1 ? 'bg-hold' : ''}>
-                      <td>{family.familyResidenceID}</td>
-                      <td>{new Date(family.datetime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                      <td>
+                        <strong>{family.familyResidenceID}</strong>
+                        {family.residenceID && (
+                          <>
+                            <br />
+                            <small className="text-primary" style={{ fontSize: '11px' }}>
+                              <i className="fa fa-link me-1"></i>
+                              <strong>Attached to: #{family.residenceID}</strong>
+                              {family.main_residence_passenger_name && (
+                                <><br/>{family.main_residence_passenger_name}</>
+                              )}
+                            </small>
+                          </>
+                        )}
+                      </td>
+                      <td>{formatDate(family.datetime)}</td>
                       <td>
                         <img
                           src={`https://flagpedia.net/data/flags/h24/${family.countryCode?.toLowerCase()}.png`}
@@ -596,7 +619,8 @@ export default function FamilyTasks() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -909,6 +933,8 @@ function AddFamilyResidenceModal({
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [residences, setResidences] = useState<Array<{ residenceID: number; passenger_name: string; passportNumber: string; customer_name: string }>>([]);
+  const [loadingResidences, setLoadingResidences] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -937,8 +963,22 @@ function AddFamilyResidenceModal({
         other_doc: null
       });
       setErrors({});
+      loadResidences();
     }
   }, [isOpen]);
+
+  const loadResidences = async () => {
+    setLoadingResidences(true);
+    try {
+      const response = await residenceService.getResidences({ limit: 500 });
+      setResidences(response.data || []);
+    } catch (error) {
+      console.error('Error loading residences:', error);
+      Swal.fire('Error', 'Failed to load residences', 'error');
+    } finally {
+      setLoadingResidences(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1013,13 +1053,29 @@ function AddFamilyResidenceModal({
                 {errors.customer_id && <div className="invalid-feedback">{errors.customer_id}</div>}
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">Residence ID (Optional)</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={formData.residence_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, residence_id: e.target.value }))}
-                />
+                <label className="form-label">Residence to Attach (Optional)</label>
+                {loadingResidences ? (
+                  <div className="form-control text-center">
+                    <i className="fa fa-spinner fa-spin me-2"></i>Loading...
+                  </div>
+                ) : (
+                  <select
+                    className="form-select"
+                    value={formData.residence_id}
+                    onChange={(e) => setFormData(prev => ({ ...prev, residence_id: e.target.value }))}
+                  >
+                    <option value="">-- None (Optional) --</option>
+                    {residences.map((r) => (
+                      <option key={r.residenceID} value={r.residenceID}>
+                        ID: {r.residenceID} - {r.passenger_name} - {r.passportNumber} ({r.customer_name || 'N/A'})
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <small className="text-muted d-block mt-1">
+                  <i className="fa fa-info-circle me-1"></i>
+                  Select a main residence to attach this family member to it
+                </small>
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Passenger Name <span className="text-danger">*</span></label>
