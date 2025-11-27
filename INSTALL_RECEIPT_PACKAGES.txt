@@ -1,0 +1,44 @@
+================================================================================
+RECEIPT SYSTEM - REQUIRED PACKAGES
+================================================================================
+
+To enable the full receipt system with QR codes and signatures, run:
+
+cd /Applications/XAMPP/xamppfiles/htdocs/snt/react-frontend
+npm install qrcode.react signature_pad
+
+Optional TypeScript types:
+npm install --save-dev @types/qrcode.react
+
+================================================================================
+WHAT THESE PACKAGES DO:
+================================================================================
+
+1. qrcode.react
+   - Generates QR codes for receipt verification
+   - Allows customers to scan and verify receipts
+   - Adds modern security feature
+
+2. signature_pad
+   - Enables digital signatures on receipts
+   - Company and customer can sign directly
+   - Works with mouse/touch/stylus
+
+================================================================================
+BACKEND FILE TO UPLOAD:
+================================================================================
+
+Upload this file to your server:
+- snt/api/customers/receipt/get-receipt.php
+
+================================================================================
+THEN TEST:
+================================================================================
+
+1. Go to: http://127.0.0.1:5174/ledger/customer
+2. Click "Make Receipt" for any customer
+3. Receipt should open with QR code and signature pads
+4. Test print functionality
+
+================================================================================
+
