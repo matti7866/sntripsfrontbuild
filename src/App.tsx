@@ -136,7 +136,6 @@ function App() {
               <Route path="payment/customer" element={<CustomerPayments />} />
               <Route path="payment/supplier" element={<SupplierPayments />} />
               <Route path="payment/receipt/:id" element={<Receipt />} />
-              <Route path="receipt" element={<Receipt />} />
               <Route path="payments" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">All Payments</h1><p className="mt-4 text-gray-600">Payments module coming soon...</p></div>} />
               <Route path="payments/pending" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Pending Payments</h1><p className="mt-4 text-gray-600">Pending payments module coming soon...</p></div>} />
               <Route path="payments/receipts" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Receipts</h1><p className="mt-4 text-gray-600">Receipts module coming soon...</p></div>} />

@@ -35,8 +35,14 @@ export default function PublicReceipt() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (receiptId && hash) {
-      loadPublicReceipt();
+    if (receiptId) {
+      if (hash) {
+        // Public access with hash validation
+        loadPublicReceipt();
+      } else {
+        // Authenticated access without hash (redirect to authenticated receipt)
+        window.location.href = `/payment/receipt/${receiptId}`;
+      }
     } else {
       setError('Invalid receipt link');
       setLoading(false);
