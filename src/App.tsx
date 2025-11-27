@@ -49,6 +49,7 @@ import PrintLetter from './pages/residence/PrintLetter';
 import CustomerPayments from './pages/payment/CustomerPayments';
 import SupplierPayments from './pages/payment/SupplierPayments';
 import Receipt from './pages/payment/Receipt';
+import PublicReceipt from './pages/payment/PublicReceipt';
 import Agents from './pages/agent/Agents';
 import AffiliateLedger from './pages/affiliate/AffiliateLedger';
 import AffiliateLedgerView from './pages/affiliate/AffiliateLedgerView';
@@ -78,6 +79,7 @@ function App() {
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<LoginOTP />} />
+              <Route path="/receipt" element={<PublicReceipt />} />
 
               {/* Protected Routes */}
               <Route
