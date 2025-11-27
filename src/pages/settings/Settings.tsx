@@ -316,8 +316,9 @@ const Settings: React.FC = () => {
       title: 'Send Test SMS',
       html: `
         <div class="text-start">
-          <label class="form-label">Phone Number</label>
-          <input id="swal-sms-phone" class="swal2-input" placeholder="+971501234567" value="+971" style="width: 90%;">
+          <label class="form-label">Phone Number (without +)</label>
+          <input id="swal-sms-phone" class="swal2-input" placeholder="971585550045" value="971" style="width: 90%;">
+          <small class="text-muted d-block mb-2">Format: 971XXXXXXXXX (no + sign, no spaces)</small>
           <label class="form-label mt-2">Message</label>
           <textarea id="swal-sms-message" class="swal2-textarea" placeholder="Your test message here..." style="width: 90%; height: 100px;">Hello! This is a test SMS from SN Travels via Etisalat Enterprise API. Your IP has been whitelisted successfully!</textarea>
         </div>
@@ -334,11 +335,13 @@ const Settings: React.FC = () => {
           Swal.showValidationMessage('Please enter both phone number and message');
           return false;
         }
-        if (!phone.startsWith('+')) {
-          Swal.showValidationMessage('Phone number must start with + (e.g., +971...)');
+        // Remove any non-digit characters
+        const cleanPhone = phone.replace(/\D/g, '');
+        if (cleanPhone.length < 10) {
+          Swal.showValidationMessage('Phone number must be at least 10 digits (e.g., 971585550045)');
           return false;
         }
-        return { phone, message };
+        return { phone: cleanPhone, message };
       }
     });
 
