@@ -909,6 +909,31 @@ function AddFamilyResidenceModal({
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [residences, setResidences] = useState<Array<{ residenceID: number; passenger_name: string; passportNumber: string }>>([]);
+  const [loadingResidences, setLoadingResidences] = useState(false);
+
+  // Load residences when customer is selected
+  useEffect(() => {
+    if (formData.customer_id && isOpen) {
+      loadResidencesForCustomer(parseInt(formData.customer_id));
+    } else {
+      setResidences([]);
+      setFormData(prev => ({ ...prev, residence_id: '' }));
+    }
+  }, [formData.customer_id, isOpen]);
+
+  const loadResidencesForCustomer = async (customerId: number) => {
+    setLoadingResidences(true);
+    try {
+      const data = await residenceService.getResidencesByCustomer(customerId);
+      setResidences(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error loading residences:', error);
+      setResidences([]);
+    } finally {
+      setLoadingResidences(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -937,6 +962,7 @@ function AddFamilyResidenceModal({
         other_doc: null
       });
       setErrors({});
+      setResidences([]);
     }
   }, [isOpen]);
 
@@ -1013,13 +1039,29 @@ function AddFamilyResidenceModal({
                 {errors.customer_id && <div className="invalid-feedback">{errors.customer_id}</div>}
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">Residence ID (Optional)</label>
-                <input
-                  type="number"
-                  className="form-control"
+                <label className="form-label">Link to Main Residence (Optional)</label>
+                <select
+                  className="form-select"
                   value={formData.residence_id}
                   onChange={(e) => setFormData(prev => ({ ...prev, residence_id: e.target.value }))}
-                />
+                  disabled={!formData.customer_id || loadingResidences}
+                >
+                  <option value="">-- Select Main Residence (Optional) --</option>
+                  {loadingResidences ? (
+                    <option disabled>Loading residences...</option>
+                  ) : residences.length === 0 && formData.customer_id ? (
+                    <option disabled>No residences found for this customer</option>
+                  ) : (
+                    residences.map((residence) => (
+                      <option key={residence.residenceID} value={residence.residenceID}>
+                        ID: {residence.residenceID} - {residence.passenger_name} ({residence.passportNumber})
+                      </option>
+                    ))
+                  )}
+                </select>
+                <small className="form-text text-muted">
+                  Select the main residence record if this family member is linked to an existing employee/resident
+                </small>
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Passenger Name <span className="text-danger">*</span></label>

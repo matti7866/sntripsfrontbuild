@@ -1045,6 +1045,21 @@ const residenceService = {
   },
 
   /**
+   * Get residences for a specific customer
+   */
+  async getResidencesByCustomer(customerId: number) {
+    try {
+      const response = await axios.get('/residence/get-by-customer.php', {
+        params: { customer_id: customerId }
+      });
+      return response.data.data || response.data || [];
+    } catch (error: any) {
+      console.error('Error fetching residences by customer:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Get family residence tasks (filtered by step)
    */
   async getFamilyTasks(params: { step: string; company_id?: string; search?: string }) {
