@@ -209,14 +209,31 @@ export default function CustomerPayments() {
         currencyID: payment.currencyID
       });
       
+      console.log('Receipt generation response:', response.data);
+      
       if (response.data.success) {
-        const receiptID = response.data.data.invoiceID;
+        // Handle both response.data.data and direct response.data formats
+        const receiptID = response.data.data?.invoiceID || response.data.invoiceID;
+        
+        if (!receiptID) {
+          throw new Error('No invoice ID returned from server');
+        }
+        
         // Open receipt in new window/tab
         window.open(`/receipt?id=${receiptID}`, '_blank');
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'Receipt generated successfully',
+          timer: 1500,
+          showConfirmButton: false
+        });
       } else {
         throw new Error(response.data.message || 'Failed to generate receipt');
       }
     } catch (error: any) {
+      console.error('Receipt generation error:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error!',
