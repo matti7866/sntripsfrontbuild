@@ -50,13 +50,18 @@ export default function Receipt() {
   useEffect(() => {
     // Initialize signature pads when canvas refs are ready
     if (companySignatureRef.current && customerSignatureRef.current) {
-      // Import signature pad dynamically
-      import('signature_pad').then((SignaturePad) => {
-        companySignaturePad.current = new SignaturePad.default(companySignatureRef.current!);
-        customerSignaturePad.current = new SignaturePad.default(customerSignatureRef.current!);
-      }).catch(() => {
-        console.log('Signature pad not installed. Run: npm install signature_pad');
-      });
+      // Try to import signature pad dynamically (optional feature)
+      const loadSignaturePad = async () => {
+        try {
+          const SignaturePad = await import('signature_pad');
+          companySignaturePad.current = new SignaturePad.default(companySignatureRef.current!);
+          customerSignaturePad.current = new SignaturePad.default(customerSignatureRef.current!);
+        } catch (error) {
+          console.log('Signature pad not installed. To enable signatures, run: npm install signature_pad');
+          // Signature feature will be disabled but receipt still works
+        }
+      };
+      loadSignaturePad();
     }
   }, [receiptInfo]);
 
@@ -294,7 +299,7 @@ export default function Receipt() {
   );
 }
 
-// QR Code Component
+// QR Code Component (Optional - requires npm install qrcode.react)
 function QRCodeComponent({ receiptNumber, customerName, date, amount }: {
   receiptNumber: string;
   customerName: string;
@@ -302,14 +307,20 @@ function QRCodeComponent({ receiptNumber, customerName, date, amount }: {
   amount: number;
 }) {
   const [QRCode, setQRCode] = useState<any>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    // Dynamically import QR code library
-    import('qrcode.react').then((module) => {
-      setQRCode(() => module.QRCodeSVG);
-    }).catch(() => {
-      console.log('QR Code library not installed. Run: npm install qrcode.react');
-    });
+    // Try to dynamically import QR code library
+    const loadQRCode = async () => {
+      try {
+        const module = await import('qrcode.react');
+        setQRCode(() => module.QRCodeSVG);
+      } catch (err) {
+        console.log('QR Code library not installed. To enable QR codes, run: npm install qrcode.react');
+        setError(true);
+      }
+    };
+    loadQRCode();
   }, []);
 
   const qrData = JSON.stringify({
@@ -319,6 +330,17 @@ function QRCodeComponent({ receiptNumber, customerName, date, amount }: {
     amount,
     verifyUrl: `${window.location.origin}/payment/receipt/${receiptNumber}`
   });
+
+  if (error) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '10px', padding: '10px', background: '#f8f9fa', borderRadius: '5px' }}>
+        <small className="text-muted">
+          <i className="fa fa-info-circle me-1"></i>
+          QR Code: Run <code>npm install qrcode.react</code>
+        </small>
+      </div>
+    );
+  }
 
   if (!QRCode) {
     return null;
