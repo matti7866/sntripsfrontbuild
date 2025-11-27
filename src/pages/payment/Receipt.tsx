@@ -33,6 +33,7 @@ export default function Receipt() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [totalPaid, setTotalPaid] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [printSize, setPrintSize] = useState<'A4' | 'A5'>('A4');
 
   useEffect(() => {
     if (receiptId) {
@@ -89,16 +90,23 @@ export default function Receipt() {
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = (size: 'A4' | 'A5') => {
+    // Set print size
+    setPrintSize(size);
+    
     // Set document title for PDF filename
     if (transactions.length > 0) {
       document.title = `${transactions[0].PassengerName}_${totalPaid.toFixed(2)}_${receiptInfo?.invoiceNumber}.pdf`;
     }
-    window.print();
-    // Reset title after print
+    
+    // Wait for state update then print
     setTimeout(() => {
-      document.title = `Print Receipt ${receiptInfo?.invoiceNumber}`;
-    }, 1000);
+      window.print();
+      // Reset title after print
+      setTimeout(() => {
+        document.title = `Print Receipt ${receiptInfo?.invoiceNumber}`;
+      }, 1000);
+    }, 100);
   };
 
   const formatNumber = (num: number) => {
@@ -143,12 +151,19 @@ export default function Receipt() {
 
   return (
     <>
-      {/* Print Button (Fixed position, hidden on print) */}
-      <button className="action-button print-button no-print" onClick={handlePrint}>
-        Print Receipt
-      </button>
+      {/* Print Buttons (Fixed position, hidden on print) */}
+      <div className="print-buttons-container no-print">
+        <button className="action-button print-a4-button" onClick={() => handlePrint('A4')}>
+          <i className="fa fa-print me-2"></i>
+          Print A4
+        </button>
+        <button className="action-button print-a5-button" onClick={() => handlePrint('A5')}>
+          <i className="fa fa-print me-2"></i>
+          Print A5
+        </button>
+      </div>
 
-      <div className="page">
+      <div className={`page print-${printSize.toLowerCase()}`}>
         {/* Header */}
         <div className="header">
           <div className="logo logo-container">

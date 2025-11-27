@@ -9,10 +9,29 @@ body {
   display: block;
   margin: 20px auto;
   width: 8.27in; /* A4 width */
-  min-height: 11.69in; /* A4 height */
+  min-height: auto; /* Auto height to fit content */
   border: 1px solid #000;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   background: white;
+}
+
+/* A5 preview on screen */
+.page.print-a5 {
+  width: 5.83in; /* A5 width */
+  min-height: auto; /* Auto height */
+}
+
+/* Responsive for smaller screens */
+@media (max-width: 1200px) {
+  .page {
+    width: 95%;
+    max-width: 8.27in;
+  }
+  
+  .page.print-a5 {
+    width: 90%;
+    max-width: 5.83in;
+  }
 }
 
 .header {
@@ -81,17 +100,22 @@ body {
 }
 
 .col .label {
-  background-color: #f0f0f0;
-  padding: 8px;
-  font-weight: bold;
+  background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+  padding: 10px;
+  font-weight: 600;
   border-radius: 4px 4px 0 0;
+  border: 1px solid #dee2e6;
+  border-bottom: none;
+  font-size: 0.9rem;
 }
 
 .col .value {
-  padding: 8px;
-  border: 1px solid #e0e0e0;
-  border-top: none;
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  border-top: 2px solid #007bff;
   border-radius: 0 0 4px 4px;
+  font-weight: 500;
+  background: white;
 }
 
 .col.col-full {
@@ -101,17 +125,26 @@ body {
 table {
   margin-top: 20px;
   margin-bottom: 30px;
+  border: 2px solid #000;
 }
 
 table th {
-  background-color: #f0f0f0;
-  padding: 10px;
+  background: linear-gradient(to bottom, #e9ecef, #dee2e6);
+  padding: 12px 10px;
   text-align: center;
+  font-weight: 700;
+  border-bottom: 2px solid #000;
 }
 
 table td {
   padding: 10px;
   text-align: center;
+  border: 1px solid #dee2e6;
+}
+
+table tbody tr:last-child td {
+  font-weight: 700;
+  background-color: #f8f9fa;
 }
 
 table td.text-right {
@@ -130,36 +163,72 @@ table td.text-right {
   font-size: 1rem;
 }
 
-/* Action Buttons */
-.action-button {
+/* Print Buttons Container */
+.print-buttons-container {
   position: fixed;
-  padding: 10px 15px;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  z-index: 9999; /* Higher than navigation */
-  font-family: 'Poppins', sans-serif;
-  margin: 5px;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.print-button {
   top: 70px; /* Below header navigation */
   right: 20px;
-  background-color: #007bff;
+  z-index: 9999; /* Higher than navigation */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.print-button:hover {
-  background-color: #0056b3;
+/* Action Buttons */
+.action-button {
+  padding: 10px 20px;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  font-size: 14px;
+  min-width: 130px;
+}
+
+.print-a4-button {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.print-a4-button:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #003d82 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+}
+
+.print-a5-button {
+  background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+
+.print-a5-button:hover {
+  background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+/* Responsive buttons for smaller screens */
+@media (max-width: 768px) {
+  .print-buttons-container {
+    top: 60px;
+    right: 10px;
+  }
+  
+  .action-button {
+    padding: 8px 15px;
+    font-size: 12px;
+    min-width: 100px;
+  }
 }
 
 /* Print Styles */
 @media print {
+  /* Default A4 size with minimal margins */
   @page {
-    size: A4;
-    margin: 0;
+    size: A4 portrait;
+    margin: 5mm; /* Smaller margins to use more space */
   }
 
   html, body {
@@ -168,49 +237,255 @@ table td.text-right {
     width: 100%;
     height: 100%;
     background: white;
+    overflow: hidden !important;
   }
   
+  /* Force everything to fit on one page */
+  * {
+    max-height: none !important;
+  }
+  
+  /* Hide all navigation, headers, sidebars */
+  header,
+  nav,
+  .header-nav,
+  .sidebar,
+  .app-header,
+  .app-sidebar,
+  .app-sidebar-bg,
+  .app-sidebar-mobile-backdrop,
+  #header,
+  #sidebar,
+  #top-menu,
+  .print-buttons-container,
+  .action-button,
+  .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  /* Show only the receipt page - fit on ONE page */
   .page {
     margin: 0 !important;
     padding: 0 !important;
-    border: none !important;
+    border: 2px solid #000 !important;
     width: 100% !important;
     height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
     box-shadow: none !important;
-    page-break-after: auto;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+    overflow: visible !important;
   }
   
+  /* Prevent any content from creating second page */
+  .page::after {
+    content: none !important;
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Compact header for A4 to fit on one page */
   .header {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    height: 1.3in !important;
+    padding: 10px 15px !important;
+    border-bottom: 2px solid #000 !important;
   }
   
   .logo-container {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     background-color: #000 !important;
+    padding: 12px !important;
+    width: 1.8in !important;
+  }
+  
+  .heading {
+    font-size: 22px !important;
+  }
+  
+  .heading span {
+    padding: 8px 20px !important;
+    border: 2px dashed #000 !important;
+  }
+  
+  .qr {
+    height: 1.1in !important;
+    width: 1.1in !important;
+  }
+  
+  /* Compact data section - reduced padding to prevent overflow */
+  .data {
+    padding: 15px 20px 10px 20px !important; /* Less bottom padding */
+  }
+  
+  .row {
+    margin-bottom: 10px !important;
+  }
+  
+  .col .label {
+    padding: 8px 10px !important;
+    font-size: 1.1rem !important;
+    background: linear-gradient(to bottom, #f8f9fa, #e9ecef) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    border: 1px solid #dee2e6 !important;
+    border-bottom: none !important;
+    font-weight: 600 !important;
+  }
+  
+  .col .value {
+    padding: 8px 10px !important;
+    font-size: 1.2rem !important;
+    font-weight: 600;
+    border: 1px solid #dee2e6 !important;
+    border-top: 2px solid #007bff !important;
+  }
+  
+  table {
+    margin-top: 12px !important;
+    margin-bottom: 12px !important;
+    font-size: 1rem !important;
+    border: 2px solid #000 !important;
   }
   
   table th {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
-    background-color: #f0f0f0 !important;
+    background: linear-gradient(to bottom, #e9ecef, #dee2e6) !important;
+    padding: 10px 8px !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    border-bottom: 2px solid #000 !important;
   }
   
-  .action-button,
-  .no-print {
-    display: none !important;
+  table td {
+    padding: 8px 6px !important;
+    font-size: 0.95rem !important;
+    border: 1px solid #dee2e6 !important;
   }
   
-  /* Force content to be visible */
-  * {
+  table tbody tr:last-child td {
+    font-weight: 700 !important;
+    background-color: #f8f9fa !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 1.05rem !important;
+  }
+  
+  .english, .arabic {
+    margin-top: 12px !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.4 !important;
+  }
+  
+  /* Ensure no content after arabic text - THIS IS THE LAST ELEMENT */
+  .arabic {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Remove any spacing after last element in data section */
+  .data > div:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  /* Force receipt content to be visible */
+  .page,
+  .page * {
     visibility: visible !important;
     opacity: 1 !important;
   }
   
-  .action-button,
-  .no-print {
-    visibility: hidden !important;
-    display: none !important;
+  /* Prevent page breaks - keep everything on one page */
+  .header,
+  .data,
+  table,
+  .row,
+  tbody {
+    page-break-inside: avoid !important;
+    page-break-before: avoid !important;
+    page-break-after: avoid !important;
+  }
+  
+  /* Ensure the entire page fits */
+  .page {
+    max-height: none !important;
+    display: block !important;
+  }
+  
+  /* Prevent orphaned content */
+  .english, .arabic {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  /* A5 Specific Adjustments */
+  .print-a5 {
+    page-break-after: avoid !important;
+  }
+  
+  .print-a5 .header {
+    height: 1.2in !important;
+    padding: 10px !important;
+  }
+  
+  .print-a5 .logo-container {
+    width: 1.5in !important;
+    padding: 10px !important;
+  }
+  
+  .print-a5 .qr {
+    height: 1in !important;
+    width: 1in !important;
+  }
+  
+  .print-a5 .heading {
+    font-size: 20px !important;
+  }
+  
+  .print-a5 .heading span {
+    padding: 8px 15px !important;
+    border: 2px dashed #000 !important;
+  }
+  
+  .print-a5 .data {
+    padding: 20px !important;
+  }
+  
+  .print-a5 .row {
+    margin-bottom: 15px !important;
+  }
+  
+  .print-a5 .col .label,
+  .print-a5 .col .value {
+    padding: 6px !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .print-a5 table {
+    font-size: 0.7rem !important;
+    margin-top: 15px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .print-a5 table th,
+  .print-a5 table td {
+    padding: 8px !important;
+    font-size: 0.7rem !important;
+  }
+  
+  .print-a5 .english,
+  .print-a5 .arabic {
+    font-size: 0.8rem !important;
+    margin-top: 15px !important;
   }
 }
