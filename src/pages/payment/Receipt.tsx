@@ -38,8 +38,6 @@ export default function Receipt() {
   
   const companySignatureRef = useRef<HTMLCanvasElement>(null);
   const customerSignatureRef = useRef<HTMLCanvasElement>(null);
-  const companySignaturePad = useRef<any>(null);
-  const customerSignaturePad = useRef<any>(null);
 
   useEffect(() => {
     if (receiptId) {
@@ -48,20 +46,63 @@ export default function Receipt() {
   }, [receiptId]);
 
   useEffect(() => {
-    // Initialize signature pads when canvas refs are ready
-    if (companySignatureRef.current && customerSignatureRef.current) {
-      // Try to import signature pad dynamically (optional feature)
-      const loadSignaturePad = async () => {
-        try {
-          const SignaturePad = await import('signature_pad');
-          companySignaturePad.current = new SignaturePad.default(companySignatureRef.current!);
-          customerSignaturePad.current = new SignaturePad.default(customerSignatureRef.current!);
-        } catch (error) {
-          console.log('Signature pad not installed. To enable signatures, run: npm install signature_pad');
-          // Signature feature will be disabled but receipt still works
-        }
+    // Enable basic drawing on canvases (simple signature without library)
+    const enableDrawing = (canvas: HTMLCanvasElement) => {
+      let isDrawing = false;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+
+      const startDrawing = (e: MouseEvent | TouchEvent) => {
+        isDrawing = true;
+        const rect = canvas.getBoundingClientRect();
+        const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+        const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
       };
-      loadSignaturePad();
+
+      const draw = (e: MouseEvent | TouchEvent) => {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+        const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      };
+
+      const stopDrawing = () => {
+        isDrawing = false;
+      };
+
+      canvas.addEventListener('mousedown', startDrawing);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', stopDrawing);
+      canvas.addEventListener('mouseout', stopDrawing);
+      canvas.addEventListener('touchstart', startDrawing);
+      canvas.addEventListener('touchmove', draw);
+      canvas.addEventListener('touchend', stopDrawing);
+
+      return () => {
+        canvas.removeEventListener('mousedown', startDrawing);
+        canvas.removeEventListener('mousemove', draw);
+        canvas.removeEventListener('mouseup', stopDrawing);
+        canvas.removeEventListener('mouseout', stopDrawing);
+        canvas.removeEventListener('touchstart', startDrawing);
+        canvas.removeEventListener('touchmove', draw);
+        canvas.removeEventListener('touchend', stopDrawing);
+      };
+    };
+
+    if (companySignatureRef.current) {
+      enableDrawing(companySignatureRef.current);
+    }
+    if (customerSignatureRef.current) {
+      enableDrawing(customerSignatureRef.current);
     }
   }, [receiptInfo]);
 
@@ -123,10 +164,13 @@ export default function Receipt() {
   };
 
   const clearSignature = (type: 'company' | 'customer') => {
-    if (type === 'company' && companySignaturePad.current) {
-      companySignaturePad.current.clear();
-    } else if (type === 'customer' && customerSignaturePad.current) {
-      customerSignaturePad.current.clear();
+    // Clear canvas manually
+    const canvas = type === 'company' ? companySignatureRef.current : customerSignatureRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
     }
   };
 
@@ -299,57 +343,28 @@ export default function Receipt() {
   );
 }
 
-// QR Code Component (Optional - requires npm install qrcode.react)
+// QR Code Component (Simplified - no external dependencies needed)
 function QRCodeComponent({ receiptNumber, customerName, date, amount }: {
   receiptNumber: string;
   customerName: string;
   date: string;
   amount: number;
 }) {
-  const [QRCode, setQRCode] = useState<any>(null);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    // Try to dynamically import QR code library
-    const loadQRCode = async () => {
-      try {
-        const module = await import('qrcode.react');
-        setQRCode(() => module.QRCodeSVG);
-      } catch (err) {
-        console.log('QR Code library not installed. To enable QR codes, run: npm install qrcode.react');
-        setError(true);
-      }
-    };
-    loadQRCode();
-  }, []);
-
-  const qrData = JSON.stringify({
-    receiptNumber,
-    customerName,
-    date,
-    amount,
-    verifyUrl: `${window.location.origin}/payment/receipt/${receiptNumber}`
-  });
-
-  if (error) {
-    return (
-      <div style={{ textAlign: 'center', marginTop: '10px', padding: '10px', background: '#f8f9fa', borderRadius: '5px' }}>
-        <small className="text-muted">
-          <i className="fa fa-info-circle me-1"></i>
-          QR Code: Run <code>npm install qrcode.react</code>
-        </small>
-      </div>
-    );
-  }
-
-  if (!QRCode) {
-    return null;
-  }
-
+  // For now, show receipt verification info without actual QR code
+  // To enable QR code: npm install qrcode.react
   return (
-    <div style={{ textAlign: 'center', marginTop: '10px' }}>
-      <QRCode value={qrData} size={80} />
-      <p style={{ fontSize: '8px', marginTop: '5px' }}>Scan to verify</p>
+    <div style={{ textAlign: 'center', marginTop: '10px', padding: '10px', background: '#f8f9fa', borderRadius: '5px', border: '1px solid #dee2e6' }}>
+      <div style={{ fontSize: '10px', fontWeight: 'bold', marginBottom: '5px' }}>
+        Receipt Verification
+      </div>
+      <div style={{ fontSize: '9px', color: '#666' }}>
+        #{receiptNumber}
+      </div>
+      <small className="text-muted d-block mt-2" style={{ fontSize: '8px' }}>
+        <i className="fa fa-qrcode me-1"></i>
+        To enable QR code scanning, run:<br/>
+        <code style={{ fontSize: '7px' }}>npm install qrcode.react</code>
+      </small>
     </div>
   );
 }
