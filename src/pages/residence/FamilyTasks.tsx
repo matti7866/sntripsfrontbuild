@@ -915,7 +915,7 @@ function AddFamilyResidenceModal({
   // Load residences when customer is selected
   useEffect(() => {
     if (formData.customer_id && isOpen) {
-      loadResidencesForCustomer(parseInt(formData.customer_id));
+      loadResidencesForCustomer(parseInt(formData.customer_id, 10));
     } else {
       setResidences([]);
       setFormData(prev => ({ ...prev, residence_id: '' }));
@@ -1047,17 +1047,17 @@ function AddFamilyResidenceModal({
                   disabled={!formData.customer_id || loadingResidences}
                 >
                   <option value="">-- Select Main Residence (Optional) --</option>
-                  {loadingResidences ? (
+                  {loadingResidences && (
                     <option disabled>Loading residences...</option>
-                  ) : residences.length === 0 && formData.customer_id ? (
-                    <option disabled>No residences found for this customer</option>
-                  ) : (
-                    residences.map((residence) => (
-                      <option key={residence.residenceID} value={residence.residenceID}>
-                        ID: {residence.residenceID} - {residence.passenger_name} ({residence.passportNumber})
-                      </option>
-                    ))
                   )}
+                  {!loadingResidences && residences.length === 0 && formData.customer_id && (
+                    <option disabled>No residences found for this customer</option>
+                  )}
+                  {!loadingResidences && residences.map((residence) => (
+                    <option key={residence.residenceID} value={residence.residenceID}>
+                      ID: {residence.residenceID} - {residence.passenger_name} ({residence.passportNumber})
+                    </option>
+                  ))}
                 </select>
                 <small className="form-text text-muted">
                   Select the main residence record if this family member is linked to an existing employee/resident
