@@ -1,21 +1,23 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 class Storage {
-  async get<T>(key: string): Promise<T | null> {
+  async set<T>(key: string, value: T): Promise<void> {
     try {
-      const value = await AsyncStorage.getItem(key);
-      return value ? JSON.parse(value) : null;
+      const jsonValue = JSON.stringify(value);
+      await AsyncStorage.setItem(key, jsonValue);
     } catch (error) {
-      console.error(`Error getting ${key}:`, error);
-      return null;
+      console.error('Error saving data:', error);
+      throw error;
     }
   }
 
-  async set<T>(key: string, value: T): Promise<void> {
+  async get<T>(key: string): Promise<T | null> {
     try {
-      await AsyncStorage.setItem(key, JSON.stringify(value));
+      const jsonValue = await AsyncStorage.getItem(key);
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (error) {
-      console.error(`Error setting ${key}:`, error);
+      console.error('Error reading data:', error);
+      return null;
     }
   }
 
@@ -23,7 +25,8 @@ class Storage {
     try {
       await AsyncStorage.removeItem(key);
     } catch (error) {
-      console.error(`Error removing ${key}:`, error);
+      console.error('Error removing data:', error);
+      throw error;
     }
   }
 
@@ -32,10 +35,9 @@ class Storage {
       await AsyncStorage.clear();
     } catch (error) {
       console.error('Error clearing storage:', error);
+      throw error;
     }
   }
 }
 
 export default new Storage();
-
-

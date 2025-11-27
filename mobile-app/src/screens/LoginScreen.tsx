@@ -1,60 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
-  ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
-import { useAuth } from '../context/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
+import { authService } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 import storage from '../utils/storage';
-import { STORAGE_KEYS } from '../config/api';
+import { STORAGE_KEYS } from '../config/constants';
 
-const LoginScreen: React.FC = () => {
-  const [phone, setPhone] = useState('');
+export default function LoginScreen() {
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
+  const [step, setStep] = useState<'email' | 'otp'>('email');
   const [loading, setLoading] = useState(false);
-  const { sendOTP, verifyOTP, refreshUser } = useAuth();
-  
-  // Development bypass
-  const DEV_PHONE = '501234567'; // Test phone without country code
-  const DEV_OTP = '123456';
+  const [staffInfo, setStaffInfo] = useState<{ name: string; picture?: string } | null>(null);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    loadRememberedEmail();
+  }, []);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  const loadRememberedEmail = async () => {
+    const remembered = await storage.get<string>(STORAGE_KEYS.REMEMBER_EMAIL);
+    if (remembered) {
+      setEmail(remembered);
+    }
+  };
 
   const handleSendOTP = async () => {
-    if (!phone.trim()) {
-      Alert.alert('Error', 'Please enter your phone number');
-      return;
-    }
-
-    // Validate phone number (should be 9 digits after +971)
-    if (phone.length < 9) {
-      Alert.alert('Error', 'Please enter a valid UAE phone number');
+    if (!email || !email.includes('@')) {
+      Alert.alert('Error', 'Please enter a valid email address');
       return;
     }
 
     setLoading(true);
     try {
-      // Development bypass
-      if (phone === DEV_PHONE) {
-        setStep('otp');
-        Alert.alert('Development Mode', 'Use OTP: 123456');
-        setLoading(false);
-        return;
-      }
-
-      // For production, send OTP via API
-      const fullPhone = `+971${phone}`;
-      const response = await sendOTP(fullPhone);
+      const response = await authService.sendOTP(email);
       if (response.success) {
+        setStaffInfo(response.staff || null);
         setStep('otp');
-        Alert.alert('Success', 'OTP sent to your phone');
+        setCountdown(60); // 60 seconds countdown
+        await storage.set(STORAGE_KEYS.REMEMBER_EMAIL, email);
+        Alert.alert('Success', response.message || 'OTP sent to your email');
       } else {
         Alert.alert('Error', response.message || 'Failed to send OTP');
       }
@@ -66,255 +71,311 @@ const LoginScreen: React.FC = () => {
   };
 
   const handleVerifyOTP = async () => {
-    if (!otp.trim() || otp.length !== 6) {
+    if (!otp || otp.length !== 6) {
       Alert.alert('Error', 'Please enter a valid 6-digit OTP');
       return;
     }
 
     setLoading(true);
     try {
-      // Development bypass
-      if (phone === DEV_PHONE && otp === DEV_OTP) {
-        // Create mock user data for development (Customer ID: 558)
-        const mockUser = {
-          staff_id: 558,
-          name: 'Test Customer',
-          email: 'test@sntrips.com',
-          customer_id: 558,
-        };
-        const mockToken = 'dev_token_' + Date.now();
-        
-        await storage.set(STORAGE_KEYS.token, mockToken);
-        await storage.set(STORAGE_KEYS.user, mockUser);
-        
-        // Refresh auth context
-        await refreshUser();
-        
-        setLoading(false);
-        return;
-      }
-
-      // For production, verify OTP via API
-      const fullPhone = `+971${phone}`;
-      const response = await verifyOTP(fullPhone, otp);
+      const response = await login(email, otp);
       if (!response.success) {
         Alert.alert('Error', response.message || 'Invalid OTP');
       }
+      // Navigation will happen automatically through AuthContext
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'OTP verification failed');
+      Alert.alert('Error', error.message || 'Login failed');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleResendOTP = async () => {
+    setOtp('');
+    await handleSendOTP();
+  };
+
+  const handleBack = () => {
+    setStep('email');
+    setOtp('');
+    setStaffInfo(null);
+  };
+
   return (
+    <LinearGradient colors={['#1e3a8a', '#3b82f6', '#60a5fa']} style={styles.container}>
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <LinearGradient
-        colors={['#667eea', '#764ba2']}
-        style={styles.gradient}
+        style={styles.keyboardView}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.content}>
-            <Text style={styles.title}>SNT Customer App</Text>
-            <Text style={styles.subtitle}>Welcome Back</Text>
-
-            {step === 'phone' ? (
-              <View style={styles.form}>
-                <View style={styles.phoneContainer}>
-                  <View style={styles.countryCode}>
-                    <Text style={styles.countryCodeText}>🇦🇪 +971</Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Logo */}
+          <View style={styles.logoContainer}>
+            <View style={styles.logoPlaceholder}>
+              <Text style={styles.logoText}>SN</Text>
+            </View>
+            <Text style={styles.title}>SN Travels</Text>
+            <Text style={styles.subtitle}>Emirates ID Staff Portal</Text>
                   </View>
+
+          {/* Form Card */}
+          <View style={styles.card}>
+            {step === 'email' ? (
+              <>
+                <Text style={styles.cardTitle}>Login with Email</Text>
+                <Text style={styles.cardSubtitle}>
+                  Enter your email to receive a one-time password
+                </Text>
+
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Email Address</Text>
                   <TextInput
-                    style={styles.phoneInput}
-                    placeholder="50 123 4567"
-                    placeholderTextColor="#999"
-                    value={phone}
-                    onChangeText={setPhone}
-                    keyboardType="phone-pad"
-                    maxLength={9}
+                    style={styles.input}
+                    placeholder="your.email@sntravels.com"
+                    placeholderTextColor="#9ca3af"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    editable={!loading}
                   />
                 </View>
-                <Text style={styles.helperText}>
-                  Enter your UAE mobile number
-                </Text>
-                <Text style={styles.devNote}>
-                  💡 Dev: Use 501234567 with OTP 123456
-                </Text>
+
                 <TouchableOpacity
-                  style={styles.button}
+                  style={[styles.button, loading && styles.buttonDisabled]}
                   onPress={handleSendOTP}
                   disabled={loading}
                 >
                   {loading ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color="#ffffff" />
                   ) : (
                     <Text style={styles.buttonText}>Send OTP</Text>
                   )}
                 </TouchableOpacity>
-              </View>
+              </>
             ) : (
-              <View style={styles.form}>
-                <Text style={styles.otpLabel}>
-                  Enter the 6-digit OTP sent to +971{phone}
+              <>
+                <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+                  <Text style={styles.backButtonText}>← Back</Text>
+                </TouchableOpacity>
+
+                {staffInfo && (
+                  <View style={styles.staffInfo}>
+                    {staffInfo.picture && (
+                      <Image source={{ uri: staffInfo.picture }} style={styles.staffPicture} />
+                    )}
+                    <Text style={styles.staffName}>{staffInfo.name}</Text>
+                  </View>
+                )}
+
+                <Text style={styles.cardTitle}>Enter OTP</Text>
+                <Text style={styles.cardSubtitle}>
+                  We've sent a 6-digit code to {'\n'}
+                  <Text style={styles.emailText}>{email}</Text>
                 </Text>
+
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>OTP Code</Text>
                 <TextInput
-                  style={styles.input}
+                    style={[styles.input, styles.otpInput]}
                   placeholder="000000"
-                  placeholderTextColor="#999"
+                    placeholderTextColor="#9ca3af"
                   value={otp}
                   onChangeText={setOtp}
                   keyboardType="number-pad"
                   maxLength={6}
+                    editable={!loading}
                 />
+                </View>
+
                 <TouchableOpacity
-                  style={styles.button}
+                  style={[styles.button, loading && styles.buttonDisabled]}
                   onPress={handleVerifyOTP}
                   disabled={loading}
                 >
                   {loading ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color="#ffffff" />
                   ) : (
-                    <Text style={styles.buttonText}>Verify OTP</Text>
+                    <Text style={styles.buttonText}>Verify & Login</Text>
                   )}
                 </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.backButton}
-                  onPress={() => {
-                    setStep('phone');
-                    setOtp('');
-                  }}
-                >
-                  <Text style={styles.backButtonText}>Change Phone Number</Text>
+
+                <View style={styles.resendContainer}>
+                  {countdown > 0 ? (
+                    <Text style={styles.resendText}>Resend OTP in {countdown}s</Text>
+                  ) : (
+                    <TouchableOpacity onPress={handleResendOTP} disabled={loading}>
+                      <Text style={styles.resendLink}>Resend OTP</Text>
                 </TouchableOpacity>
+                  )}
               </View>
+              </>
             )}
           </View>
+
+          {/* Footer */}
+          <Text style={styles.footer}>
+            For authorized staff only{'\n'}© 2024 SN Travels
+          </Text>
         </ScrollView>
+      </KeyboardAvoidingView>
       </LinearGradient>
-    </KeyboardAvoidingView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  gradient: {
+  keyboardView: {
     flex: 1,
   },
-  scrollContent: {
+  scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
   },
-  content: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 20,
-    padding: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logoPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 3,
+    borderColor: '#ffffff',
+  },
+  logoText: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#ffffff',
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 10,
+    color: '#ffffff',
+    marginBottom: 8,
   },
   subtitle: {
-    fontSize: 18,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-  form: {
-    width: '100%',
-  },
-  phoneContainer: {
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
-  countryCode: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 10,
-    padding: 15,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    marginRight: 10,
-    justifyContent: 'center',
-  },
-  countryCodeText: {
     fontSize: 16,
+    color: '#e0e7ff',
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  cardTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 8,
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginBottom: 24,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#333',
-  },
-  phoneInput: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    borderRadius: 10,
-    padding: 15,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    color: '#374151',
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 10,
-    padding: 15,
-    fontSize: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  helperText: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  devNote: {
-    fontSize: 11,
-    color: '#10b981',
-    marginBottom: 15,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    backgroundColor: '#f0fdf4',
-    padding: 8,
+    backgroundColor: '#f3f4f6',
     borderRadius: 8,
+    padding: 16,
+    fontSize: 16,
+    color: '#1f2937',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
-  otpLabel: {
-    fontSize: 14,
-    color: '#666',
+  otpInput: {
     textAlign: 'center',
-    marginBottom: 15,
+    fontSize: 24,
+    letterSpacing: 8,
+    fontWeight: 'bold',
   },
   button: {
-    backgroundColor: '#667eea',
-    borderRadius: 10,
-    padding: 15,
+    backgroundColor: '#2563eb',
+    borderRadius: 8,
+    padding: 16,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   backButton: {
-    marginTop: 15,
-    alignItems: 'center',
+    marginBottom: 16,
   },
   backButtonText: {
-    color: '#667eea',
+    color: '#2563eb',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  staffInfo: {
+    alignItems: 'center',
+    marginBottom: 24,
+    padding: 16,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+  },
+  staffPicture: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    marginBottom: 12,
+  },
+  staffName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  emailText: {
+    fontWeight: '600',
+    color: '#2563eb',
+  },
+  resendContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  resendText: {
+    color: '#6b7280',
+    fontSize: 14,
+  },
+  resendLink: {
+    color: '#2563eb',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  footer: {
+    textAlign: 'center',
+    color: '#e0e7ff',
+    fontSize: 12,
+    marginTop: 32,
+    lineHeight: 20,
   },
 });
-
-export default LoginScreen;
-

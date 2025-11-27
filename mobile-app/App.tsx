@@ -1,60 +1,50 @@
-// Simple test version - Remove "test-" prefix below to use full app
-// import App from './test-app';
-// export default App;
-
-import React from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { AuthProvider, useAuth } from './src/context/AuthContext';
-import LoginScreen from './src/screens/LoginScreen';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as SplashScreen from 'expo-splash-screen';
+import * as Font from 'expo-font';
+import { AuthProvider } from './src/context/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
 
-const AppContent: React.FC = () => {
-  const { isAuthenticated, loading } = useAuth();
-  
-  console.log('AppContent render:', { isAuthenticated, loading });
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#667eea" />
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
-    );
+export default function App() {
+  const [appIsReady, setAppIsReady] = useState(false);
+
+  useEffect(() => {
+    async function prepare() {
+      try {
+        // Pre-load fonts for Ionicons
+        await Font.loadAsync({
+          'Ionicons': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
+        });
+      } catch (e) {
+        console.warn('Font loading error:', e);
+      } finally {
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
+  }, []);
+
+  useEffect(() => {
+    if (appIsReady) {
+      SplashScreen.hideAsync();
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null;
   }
 
-  if (!isAuthenticated) {
-    console.log('Rendering LoginScreen');
-    return <LoginScreen />;
-  }
-
-  console.log('Rendering AppNavigator');
-  return <AppNavigator />;
-};
-
-const App: React.FC = () => {
-  console.log('App render');
   return (
+    <SafeAreaProvider>
     <AuthProvider>
-      <StatusBar style="auto" />
-      <AppContent />
+        <AppNavigator />
+        <StatusBar style="light" />
     </AuthProvider>
+    </SafeAreaProvider>
   );
-};
-
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  loadingText: {
-    marginTop: 20,
-    fontSize: 16,
-    color: '#667eea',
-  },
-});
-
-export default App;
-
+}

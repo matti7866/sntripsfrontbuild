@@ -1,25 +1,43 @@
-node_modules/
+# Expo
 .expo/
 .expo-shared/
 dist/
-npm-debug.*
+web-build/
+
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Build
+*.apk
+*.ipa
+*.aab
+
+# Misc
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
 *.orig.*
-web-build/
-
-# macOS
-.DS_Store
-
-# IDE
-.vscode/
-.idea/
-
-# Environment
-.env
-.env.local
-
-

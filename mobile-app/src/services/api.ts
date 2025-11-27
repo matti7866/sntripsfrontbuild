@@ -1,21 +1,23 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import API_CONFIG, { STORAGE_KEYS } from '../config/api';
+import { API_CONFIG } from '../config/api';
+import { STORAGE_KEYS } from '../config/constants';
 import storage from '../utils/storage';
 
-// Create axios instance
-const apiClient: AxiosInstance = axios.create({
-  baseURL: API_CONFIG.baseURL,
-  timeout: API_CONFIG.timeout,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+class ApiService {
+  private client: AxiosInstance;
+
+  constructor() {
+    this.client = axios.create({
+      baseURL: API_CONFIG.BASE_URL,
+      timeout: API_CONFIG.TIMEOUT,
+      headers: API_CONFIG.HEADERS,
 });
 
-// Request interceptor - Add auth token to requests
-apiClient.interceptors.request.use(
+    // Request interceptor to add auth token
+    this.client.interceptors.request.use(
   async (config) => {
-    const token = await storage.get<string>(STORAGE_KEYS.token);
-    if (token && config.headers) {
+        const token = await storage.get<string>(STORAGE_KEYS.TOKEN);
+        if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -25,69 +27,58 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor - Handle errors globally
-apiClient.interceptors.response.use(
-  (response: AxiosResponse) => {
-    return response;
-  },
-  async (error) => {
-    if (error.response) {
-      switch (error.response.status) {
-        case 401:
-          // Unauthorized - clear auth data
-          await storage.remove(STORAGE_KEYS.token);
-          await storage.remove(STORAGE_KEYS.user);
-          break;
-        case 403:
-          console.error('Access forbidden');
-          break;
-        case 404:
-          console.error('Resource not found');
-          break;
-        case 500:
-          console.error('Server error');
-          break;
-        default:
-          console.error('An error occurred:', error.response.data);
+    // Response interceptor
+    this.client.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        // Log detailed error for debugging
+        if (error.response) {
+          console.error('API Error:', {
+            status: error.response.status,
+            url: error.config?.url,
+            method: error.config?.method,
+            baseURL: error.config?.baseURL,
+            fullURL: `${error.config?.baseURL}${error.config?.url}`,
+            data: error.response.data,
+          });
+        } else if (error.request) {
+          console.error('Network Error:', {
+            url: error.config?.url,
+            message: 'No response received from server',
+          });
+        }
+
+        if (error.response?.status === 401) {
+          // Token expired or invalid - clear auth and redirect to login
+          await storage.remove(STORAGE_KEYS.TOKEN);
+          await storage.remove(STORAGE_KEYS.USER);
+          // You can trigger navigation to login here if needed
+        }
+        return Promise.reject(error);
       }
-    } else if (error.request) {
-      console.error('Network error - no response received');
-    } else {
-      console.error('Error:', error.message);
-    }
-    return Promise.reject(error);
+    );
   }
-);
 
-// API Service Class
-class ApiService {
-  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await apiClient.get<T>(url, config);
+  async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.client.get(url, config);
     return response.data;
   }
 
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await apiClient.post<T>(url, data, config);
+  async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.client.post(url, data, config);
     return response.data;
   }
 
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await apiClient.put<T>(url, data, config);
+  async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.client.put(url, data, config);
     return response.data;
   }
 
-  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    const response = await apiClient.patch<T>(url, data, config);
-    return response.data;
-  }
-
-  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    const response = await apiClient.delete<T>(url, config);
+  async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    const response: AxiosResponse<T> = await this.client.delete(url, config);
     return response.data;
   }
 }
 
 export const api = new ApiService();
-export default apiClient;
-
-
+export default api;

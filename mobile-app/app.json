@@ -1,34 +1,49 @@
 {
   "expo": {
-    "name": "SNT Customer App",
-    "slug": "snt-customer-app",
+    "name": "SN Travels EID Staff",
+    "slug": "snt-eid-staff",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sntrips.customer"
+      "bundleIdentifier": "com.sntravels.eidstaff",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs camera access to scan Emirates ID cards.",
+        "NSPhotoLibraryUsageDescription": "This app needs photo library access to upload Emirates ID images.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.sntrips.customer"
+      "package": "com.sntravels.eidstaff",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow SN Travels EID Staff to access your camera to scan Emirates ID cards."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow SN Travels EID Staff to access your photos to upload Emirates ID images."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b1095f4f-be7b-4d22-aad6-2a8793e70b22"
+      }
     }
   }
 }
-
-

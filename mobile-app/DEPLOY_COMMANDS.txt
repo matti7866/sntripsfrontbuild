@@ -1,0 +1,158 @@
+═══════════════════════════════════════════════════════════════
+  SN TRAVELS EID APP - DEPLOYMENT COMMANDS CHEAT SHEET
+═══════════════════════════════════════════════════════════════
+
+📋 QUICK DEPLOY TO STAFF PHONES
+═══════════════════════════════════════════════════════════════
+
+STEP 1: CONFIGURE PRODUCTION SERVER
+───────────────────────────────────────────────────────────────
+Edit: src/config/api.ts
+
+Change:
+  BASE_URL: 'https://your-domain.com/snt/api'
+
+
+STEP 2: INSTALL EAS CLI (One-time)
+───────────────────────────────────────────────────────────────
+npm install -g eas-cli
+eas login
+
+
+STEP 3: BUILD FOR iOS (iPhone/iPad staff)
+───────────────────────────────────────────────────────────────
+cd /Applications/XAMPP/xamppfiles/htdocs/snt/react-frontend/mobile-app
+
+eas build --platform ios
+
+# Then submit to TestFlight:
+eas submit --platform ios
+
+# Add staff in: appstoreconnect.apple.com → TestFlight
+
+
+STEP 4: BUILD FOR ANDROID (Android staff)
+───────────────────────────────────────────────────────────────
+eas build --platform android
+
+(Choose: APK when prompted)
+
+# Download APK from link shown
+# Share APK file with Android staff
+
+
+═══════════════════════════════════════════════════════════════
+  STAFF INSTALLATION
+═══════════════════════════════════════════════════════════════
+
+iOS STAFF:
+───────────────────────────────────────────────────────────────
+1. Install "TestFlight" app from App Store
+2. Check email for TestFlight invite
+3. Tap link → Install
+4. Done!
+
+
+ANDROID STAFF:
+───────────────────────────────────────────────────────────────
+1. Download APK from shared link
+2. Settings → Enable "Unknown Sources"
+3. Tap APK file → Install
+4. Done!
+
+
+═══════════════════════════════════════════════════════════════
+  PUSH UPDATES (After initial install)
+═══════════════════════════════════════════════════════════════
+
+# For small changes (no rebuild needed):
+eas update --branch production --message "Your update message"
+
+# Staff get updates automatically when they open app!
+
+
+═══════════════════════════════════════════════════════════════
+  USEFUL COMMANDS
+═══════════════════════════════════════════════════════════════
+
+# Test locally before building:
+npx expo start --ios
+npx expo start --android
+
+# Check build status:
+eas build:list
+
+# View all builds:
+Go to: https://expo.dev
+
+# Cancel a build:
+eas build:cancel
+
+# See update history:
+eas update:list
+
+
+═══════════════════════════════════════════════════════════════
+  COSTS
+═══════════════════════════════════════════════════════════════
+
+✅ FREE:
+  - Expo account
+  - EAS builds (limited free tier)
+  - Android APK distribution
+  - EAS updates
+
+💰 PAID:
+  - Apple Developer: $99/year (required for iOS)
+  - Google Play: $25 one-time (optional for Android)
+
+
+═══════════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+App won't connect?
+  → Check BASE_URL in src/config/api.ts
+  → Ensure production server has HTTPS
+  → Verify API endpoints are accessible
+
+Build failed?
+  → Run: eas build --platform [ios/android] --clear-cache
+  → Check eas.json configuration
+  → Verify bundle identifier is unique
+
+Can't submit to TestFlight?
+  → Ensure Apple Developer account is enrolled
+  → Check app bundle ID matches Apple Developer account
+  → Run: eas submit --platform ios --latest
+
+
+═══════════════════════════════════════════════════════════════
+  QUICK START (All-in-One)
+═══════════════════════════════════════════════════════════════
+
+# 1. Update production URL in src/config/api.ts
+
+# 2. Install EAS
+npm install -g eas-cli
+eas login
+
+# 3. Build both platforms
+cd /Applications/XAMPP/xamppfiles/htdocs/snt/react-frontend/mobile-app
+eas build --platform all
+
+# 4. Distribute
+# iOS: eas submit --platform ios (then add testers)
+# Android: Share downloaded APK file
+
+
+═══════════════════════════════════════════════════════════════
+
+For detailed instructions, see:
+  - DEPLOYMENT_GUIDE.md (full deployment guide)
+  - INSTALL_ON_PHONES.md (detailed installation steps)
+  - README.md (app documentation)
+
+═══════════════════════════════════════════════════════════════
+
+

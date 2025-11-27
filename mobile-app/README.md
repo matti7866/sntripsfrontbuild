@@ -1,25 +1,47 @@
-# SNT Customer Management Mobile App
+# SN Travels - Emirates ID Staff Mobile App
 
-A React Native mobile application for customer management, built with Expo. This app allows customers to manage their ticket copies, view upcoming travels, check recent payments, and access their loyalty card.
+A React Native mobile application for SN Travels staff to manage Emirates ID delivery tasks. This app replicates the functionality of the web-based Emirates ID tasks page with added mobile scanning capabilities.
 
 ## Features
 
-- 🔐 **Authentication**: OTP-based login system
-- 🎫 **Ticket Management**: View and manage all ticket copies
-- ✈️ **Upcoming Travels**: View upcoming travel dates and details
-- 💳 **Recent Payments**: Track payment history
-- 🎁 **Loyalty Card**: Digital loyalty card with QR code and points tracking
+- **OTP-Based Authentication**: Secure login using email OTP
+- **3-Tab Interface**:
+  - **Pending Delivery**: View all Emirates IDs awaiting receipt from courier
+  - **Received**: View Emirates IDs received and ready for delivery to customers
+  - **Delivered**: History of all delivered Emirates IDs
+  
+- **Emirates ID Scanning**: 
+  - Camera integration to scan Emirates IDs
+  - Auto-capture or gallery upload
+  - Image attachment for front and back of ID
+  
+- **Full Task Management**:
+  - Mark IDs as received with complete details
+  - Mark IDs as delivered to customers
+  - View remaining balance, customer info, passport details
+  - Filtered views (ML/FZ types)
+
+## Tech Stack
+
+- **React Native** with Expo
+- **TypeScript** for type safety
+- **React Navigation** for tab and stack navigation
+- **Expo Camera** for Emirates ID scanning
+- **Expo Image Picker** for gallery uploads
+- **AsyncStorage** for local data persistence
+- **Axios** for API communication
 
 ## Prerequisites
 
 - Node.js (v16 or higher)
 - npm or yarn
 - Expo CLI (`npm install -g expo-cli`)
-- iOS Simulator (for Mac) or Android Studio (for Android development)
+- iOS Simulator (Mac only) or Android Emulator
+- Physical device for camera testing (recommended)
 
 ## Installation
 
-1. Navigate to the mobile-app directory:
+1. Navigate to the mobile app directory:
 ```bash
 cd mobile-app
 ```
@@ -29,106 +51,154 @@ cd mobile-app
 npm install
 ```
 
-3. Start the Expo development server:
+3. Configure API endpoint:
+   - Open `src/config/api.ts`
+   - Update `BASE_URL` with your backend API URL:
+     ```typescript
+     export const API_CONFIG = {
+       BASE_URL: 'https://yourdomain.com/api',
+       ...
+     };
+     ```
+
+## Running the App
+
+### Development Mode
+
+Start the Expo development server:
 ```bash
 npm start
 ```
 
-4. Run on your device:
-   - **iOS**: Press `i` in the terminal or scan QR code with Expo Go app
-   - **Android**: Press `a` in the terminal or scan QR code with Expo Go app
-   - **Web**: Press `w` in the terminal
+This will open Expo DevTools in your browser. From there you can:
+
+### Run on iOS Simulator (Mac only):
+```bash
+npm run ios
+```
+
+### Run on Android Emulator:
+```bash
+npm run android
+```
+
+### Run on Physical Device:
+
+1. Install **Expo Go** app on your device:
+   - [iOS](https://apps.apple.com/app/expo-go/id982107779)
+   - [Android](https://play.google.com/store/apps/details?id=host.exp.exponent)
+
+2. Scan the QR code shown in terminal/DevTools with your device camera (iOS) or Expo Go app (Android)
 
 ## Project Structure
 
 ```
 mobile-app/
 ├── src/
-│   ├── config/          # API configuration
-│   ├── context/         # React contexts (Auth)
-│   ├── navigation/      # Navigation setup
-│   ├── screens/         # App screens
-│   ├── services/        # API services
-│   ├── types/           # TypeScript types
-│   └── utils/           # Utility functions
-├── App.tsx              # Main app component
-├── app.json             # Expo configuration
-└── package.json         # Dependencies
+│   ├── components/          # Reusable components
+│   │   ├── EIDScanner.tsx   # Emirates ID camera scanner
+│   │   └── MarkReceivedModal.tsx  # Modal for marking ID as received
+│   ├── config/              # Configuration files
+│   │   ├── api.ts           # API configuration
+│   │   └── constants.ts     # App constants
+│   ├── context/             # React Context providers
+│   │   └── AuthContext.tsx  # Authentication context
+│   ├── navigation/          # Navigation configuration
+│   │   └── AppNavigator.tsx # Main navigator with tabs
+│   ├── screens/             # App screens
+│   │   ├── LoginScreen.tsx          # OTP login
+│   │   ├── PendingDeliveryScreen.tsx  # Pending tab
+│   │   ├── ReceivedScreen.tsx       # Received tab
+│   │   └── DeliveredScreen.tsx      # Delivered tab
+│   ├── services/            # API services
+│   │   ├── api.ts           # Base API client
+│   │   ├── authService.ts   # Authentication API
+│   │   └── eidService.ts    # Emirates ID API
+│   ├── types/               # TypeScript type definitions
+│   │   └── index.ts
+│   └── utils/               # Utility functions
+│       └── storage.ts       # AsyncStorage wrapper
+├── App.tsx                  # App entry point
+├── app.json                 # Expo configuration
+└── package.json             # Dependencies
+
 ```
+
+## Key Features Explained
+
+### 1. OTP Login
+- Staff enters their email address
+- OTP is sent to email via backend
+- Staff enters 6-digit OTP to authenticate
+- JWT token stored locally for session management
+
+### 2. Pending Delivery Tab
+- Lists all Emirates IDs waiting to be received from courier
+- Shows: ID, Passenger Name, Customer, Passport, EID Number, Balance
+- "Mark as Received" button opens scanning modal
+
+### 3. Mark as Received Modal
+- **Scan Emirates ID** button opens camera
+- Captures front and back images of ID
+- Form fields:
+  - EID Number (auto-filled from scan if OCR enabled)
+  - EID Expiry Date
+  - Passenger Full Name
+  - Gender
+  - Date of Birth
+  - Occupation (dropdown)
+  - Establishment Name (dropdown)
+- Submits all data and images to backend
+
+### 4. Received Tab
+- Lists Emirates IDs received and ready for delivery
+- Shows received date, expiry date
+- "Mark as Delivered" button confirms delivery
+
+### 5. Delivered Tab
+- History of all delivered Emirates IDs
+- Shows delivery date
+- Read-only view
 
 ## API Integration
 
-The app uses the same API as the web application:
-- Base URL: `https://app.sntrips.com/api`
-- Authentication: Bearer token (JWT)
-- All endpoints match the web app's API structure
+The app expects the following API endpoints (matching your React app):
 
-## Database Schema
+### Authentication
+- `POST /api/auth/send-otp.php` - Send OTP to email
+- `POST /api/auth/verify-otp.php` - Verify OTP and get token
+- `POST /api/auth/logout.php` - Logout user
+- `GET /api/auth/me.php` - Get current user
 
-### Loyalty Card Table
+### Emirates ID Tasks
+- `GET /api/visa/eid-tasks.php?step={pending|received|delivered}` - Get tasks by step
+- `POST /api/visa/eid-tasks-controller.php` - Mark as received/delivered
+- `GET /api/visa/eid-tasks-controller.php` - Get residence, positions, companies data
 
-You'll need to create a new table in your database for the loyalty card feature:
+## Camera Permissions
 
-```sql
-CREATE TABLE IF NOT EXISTS loyalty_cards (
-  card_id INT AUTO_INCREMENT PRIMARY KEY,
-  customer_id INT NOT NULL,
-  card_number VARCHAR(50) UNIQUE NOT NULL,
-  points INT DEFAULT 0,
-  tier ENUM('bronze', 'silver', 'gold', 'platinum') DEFAULT 'bronze',
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
-  INDEX idx_customer_id (customer_id),
-  INDEX idx_card_number (card_number)
-);
+The app requires camera permissions to scan Emirates IDs. Permissions are handled automatically, but users must grant access when prompted.
 
-CREATE TABLE IF NOT EXISTS loyalty_transactions (
-  transaction_id INT AUTO_INCREMENT PRIMARY KEY,
-  card_id INT NOT NULL,
-  points INT NOT NULL,
-  type ENUM('earned', 'redeemed') NOT NULL,
-  description VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (card_id) REFERENCES loyalty_cards(card_id) ON DELETE CASCADE,
-  INDEX idx_card_id (card_id),
-  INDEX idx_created_at (created_at)
-);
+### iOS
+Permissions are configured in `app.json`:
+```json
+{
+  "ios": {
+    "infoPlist": {
+      "NSCameraUsageDescription": "This app needs camera access to scan Emirates ID cards."
+    }
+  }
+}
 ```
 
-## Backend API Endpoints Required
-
-The app expects the following API endpoints:
-
-### Loyalty Card Endpoints
-
-1. **GET /loyalty/card.php?customerId={id}**
-   - Returns loyalty card for a customer
-   - Response: `{ success: boolean, data: LoyaltyCard }`
-
-2. **POST /loyalty/card.php**
-   - Creates a new loyalty card
-   - Body: `{ action: 'create', customer_id: number }`
-   - Response: `{ success: boolean, data: LoyaltyCard, message?: string }`
-
-3. **GET /loyalty/transactions.php?cardId={id}**
-   - Returns transaction history for a card
-   - Response: `{ success: boolean, data: LoyaltyCardTransaction[] }`
-
-4. **POST /loyalty/transactions.php**
-   - Adds a transaction (points earned/redeemed)
-   - Body: `{ action: 'add', card_id: number, points: number, type: 'earned'|'redeemed', description: string }`
-   - Response: `{ success: boolean, message?: string }`
-
-## Configuration
-
-Update the API base URL in `src/config/api.ts` if needed:
-
-```typescript
-export const API_CONFIG = {
-  baseURL: 'https://app.sntrips.com/api',
-  timeout: 30000,
-};
+### Android
+Permissions are configured in `app.json`:
+```json
+{
+  "android": {
+    "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
+  }
+}
 ```
 
 ## Building for Production
@@ -143,28 +213,39 @@ expo build:ios
 expo build:android
 ```
 
-Or use EAS Build:
-```bash
-npm install -g eas-cli
-eas build --platform ios
-eas build --platform android
-```
+For more details, see [Expo Build Documentation](https://docs.expo.dev/classic/building-standalone-apps/).
 
 ## Troubleshooting
 
-1. **Metro bundler issues**: Clear cache with `expo start -c`
-2. **Module not found**: Run `npm install` again
-3. **API connection errors**: Check API base URL and network connectivity
-4. **Authentication issues**: Verify token storage and API endpoints
+### Camera Not Working
+- Ensure you're testing on a physical device (simulators don't have cameras)
+- Check that camera permissions are granted
+- Restart the app after granting permissions
 
-## Notes
+### API Connection Issues
+- Verify `BASE_URL` in `src/config/api.ts`
+- Check that backend is running and accessible
+- Check network connectivity on device
+- For local development, use your computer's IP address instead of localhost
 
-- The app currently uses a default `customer_id` of 1 for testing. In production, this should come from the authenticated user's data.
-- Make sure your backend API supports CORS for mobile app requests.
-- The loyalty card feature requires backend implementation of the endpoints mentioned above.
+### Authentication Issues
+- Clear app data: `rm -rf node_modules && npm install`
+- Check AsyncStorage: Device Settings > Apps > Expo Go > Storage > Clear Data
+
+## Development Tips
+
+1. **Hot Reload**: Expo supports fast refresh - save files to see changes instantly
+2. **Console Logs**: View logs in terminal where `npm start` is running
+3. **Debugging**: Shake device or press `Cmd+D` (iOS) / `Cmd+M` (Android) for dev menu
+4. **Network**: Use `expo start --tunnel` for testing on devices not on same network
+
+## Support
+
+For issues or questions, contact your development team or refer to:
+- [Expo Documentation](https://docs.expo.dev/)
+- [React Native Documentation](https://reactnative.dev/)
+- [React Navigation Docs](https://reactnavigation.org/)
 
 ## License
 
-Private - SNT Trips
-
-
+Proprietary - SN Travels © 2024

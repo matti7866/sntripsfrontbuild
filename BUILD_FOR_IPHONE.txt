@@ -1,0 +1,69 @@
+================================
+BUILD NATIVE APP FOR iPHONE
+================================
+
+Your app is configured to use production API: https://rest.sntrips.com/api
+This will work from ANY network (WiFi, cellular, anywhere).
+
+STEP 1: Login to Expo
+----------------------
+cd /Applications/XAMPP/xamppfiles/htdocs/snt/react-frontend/mobile-app
+npx eas-cli login
+
+(Create free account at expo.dev if you don't have one)
+
+
+STEP 2: Configure EAS Build
+----------------------------
+npx eas-cli build:configure
+
+
+STEP 3: Build for iPhone
+-------------------------
+npx eas-cli build --platform ios --profile preview
+
+This will:
+- Upload your code to Expo servers
+- Build a native iOS app
+- Takes 15-20 minutes
+- Gives you a download link
+
+
+STEP 4: Install on iPhone
+--------------------------
+When build completes:
+1. Open the link they give you on your iPhone
+2. Tap "Install"
+3. App installs like a real app
+4. Works anywhere - no Mac needed!
+
+
+ALTERNATIVE: For Development/Testing
+-------------------------------------
+If you just want to test and you're willing to run on same WiFi:
+
+cd /Applications/XAMPP/xamppfiles/htdocs/snt/react-frontend/mobile-app
+npx expo start
+
+Then scan QR code with Expo Go app.
+
+Your Mac IP: 192.168.1.232
+Port: 8082
+
+
+TROUBLESHOOTING
+---------------
+If tunnel doesn't work (ngrok issues), you have two options:
+
+Option A: Stay on same WiFi
+- Keep using: npx expo start
+- Scan QR with Expo Go
+- Works great for testing
+
+Option B: Build native app
+- Use: npx eas-cli build --platform ios --profile preview
+- Get standalone app
+- Best for production use
+
+================================
+

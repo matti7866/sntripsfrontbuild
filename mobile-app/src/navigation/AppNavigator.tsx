@@ -1,74 +1,146 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Text } from 'react-native';
+import { TouchableOpacity, Alert, View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../context/AuthContext';
+
+// Screens
+import LoginScreen from '../screens/LoginScreen';
 import DashboardScreen from '../screens/DashboardScreen';
-import TicketsScreen from '../screens/TicketsScreen';
-import TravelsScreen from '../screens/TravelsScreen';
-import PaymentsScreen from '../screens/PaymentsScreen';
+import MOHREScreen from '../screens/MOHREScreen';
+import EmiratesIDNavigator from './EmiratesIDNavigator';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-const MainTabs = () => {
+function MainTabs() {
+  const { logout, user } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color }) => {
-          let emoji = '📱';
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap = 'help-circle-outline';
 
           if (route.name === 'Dashboard') {
-            emoji = '🏠';
-          } else if (route.name === 'Tickets') {
-            emoji = '🎫';
-          } else if (route.name === 'Travels') {
-            emoji = '✈️';
-          } else if (route.name === 'Payments') {
-            emoji = '💳';
+            iconName = focused ? 'grid' : 'grid-outline';
+          } else if (route.name === 'MOHRE') {
+            iconName = focused ? 'document-text' : 'document-text-outline';
+          } else if (route.name === 'EmiratesID') {
+            iconName = focused ? 'card' : 'card-outline';
           }
 
-          return <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.5 }}>{emoji}</Text>;
+          return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#667eea',
-        tabBarInactiveTintColor: '#aaa',
-        headerShown: false,
+        tabBarActiveTintColor: '#2563eb',
+        tabBarInactiveTintColor: '#6b7280',
         tabBarStyle: {
+          backgroundColor: '#ffffff',
+          borderTopWidth: 1,
+          borderTopColor: '#e5e7eb',
+          height: 60,
           paddingBottom: 8,
           paddingTop: 8,
-          height: 70,
-          backgroundColor: '#fff',
-          borderTopWidth: 0,
-          elevation: 20,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -4 },
-          shadowOpacity: 0.1,
-          shadowRadius: 12,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
-          marginTop: 4,
         },
+        headerStyle: {
+          backgroundColor: '#2563eb',
+        },
+        headerTintColor: '#ffffff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        headerRight: () => (
+          <View style={styles.headerRight}>
+            {user && (
+              <View style={styles.userInfo}>
+                <Text style={styles.userName} numberOfLines={1}>{user.name}</Text>
+              </View>
+            )}
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+              <Ionicons name="log-out-outline" size={24} color="#ffffff" />
+            </TouchableOpacity>
+          </View>
+        ),
       })}
     >
-      <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Tickets" component={TicketsScreen} />
-      <Tab.Screen name="Travels" component={TravelsScreen} />
-      <Tab.Screen name="Payments" component={PaymentsScreen} />
+      <Tab.Screen
+        name="Dashboard"
+        component={DashboardScreen}
+        options={{ title: 'Dashboard', headerTitle: 'Dashboard' }}
+      />
+      <Tab.Screen
+        name="MOHRE"
+        component={MOHREScreen}
+        options={{ title: 'MOHRE', headerTitle: 'MOHRE Tasks' }}
+      />
+      <Tab.Screen
+        name="EmiratesID"
+        component={EmiratesIDNavigator}
+        options={{ title: 'Emirates ID', headerTitle: 'Emirates ID Tasks' }}
+      />
     </Tab.Navigator>
   );
-};
+}
 
-const AppNavigator = () => {
+const styles = StyleSheet.create({
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 12,
+    gap: 8,
+  },
+  userInfo: {
+    maxWidth: 150,
+  },
+  userName: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  logoutButton: {
+    padding: 8,
+  },
+});
+
+export default function AppNavigator() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return null; // Or a loading screen
+  }
+
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="MainTabs" component={MainTabs} />
+        {!isAuthenticated ? (
+          <Stack.Screen name="Login" component={LoginScreen} />
+        ) : (
+          <Stack.Screen name="Main" component={MainTabs} />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
-};
-
-export default AppNavigator;
-
+}
