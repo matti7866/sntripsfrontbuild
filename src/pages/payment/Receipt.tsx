@@ -151,8 +151,8 @@ export default function Receipt() {
       <div className="page">
         {/* Header */}
         <div className="header">
-          <div className="logo">
-            <img src="/logoselab.png" alt="Company Logo" />
+          <div className="logo logo-container">
+            <img src="/assets/logo-white.png" alt="Company Logo" />
           </div>
           <div className="heading">
             <span>PAYMENT RECEIPT</span>
