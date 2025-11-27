@@ -636,6 +636,16 @@
   transform: scale(1.05);
 }
 
+.btn-attachments {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.btn-attachments:hover {
+  background: #bae6fd;
+  transform: scale(1.05);
+}
+
 /* ============================================
    EMPTY & LOADING STATES
    ============================================ */

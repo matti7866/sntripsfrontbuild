@@ -44,7 +44,16 @@ const amerService = {
   },
 
   createTransaction: async (data: CreateAmerTransactionRequest): Promise<void> => {
-    await apiClient.post('/amer/transactions.php', { action: 'addTransaction', ...data });
+    console.log('📤 Sending create transaction request:', { action: 'addTransaction', ...data });
+    const response = await apiClient.post('/amer/transactions.php', { action: 'addTransaction', ...data });
+    console.log('📥 Create transaction response:', response.data);
+    if (response.data.error) {
+      throw new Error(response.data.error);
+    }
+    if (response.data.message && !response.data.success) {
+      throw new Error(response.data.message);
+    }
+    return response.data;
   },
 
   updateTransaction: async (id: number, data: Partial<CreateAmerTransactionRequest>): Promise<void> => {
@@ -90,6 +99,60 @@ const amerService = {
     if (response.data.success && response.data.data) {
       return response.data.data;
     }
+    return response.data;
+  },
+
+  // Attachments - Using transactions.php endpoint with action parameter
+  getAttachments: async (transactionId: number): Promise<any[]> => {
+    try {
+      const response = await apiClient.post('/amer/transactions.php', { 
+        action: 'getAttachments', 
+        transaction_id: transactionId 
+      });
+      console.log('Get attachments response:', response.data);
+      if (response.data.success && response.data.data) {
+        return Array.isArray(response.data.data) ? response.data.data : [];
+      }
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+      if (Array.isArray(response.data.data)) {
+        return response.data.data;
+      }
+      if (Array.isArray(response.data.attachments)) {
+        return response.data.attachments;
+      }
+      return [];
+    } catch (error: any) {
+      console.error('Error getting attachments:', error);
+      // Return empty array instead of throwing to prevent UI errors
+      return [];
+    }
+  },
+
+  uploadAttachment: async (transactionId: number, file: File, description?: string): Promise<any> => {
+    const formData = new FormData();
+    formData.append('action', 'uploadAttachment');
+    formData.append('transaction_id', transactionId.toString());
+    formData.append('file', file);
+    if (description) {
+      formData.append('description', description);
+    }
+    const response = await apiClient.post('/amer/transactions.php', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    console.log('Upload attachment response:', response.data);
+    return response.data;
+  },
+
+  deleteAttachment: async (attachmentId: number): Promise<void> => {
+    const response = await apiClient.post('/amer/transactions.php', { 
+      action: 'deleteAttachment', 
+      attachment_id: attachmentId 
+    });
+    console.log('Delete attachment response:', response.data);
     return response.data;
   }
 };

@@ -6,6 +6,7 @@ interface TransactionsTableProps {
   onEdit: (transaction: AmerTransaction) => void;
   onDelete: (id: number) => void;
   onChangeStatus: (transaction: AmerTransaction) => void;
+  onViewAttachments: (transaction: AmerTransaction) => void;
 }
 
 export default function TransactionsTable({
@@ -13,7 +14,8 @@ export default function TransactionsTable({
   isLoading,
   onEdit,
   onDelete,
-  onChangeStatus
+  onChangeStatus,
+  onViewAttachments
 }: TransactionsTableProps) {
   const getStatusBadge = (status: string) => {
     const badges: Record<string, { class: string; icon: string }> = {
@@ -176,6 +178,13 @@ export default function TransactionsTable({
                     </td>
                     <td className="cell-actions">
                       <div className="action-buttons">
+                        <button
+                          className="btn-action btn-attachments"
+                          onClick={() => onViewAttachments(transaction)}
+                          title="View Attachments"
+                        >
+                          <i className="fa fa-paperclip"></i>
+                        </button>
                         <button
                           className="btn-action btn-edit"
                           onClick={() => onEdit(transaction)}

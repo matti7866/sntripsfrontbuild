@@ -3,7 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import amerService from '../../services/amerService';
 import SearchableSelect from '../../components/form/SearchableSelect';
+import AmerAttachmentsModal from '../../components/amer/AmerAttachmentsModal';
 import { TransactionFilters, TransactionsTable, TypesTable } from './components';
+import { getDubaiToday } from '../../utils/timezone';
 import type {
   AmerTransaction,
   AmerType,
@@ -22,13 +24,12 @@ declare global {
 }
 
 const getTodayDate = () => {
-  const today = new Date();
-  return today.toISOString().split('T')[0];
+  return getDubaiToday(); // Use Dubai timezone
 };
 
 const getFirstDayOfMonth = () => {
-  const today = new Date();
-  return new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+  const dubaiNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Dubai' }));
+  return new Date(dubaiNow.getFullYear(), dubaiNow.getMonth(), 1).toISOString().split('T')[0];
 };
 
 export default function AmerTransactions() {
@@ -53,6 +54,12 @@ export default function AmerTransactions() {
   
   // Status change modal
   const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    transaction: AmerTransaction | null;
+  }>({ isOpen: false, transaction: null });
+
+  // Attachments modal
+  const [attachmentsModal, setAttachmentsModal] = useState<{
     isOpen: boolean;
     transaction: AmerTransaction | null;
   }>({ isOpen: false, transaction: null });
@@ -87,14 +94,44 @@ export default function AmerTransactions() {
   
   // Mutations
   const createTransactionMutation = useMutation({
-    mutationFn: (data: CreateAmerTransactionRequest) => amerService.createTransaction(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['amer-transactions'] });
+    mutationFn: (data: CreateAmerTransactionRequest) => {
+      console.log('📤 Creating Amer transaction with data:', data);
+      return amerService.createTransaction(data);
+    },
+    onSuccess: (response: any, variables: CreateAmerTransactionRequest) => {
+      console.log('✅ Amer transaction created successfully:', response);
+      
+      // Check if payment_date is outside current filter range
+      const paymentDate = variables.payment_date;
+      console.log('📅 Payment date:', paymentDate, 'Current filters:', filters);
+      
+      if (filters.start_date && paymentDate < filters.start_date) {
+        console.log('⚠️ Payment date before filter start date, updating filter...');
+        setFilters({ ...filters, start_date: paymentDate });
+      }
+      if (filters.end_date && paymentDate > filters.end_date) {
+        console.log('⚠️ Payment date after filter end date, updating filter...');
+        setFilters({ ...filters, end_date: paymentDate });
+      }
+      
+      // Force refetch immediately - don't wait for invalidation
+      console.log('🔄 Refetching transactions immediately...');
+      refetchTransactions();
+      
+      // Also invalidate for other components that might be watching
+      queryClient.invalidateQueries({ 
+        queryKey: ['amer-transactions'],
+        exact: false
+      });
+      
       setTransactionModal({ isOpen: false, transaction: null });
       Swal.fire('Success', 'Transaction added successfully', 'success');
     },
     onError: (error: any) => {
-      Swal.fire('Error', error.response?.data?.message || 'Failed to add transaction', 'error');
+      console.error('❌ Error creating Amer transaction:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      Swal.fire('Error', error.response?.data?.message || error.message || 'Failed to add transaction', 'error');
     }
   });
   
@@ -216,6 +253,10 @@ export default function AmerTransactions() {
       changeStatusMutation.mutate({ id: statusModal.transaction.id, status });
     }
   };
+
+  const handleViewAttachments = (transaction: AmerTransaction) => {
+    setAttachmentsModal({ isOpen: true, transaction });
+  };
   
   const handleAddType = () => {
     setTypeModal({ isOpen: true, type: null });
@@ -307,6 +348,7 @@ export default function AmerTransactions() {
               onEdit={handleEditTransaction}
               onDelete={handleDeleteTransaction}
               onChangeStatus={handleChangeStatus}
+              onViewAttachments={handleViewAttachments}
             />
           </div>
         )}
@@ -331,12 +373,24 @@ export default function AmerTransactions() {
           dropdowns={dropdowns}
           onClose={() => setTransactionModal({ isOpen: false, transaction: null })}
           onSubmit={(data) => {
+            console.log('📥 TransactionModal onSubmit called with data:', data);
             if (transactionModal.transaction) {
+              console.log('✏️ Updating existing transaction:', transactionModal.transaction.id);
               updateTransactionMutation.mutate({ id: transactionModal.transaction.id, data });
             } else {
+              console.log('➕ Creating new transaction');
               createTransactionMutation.mutate(data as CreateAmerTransactionRequest);
             }
           }}
+        />
+      )}
+      
+      {/* Attachments Modal */}
+      {attachmentsModal.isOpen && attachmentsModal.transaction && (
+        <AmerAttachmentsModal
+          isOpen={attachmentsModal.isOpen}
+          onClose={() => setAttachmentsModal({ isOpen: false, transaction: null })}
+          transactionId={attachmentsModal.transaction.id}
         />
       )}
       
@@ -596,7 +650,24 @@ function TransactionModal({
       return;
     }
     
-    onSubmit(formData);
+    // Ensure all required fields are properly formatted
+    const submitData: CreateAmerTransactionRequest = {
+      customer_id: Number(formData.customer_id),
+      passenger_name: String(formData.passenger_name).trim(),
+      type_id: Number(formData.type_id),
+      application_number: String(formData.application_number).trim(),
+      transaction_number: String(formData.transaction_number).trim(),
+      payment_date: String(formData.payment_date),
+      cost_price: String(formData.cost_price), // Ensure string format
+      sale_price: String(formData.sale_price), // Ensure string format
+      account_id: Number(formData.account_id),
+      created_by: Number(formData.created_by),
+      status: formData.status || 'pending',
+      ...(formData.iban && { iban: String(formData.iban).trim() })
+    };
+    
+    console.log('📋 Submitting Amer transaction form data:', submitData);
+    onSubmit(submitData);
   };
   
   return (
