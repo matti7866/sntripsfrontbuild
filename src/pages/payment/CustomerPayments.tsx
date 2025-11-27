@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { customerPaymentService } from '../../services/paymentService';
 import apiClient from '../../services/api';
@@ -15,6 +16,7 @@ interface DropdownData {
 }
 
 export default function CustomerPayments() {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<CustomerPaymentFilters>({
     start_date: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     end_date: new Date().toISOString().split('T')[0],
@@ -33,6 +35,7 @@ export default function CustomerPayments() {
     staff_id: undefined
   });
   const [currencyDisabled, setCurrencyDisabled] = useState(false);
+  const [generatingReceipt, setGeneratingReceipt] = useState<number | null>(null);
   
   const queryClient = useQueryClient();
   
@@ -193,6 +196,35 @@ export default function CustomerPayments() {
         deletePaymentMutation.mutate(pay_id);
       }
     });
+  };
+  
+  const handleGenerateReceipt = async (payment: CustomerPayment) => {
+    setGeneratingReceipt(payment.pay_id);
+    try {
+      // Generate receipt for this payment
+      const response = await apiClient.post('/customers/receipt/generate.php', {
+        action: 'generatePaymentReceipt',
+        paymentID: payment.pay_id,
+        customerID: payment.customer_id,
+        currencyID: payment.currencyID
+      });
+      
+      if (response.data.success) {
+        const receiptID = response.data.data.invoiceID;
+        // Open receipt in new window/tab
+        window.open(`/receipt?id=${receiptID}`, '_blank');
+      } else {
+        throw new Error(response.data.message || 'Failed to generate receipt');
+      }
+    } catch (error: any) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: error.response?.data?.message || error.message || 'Failed to generate receipt'
+      });
+    } finally {
+      setGeneratingReceipt(null);
+    }
   };
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -384,14 +416,28 @@ export default function CustomerPayments() {
                       <td>
                         <div className="action-buttons">
                           <button
+                            className="btn btn-sm btn-info me-2"
+                            onClick={() => handleGenerateReceipt(payment)}
+                            disabled={generatingReceipt === payment.pay_id}
+                            title="Generate Receipt"
+                          >
+                            {generatingReceipt === payment.pay_id ? (
+                              <i className="fa fa-spinner fa-spin"></i>
+                            ) : (
+                              <i className="fa fa-receipt"></i>
+                            )}
+                          </button>
+                          <button
                             className="btn btn-sm btn-warning me-2"
                             onClick={() => handleEditPayment(payment)}
+                            title="Edit Payment"
                           >
                             <i className="fa fa-edit"></i>
                           </button>
                           <button
                             className="btn btn-sm btn-danger"
                             onClick={() => handleDeletePayment(payment.pay_id)}
+                            title="Delete Payment"
                           >
                             <i className="fa fa-trash"></i>
                           </button>
