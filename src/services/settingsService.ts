@@ -232,6 +232,23 @@ class SettingsService {
     return response.data;
   }
 
+  async sendTestSMS(phone: string, message: string): Promise<TestConnectionResponse> {
+    const formData = this.getFormData({
+      action: 'sendTestSMS',
+      phone,
+      message
+    });
+    const response = await axios.post<TestConnectionResponse>(
+      `${config.baseUrl}/settingsController.php`,
+      formData,
+      {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }
+    );
+    return response.data;
+  }
+
   async sendEtisalatWhatsApp(phoneNumber: string, message: string): Promise<{ status: string; message: string; data?: any }> {
     const formData = this.getFormData({
       action: 'sendEtisalatWhatsApp',

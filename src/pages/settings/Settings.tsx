@@ -311,6 +311,71 @@ const Settings: React.FC = () => {
     }
   };
 
+  const handleSendTestSMS = async () => {
+    const { value: formValues } = await Swal.fire({
+      title: 'Send Test SMS',
+      html: `
+        <div class="text-start">
+          <label class="form-label">Phone Number</label>
+          <input id="swal-sms-phone" class="swal2-input" placeholder="+971501234567" value="+971" style="width: 90%;">
+          <label class="form-label mt-2">Message</label>
+          <textarea id="swal-sms-message" class="swal2-textarea" placeholder="Your test message here..." style="width: 90%; height: 100px;">Hello! This is a test SMS from SN Travels via Etisalat Enterprise API. Your IP has been whitelisted successfully!</textarea>
+        </div>
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Send SMS',
+      cancelButtonText: 'Cancel',
+      width: '600px',
+      preConfirm: () => {
+        const phone = (document.getElementById('swal-sms-phone') as HTMLInputElement)?.value;
+        const message = (document.getElementById('swal-sms-message') as HTMLTextAreaElement)?.value;
+        if (!phone || !message) {
+          Swal.showValidationMessage('Please enter both phone number and message');
+          return false;
+        }
+        if (!phone.startsWith('+')) {
+          Swal.showValidationMessage('Phone number must start with + (e.g., +971...)');
+          return false;
+        }
+        return { phone, message };
+      }
+    });
+
+    if (formValues) {
+      try {
+        Swal.fire({
+          title: 'Sending SMS...',
+          text: 'Please wait while we send your test message',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        const response = await settingsService.sendTestSMS(formValues.phone, formValues.message);
+        
+        if (response.status === 'success') {
+          Swal.fire({
+            icon: 'success',
+            title: 'SMS Sent Successfully!',
+            html: `
+              <div class="text-start">
+                <p><strong>To:</strong> ${formValues.phone}</p>
+                <p><strong>Message:</strong> ${formValues.message}</p>
+                ${response.message ? `<p class="text-success mt-2">${response.message}</p>` : ''}
+              </div>
+            `,
+          });
+        } else {
+          Swal.fire('Error', response.message || 'Failed to send SMS', 'error');
+        }
+      } catch (error: any) {
+        Swal.fire('Error', error.response?.data?.message || error.message || 'Failed to send SMS', 'error');
+      }
+    }
+  };
+
   // Expose test function to window for console testing
   useEffect(() => {
     (window as any).testSMSConnection = async () => {
@@ -538,9 +603,24 @@ const Settings: React.FC = () => {
                       <div className="row mb-2">
                         <label className="form-label col-form-label col-md-4">API Status</label>
                         <div className="col-md-8">
-                          <button type="button" className="btn btn-outline-primary btn-sm" onClick={handleTestSMS}>
-                            <i className="fa fa-test"></i> Test Connection
+                          <button type="button" className="btn btn-outline-primary btn-sm me-2" onClick={handleTestSMS}>
+                            <i className="fa fa-plug"></i> Test Connection
                           </button>
+                          <button type="button" className="btn btn-outline-success btn-sm" onClick={handleSendTestSMS}>
+                            <i className="fa fa-paper-plane"></i> Send Test SMS
+                          </button>
+                        </div>
+                      </div>
+                      <div className="row mb-3">
+                        <div className="col-md-12">
+                          <div className="alert alert-success">
+                            <h6>
+                              <i className="fa fa-check-circle"></i> IP Whitelisted!
+                            </h6>
+                            <p className="mb-0">
+                              Your IP has been added to Etisalat's whitelist. You can now send test SMS messages to verify the integration is working correctly.
+                            </p>
+                          </div>
                         </div>
                       </div>
                       <div className="row mb-3">
