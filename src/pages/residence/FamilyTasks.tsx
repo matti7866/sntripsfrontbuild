@@ -37,6 +37,22 @@ interface FamilyTask {
   insideOutside: string;
   tawjeeh_charge: number;
   iloe_charge: number;
+  // Step data for checking if steps are completed
+  evisa_cost?: number;
+  evisa_datetime?: string;
+  evisa_account?: number;
+  change_status_cost?: number;
+  change_status_datetime?: string;
+  change_status_account?: number;
+  medical_cost?: number;
+  medical_datetime?: string;
+  medical_account?: number;
+  eid_cost?: number;
+  eid_datetime?: string;
+  eid_account?: number;
+  visa_stamping_cost?: number;
+  visa_stamping_datetime?: string;
+  visa_stamping_account?: number;
 }
 
 interface StepInfo {
@@ -296,41 +312,66 @@ export default function FamilyTasks() {
 
 
   const handleMoveToStep = async (id: number, currentStep: string) => {
-    const stepToCompletedStep: Record<string, number> = {
-      '1': 1,
-      '2': 2,
-      '3': 3,
-      '4': 4,
-      '5': 5,
-      '6': 6
-    };
-
-    const currentCompletedStep = stepToCompletedStep[currentStep] || 0;
-
-    const allSteps = [
-      { value: '1', label: '1 - E-Visa', completedStep: 1 },
-      { value: '2', label: '2 - Change Status', completedStep: 2 },
-      { value: '3', label: '3 - Medical', completedStep: 3 },
-      { value: '4', label: '4 - Emirates ID', completedStep: 4 },
-      { value: '5', label: '5 - Visa Stamping', completedStep: 5 },
-      { value: '6', label: '6 - Completed', completedStep: 6 }
-    ];
-
-    const availableSteps = allSteps.filter(step => step.completedStep > currentCompletedStep);
-
-    if (availableSteps.length === 0) {
-      Swal.fire('Info', 'No steps available to move forward. This family residence is already at the final step.', 'info');
+    // Find the family member data to check which steps have submitted data
+    const family = families.find(f => f.familyResidenceID === id);
+    
+    if (!family) {
+      Swal.fire('Error', 'Family member data not found', 'error');
       return;
     }
+
+    const allSteps = [
+      { 
+        value: '1', 
+        label: '1 - E-Visa', 
+        hasData: !!(family.evisa_cost && family.evisa_datetime && family.evisa_account)
+      },
+      { 
+        value: '2', 
+        label: '2 - Change Status', 
+        hasData: !!(family.change_status_cost && family.change_status_datetime && family.change_status_account)
+      },
+      { 
+        value: '3', 
+        label: '3 - Medical', 
+        hasData: !!(family.medical_cost && family.medical_datetime && family.medical_account)
+      },
+      { 
+        value: '4', 
+        label: '4 - Emirates ID', 
+        hasData: !!(family.eid_cost && family.eid_datetime && family.eid_account)
+      },
+      { 
+        value: '5', 
+        label: '5 - Visa Stamping', 
+        hasData: !!(family.visa_stamping_cost && family.visa_stamping_datetime && family.visa_stamping_account)
+      },
+      { 
+        value: '6', 
+        label: '6 - Completed', 
+        hasData: false // Can always move to completed
+      }
+    ];
+
+    // Filter out: current step and steps with submitted data
+    const availableSteps = allSteps.filter(step => 
+      step.value !== currentStep && !step.hasData
+    );
+
+    if (availableSteps.length === 0) {
+      Swal.fire('Info', 'No steps available to move to. All other steps have submitted data.', 'info');
+      return;
+    }
+
+    // Show which steps are blocked
+    const blockedSteps = allSteps
+      .filter(step => step.hasData && step.value !== currentStep)
+      .map(step => step.label)
+      .join(', ');
 
     const optionsHtml = availableSteps.map(step => 
       `<option value="${step.value}">${step.label}</option>`
     ).join('');
-
-    const excludedSteps = allSteps
-      .filter(step => step.completedStep <= currentCompletedStep)
-      .map(step => step.value)
-      .join(', ');
 
     const { value: targetStep } = await Swal.fire({
       title: 'Move Family Residence to Step',
@@ -342,7 +383,7 @@ export default function FamilyTasks() {
           </select>
           <small class="text-muted d-block mt-2">
             <strong>Current step:</strong> ${currentStep}<br>
-            <strong>Cannot move back to:</strong> ${excludedSteps}
+            ${blockedSteps ? `<strong class="text-danger">⚠️ Cannot move to (has submitted data):</strong> ${blockedSteps}` : '<strong class="text-success">✓ All steps available</strong>'}
           </small>
         </div>
       `,
@@ -361,11 +402,6 @@ export default function FamilyTasks() {
         const select = document.getElementById('targetStep') as HTMLSelectElement;
         if (!select || !select.value) {
           Swal.showValidationMessage('Please select a target step');
-          return false;
-        }
-        const selectedStep = allSteps.find(s => s.value === select.value);
-        if (selectedStep && selectedStep.completedStep <= currentCompletedStep) {
-          Swal.showValidationMessage('Cannot move back to a completed step');
           return false;
         }
         return select.value;
