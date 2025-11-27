@@ -37,6 +37,9 @@ export default function AccountsReport() {
   const [balancesPage, setBalancesPage] = useState(1);
   const [transactionsPerPage, setTransactionsPerPage] = useState(50);
   const [balancesPerPage, setBalancesPerPage] = useState(20);
+  
+  // Search filter for transactions table
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Statement modal state
   const [showStatementModal, setShowStatementModal] = useState(false);
@@ -130,7 +133,46 @@ export default function AccountsReport() {
       resetDate: permanentResetDate
     }),
     onSuccess: (data: any) => {
-      console.log('Transactions data received:', data);
+      // ============== ENHANCED DEBUG LOGGING ==============
+      console.log('========================================');
+      console.log('📊 TRANSACTIONS DATA RECEIVED (STANDALONE API)');
+      console.log('========================================');
+      console.log('Request Parameters:');
+      console.log('  - From Date:', fromDate);
+      console.log('  - To Date:', toDate);
+      console.log('  - Account Filter:', accountFilter || 'ALL ACCOUNTS');
+      console.log('  - Type Filter:', typeFilter || 'ALL TYPES');
+      console.log('  - Reset Date:', permanentResetDate);
+      console.log('----------------------------------------');
+      console.log('Response Data:', data);
+      console.log('Total Transactions:', data.transactions?.length || 0);
+      console.log('Summary:', data.summary);
+      console.log('Meta:', data.meta);
+      
+      if (data.transactions && data.transactions.length > 0) {
+        // Group by transaction type
+        const typeGroups: Record<string, number> = {};
+        data.transactions.forEach((t: any) => {
+          const type = t.transaction_type;
+          typeGroups[type] = (typeGroups[type] || 0) + 1;
+        });
+        console.log('----------------------------------------');
+        console.log('Transaction Types Breakdown:');
+        Object.entries(typeGroups).sort((a, b) => b[1] - a[1]).forEach(([type, count]) => {
+          console.log(`  - ${type}: ${count}`);
+        });
+      } else {
+        console.warn('⚠️ NO TRANSACTIONS RECEIVED!');
+        console.warn('Possible reasons:');
+        console.warn('  1. No data in database for selected date range');
+        console.warn('  2. Date range before reset date (2025-10-01)');
+        console.warn('  3. Account filter excludes all data');
+        console.warn('  4. Type filter excludes all data');
+        console.warn('  5. Database tables missing or empty');
+      }
+      console.log('========================================');
+      // ============== END DEBUG LOGGING ==============
+      
       setTransactions(data.transactions || []);
       setTransactionsPage(1); // Reset to first page when new data loads
       if (data.summary) {
@@ -143,7 +185,14 @@ export default function AccountsReport() {
       }
     },
     onError: (error: any) => {
-      console.error('Error loading transactions:', error);
+      console.error('========================================');
+      console.error('❌ ERROR LOADING TRANSACTIONS');
+      console.error('========================================');
+      console.error('Error:', error);
+      console.error('Error Response:', error.response?.data);
+      console.error('Error Status:', error.response?.status);
+      console.error('Error Message:', error.message);
+      console.error('========================================');
       Swal.fire('Error', error.response?.data?.error || error.message || 'Failed to load transactions', 'error');
     }
   });
@@ -152,12 +201,26 @@ export default function AccountsReport() {
   const loadBalancesMutation = useMutation({
     mutationFn: () => accountsService.getAccountBalances(permanentResetDate),
     onSuccess: (data: any) => {
-      console.log('Balances data received:', data);
+      console.log('========================================');
+      console.log('💰 BALANCES DATA RECEIVED (STANDALONE API)');
+      console.log('========================================');
+      console.log('Response Data:', data);
+      console.log('Total Accounts:', data.balances?.length || 0);
+      console.log('Reset Date:', data.reset_date);
+      console.log('To Date:', data.to_date);
+      if (data.balances && data.balances.length > 0) {
+        console.log('Sample Balances:');
+        data.balances.slice(0, 5).forEach((b: any) => {
+          console.log(`  - ${b.account_Name}: ${b.balance} AED (${b.status})`);
+        });
+      }
+      console.log('========================================');
+      
       setBalances(data.balances || []);
       setBalancesPage(1); // Reset to first page when new data loads
     },
     onError: (error: any) => {
-      console.error('Error loading balances:', error);
+      console.error('❌ ERROR LOADING BALANCES:', error);
       Swal.fire('Error', error.response?.data?.error || error.message || 'Failed to load account balances', 'error');
     }
   });
@@ -298,11 +361,23 @@ export default function AccountsReport() {
     return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  // Pagination calculations
-  const transactionsTotalPages = Math.ceil(transactions.length / transactionsPerPage);
+  // Pagination calculations with search filter
+  const filteredTransactions = transactions.filter(transaction => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      transaction.transaction_type?.toLowerCase().includes(searchLower) ||
+      transaction.account?.toLowerCase().includes(searchLower) ||
+      transaction.description?.toLowerCase().includes(searchLower) ||
+      transaction.remarks?.toLowerCase().includes(searchLower) ||
+      transaction.staff_name?.toLowerCase().includes(searchLower)
+    );
+  });
+  
+  const transactionsTotalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
   const balancesTotalPages = Math.ceil(balances.length / balancesPerPage);
   
-  const paginatedTransactions = transactions.slice(
+  const paginatedTransactions = filteredTransactions.slice(
     (transactionsPage - 1) * transactionsPerPage,
     transactionsPage * transactionsPerPage
   );
@@ -316,10 +391,12 @@ export default function AccountsReport() {
   const handleShowStatement = (accountId: number, accountName: string) => {
     setStatementAccountId(accountId);
     setStatementAccountName(accountName);
-    setStatementFromDate(permanentResetDate);
+    setStatementFromDate(permanentResetDate); // Always start from reset date
     setStatementToDate(today);
     setStatementData(null);
     setShowStatementModal(true);
+    // Auto-load statement immediately
+    setTimeout(() => handleLoadStatement(), 100);
   };
 
   // Load account statement
@@ -328,9 +405,10 @@ export default function AccountsReport() {
     
     setStatementLoading(true);
     try {
+      // Always use permanent reset date as fromDate to match balance calculations
       const data = await accountsService.getAccountStatement(
         statementAccountId,
-        statementFromDate,
+        permanentResetDate, // Always start from reset date
         statementToDate
       );
       setStatementData(data);
@@ -516,7 +594,11 @@ export default function AccountsReport() {
           <div className="action-buttons">
             <button
               className="btn btn-primary"
-              onClick={() => loadTransactionsMutation.mutate()}
+              onClick={() => {
+                console.log('🔄 FORCE RELOAD - Clearing cache and reloading...');
+                console.log('Filters:', { fromDate, toDate, accountFilter, typeFilter });
+                loadTransactionsMutation.mutate();
+              }}
               disabled={loadTransactionsMutation.isPending}
             >
               <i className="fa fa-search"></i>{' '}
@@ -645,6 +727,46 @@ export default function AccountsReport() {
 
         {/* Transactions Table */}
         <div className="card-body">
+          {/* Search Filter */}
+          <div className="mb-3">
+            <div className="row">
+              <div className="col-md-6">
+                <label><strong>Search Transactions:</strong></label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search by type, account, description, remarks, or staff name... (e.g., 'Medical', 'Transfer', 'John Doe')"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setTransactionsPage(1); // Reset to first page on search
+                  }}
+                />
+                {searchTerm && (
+                  <small className="text-muted">
+                    Showing {filteredTransactions.length} of {transactions.length} transactions
+                  </small>
+                )}
+              </div>
+              <div className="col-md-6">
+                <label>&nbsp;</label>
+                <div>
+                  <button className="btn btn-sm btn-info" onClick={() => setSearchTerm('Medical')}>
+                    <i className="fa fa-search"></i> Show Medical Only
+                  </button>
+                  {' '}
+                  <button className="btn btn-sm btn-warning" onClick={() => setSearchTerm('Transfer')}>
+                    <i className="fa fa-search"></i> Show Transfers
+                  </button>
+                  {' '}
+                  <button className="btn btn-sm btn-secondary" onClick={() => setSearchTerm('')}>
+                    <i className="fa fa-times"></i> Clear Search
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <div className="table-responsive">
             <table className="table transactions-table">
               <thead>
@@ -669,6 +791,13 @@ export default function AccountsReport() {
                 ) : transactions.length === 0 ? (
                   <tr>
                     <td colSpan={10} className="text-center">Click "Load Transactions" to view data</td>
+                  </tr>
+                ) : filteredTransactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="text-center">
+                      No transactions match your search "{searchTerm}". 
+                      <button className="btn btn-sm btn-link" onClick={() => setSearchTerm('')}>Clear search</button>
+                    </td>
                   </tr>
                 ) : (
                   paginatedTransactions.map((transaction, index) => {
@@ -705,15 +834,15 @@ export default function AccountsReport() {
               </tbody>
             </table>
           </div>
-          {transactions.length > 0 && (
+          {filteredTransactions.length > 0 && (
             <PaginationControls
               currentPage={transactionsPage}
               totalPages={transactionsTotalPages}
               onPageChange={setTransactionsPage}
               itemsPerPage={transactionsPerPage}
               onItemsPerPageChange={setTransactionsPerPage}
-              totalItems={transactions.length}
-              label="transactions"
+              totalItems={filteredTransactions.length}
+              label={searchTerm ? `filtered transactions (${filteredTransactions.length} of ${transactions.length})` : 'transactions'}
             />
           )}
         </div>
@@ -729,15 +858,18 @@ export default function AccountsReport() {
             </div>
             <div className="modal-body">
               <div className="statement-filters mb-4">
+                <div className="alert alert-info">
+                  <i className="fa fa-info-circle"></i> <strong>Note:</strong> Statement always starts from {permanentResetDate} (permanent reset date) to match account balance calculations.
+                </div>
                 <div className="row">
                   <div className="col-md-4">
                     <label>From Date:</label>
                     <input
                       type="date"
                       className="form-control"
-                      value={statementFromDate}
-                      onChange={(e) => setStatementFromDate(e.target.value)}
-                      min={permanentResetDate}
+                      value={permanentResetDate}
+                      disabled
+                      title="Statement always starts from permanent reset date"
                     />
                   </div>
                   <div className="col-md-4">
@@ -757,7 +889,7 @@ export default function AccountsReport() {
                       onClick={handleLoadStatement}
                       disabled={statementLoading}
                     >
-                      {statementLoading ? 'Loading...' : 'Load Statement'}
+                      {statementLoading ? 'Loading...' : 'Reload Statement'}
                     </button>
                   </div>
                 </div>

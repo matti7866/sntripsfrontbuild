@@ -762,10 +762,10 @@ export function MedicalModal({ isOpen, onClose, residenceId, onSuccess, currenci
         await residenceService.updateStep(residenceId, {
           step: 6,
           markComplete: true,
-          medicalCost: formData.medicalCost,
-          medicalCur: formData.medicalCurrency,
-          medicalChargOpt: formData.medicalChargeOn,
-          medicalChargedEntity: formData.medicalChargeOn === '1' ? formData.medicalChargeAccount : formData.medicalChargeSupplier,
+          medical_cost: formData.medicalCost,                    // Fixed: was medicalCost
+          medicalCostCur: formData.medicalCurrency,              // Fixed: was medicalCur
+          medicalTChargOpt: formData.medicalChargeOn,            // Fixed: was medicalChargOpt
+          medicalTChargedEntity: formData.medicalChargeOn === '1' ? formData.medicalChargeAccount : formData.medicalChargeSupplier, // Fixed: was medicalChargedEntity
           files: selectedFile ? { medicalFile: selectedFile } : {}
         });
       }

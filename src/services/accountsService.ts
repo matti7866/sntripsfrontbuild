@@ -109,35 +109,37 @@ class AccountsService {
 
   async getDetailedTransactions(filters: TransactionFilter): Promise<TransactionsResponse> {
     const formData = new FormData();
-    formData.append('action', 'getDetailedTransactions');
     formData.append('fromDate', filters.fromDate);
     formData.append('toDate', filters.toDate);
     formData.append('accountFilter', filters.accountFilter);
     formData.append('typeFilter', filters.typeFilter);
     formData.append('resetDate', filters.resetDate);
 
-    // Use absolute URL for root-level PHP files
-    const response = await apiClient.post(`${config.baseUrl}/accountsReportController.php`, formData, {
+    // NEW: Use standalone API endpoint in /api/accounts/ folder
+    const response = await apiClient.post(`${config.baseUrl}/api/accounts/transactions.php`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
+    
+    logger.debug('Transactions API Response:', response.data);
     return response.data;
   }
 
   async getAccountBalances(resetDate: string): Promise<AccountBalancesResponse> {
     const formData = new FormData();
-    formData.append('action', 'getAccountBalances');
     formData.append('resetDate', resetDate);
 
-    // Use absolute URL for root-level PHP files
-    const response = await apiClient.post(`${config.baseUrl}/accountsReportController.php`, formData, {
+    // NEW: Use standalone API endpoint in /api/accounts/ folder
+    const response = await apiClient.post(`${config.baseUrl}/api/accounts/balances.php`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
+    
+    logger.debug('Balances API Response:', response.data);
     return response.data;
   }
 
@@ -207,17 +209,19 @@ class AccountsService {
 
   async getAccountStatement(accountId: number, fromDate: string, toDate: string): Promise<AccountStatementData> {
     const formData = new FormData();
-    formData.append('GetAccountStatement', 'detailed');
     formData.append('accountId', accountId.toString());
-    formData.append('fromDate', fromDate);
+    formData.append('fromDate', fromDate); // Note: Backend will override to permanent reset date
     formData.append('toDate', toDate);
 
-    const response = await apiClient.post(`${config.baseUrl}/accountsReportController.php`, formData, {
+    // NEW: Use standalone API endpoint in /api/accounts/ folder
+    const response = await apiClient.post(`${config.baseUrl}/api/accounts/statement.php`, formData, {
       withCredentials: true,
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
+    
+    logger.debug('Statement API Response:', response.data);
     return response.data;
   }
 

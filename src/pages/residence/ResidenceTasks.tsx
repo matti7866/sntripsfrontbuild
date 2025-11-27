@@ -421,17 +421,26 @@ export default function ResidenceTasks() {
   };
 
   const handleMoveToStep = async (id: number, currentStep: string) => {
-    // Find the residence to get its completedStep value
+    // Find the residence to get its data
     const residence = residences.find(r => r.residenceID === id);
     if (!residence) {
       Swal.fire('Error', 'Residence not found', 'error');
       return;
     }
 
-    // Get the residence's current completedStep (highest step that has been completed)
+    // Fetch full residence details to check which steps have financial transactions
+    let residenceDetails: any = null;
+    try {
+      const response = await residenceService.getResidence(id);
+      residenceDetails = response;
+    } catch (error) {
+      console.error('Error fetching residence details:', error);
+    }
+
+    // Get the residence's current completedStep
     const residenceCompletedStep = residence.completedStep || 0;
 
-    // Map step names to completedStep values (same as in API)
+    // Map step names to completedStep values
     const stepToCompletedStep: Record<string, number> = {
       '1': 1,
       '1a': 2,
@@ -447,59 +456,97 @@ export default function ResidenceTasks() {
       '10': 10
     };
 
-    // Get the current step's completedStep value
-    const currentCompletedStep = stepToCompletedStep[currentStep] || 0;
+    // Check which steps have financial transactions (cost + account/supplier + date)
+    // A step is considered to have a transaction if it has ALL THREE:
+    // 1. Cost > 0
+    // 2. Account OR Supplier assigned
+    // 3. Date set
+    const stepsWithTransactions: Record<string, boolean> = {
+      '1': !!(residenceDetails?.offerLetterCost && (residenceDetails?.offerLetterAccount || residenceDetails?.offerLetterSupplier) && residenceDetails?.offerLetterDate),
+      '2': !!(residenceDetails?.insuranceCost && (residenceDetails?.insuranceAccount || residenceDetails?.insuranceSupplier) && residenceDetails?.insuranceDate),
+      '3': !!(residenceDetails?.laborCardFee && (residenceDetails?.laborCardAccount || residenceDetails?.laborCardSupplier) && residenceDetails?.laborCardDate),
+      '4': !!(residenceDetails?.eVisaCost && (residenceDetails?.eVisaAccount || residenceDetails?.eVisaSupplier) && residenceDetails?.eVisaDate),
+      '5': !!(residenceDetails?.changeStatusCost && (residenceDetails?.changeStatusAccount || residenceDetails?.changeStatusSupplier) && residenceDetails?.changeStatusDate),
+      '6': !!(residenceDetails?.medicalTCost && (residenceDetails?.medicalAccount || residenceDetails?.medicalSupplier) && residenceDetails?.medicalDate),
+      '7': !!(residenceDetails?.emiratesIDCost && (residenceDetails?.emiratesIDAccount || residenceDetails?.emiratesIDSupplier) && residenceDetails?.emiratesIDDate),
+      '8': !!(residenceDetails?.visaStampingCost && (residenceDetails?.visaStampingAccount || residenceDetails?.visaStampingSupplier) && residenceDetails?.visaStampingDate),
+    };
 
-    // Define all available steps with their completedStep values
+    // Define all available steps
     const allSteps = [
-      { value: '1', label: '1 - Offer Letter', completedStep: 1 },
-      { value: '1a', label: '1a - Offer Letter (Submitted)', completedStep: 2 },
-      { value: '2', label: '2 - Insurance', completedStep: 3 },
-      { value: '3', label: '3 - Labour Card', completedStep: 4 },
-      { value: '4', label: '4 - E-Visa', completedStep: 5 },
-      { value: '4a', label: '4a - E-Visa (Submitted)', completedStep: 5 },
-      { value: '5', label: '5 - Change Status', completedStep: 6 },
-      { value: '6', label: '6 - Medical', completedStep: 7 },
-      { value: '7', label: '7 - Emirates ID', completedStep: 8 },
-      { value: '8', label: '8 - Visa Stamping', completedStep: 9 },
-      { value: '9', label: '9 - Contract Submission', completedStep: 10 },
-      { value: '10', label: '10 - Completed', completedStep: 10 }
+      { value: '1', label: '1 - Offer Letter', completedStep: 0, hasTransaction: stepsWithTransactions['1'] },
+      { value: '1a', label: '1a - Offer Letter (Submitted)', completedStep: 1, hasTransaction: false },
+      { value: '2', label: '2 - Insurance', completedStep: 1, hasTransaction: stepsWithTransactions['2'] },
+      { value: '3', label: '3 - Labour Card', completedStep: 2, hasTransaction: stepsWithTransactions['3'] },
+      { value: '4', label: '4 - E-Visa', completedStep: 3, hasTransaction: stepsWithTransactions['4'] },
+      { value: '4a', label: '4a - E-Visa (Submitted)', completedStep: 4, hasTransaction: false },
+      { value: '5', label: '5 - Change Status', completedStep: 4, hasTransaction: stepsWithTransactions['5'] },
+      { value: '6', label: '6 - Medical', completedStep: 5, hasTransaction: stepsWithTransactions['6'] },
+      { value: '7', label: '7 - Emirates ID', completedStep: 6, hasTransaction: stepsWithTransactions['7'] },
+      { value: '8', label: '8 - Visa Stamping', completedStep: 7, hasTransaction: stepsWithTransactions['8'] },
+      { value: '9', label: '9 - Contract Submission', completedStep: 8, hasTransaction: false },
+      { value: '10', label: '10 - Completed', completedStep: 10, hasTransaction: false }
     ];
 
-    // Filter steps:
-    // - Allow moving backward to steps that have been completed (completedStep <= residenceCompletedStep)
-    // - Allow moving forward ONLY to the immediate next step (completedStep = residenceCompletedStep + 1)
-    // - Exclude the current step
+    // NEW LOGIC: Allow moving to ANY step EXCEPT:
+    // 1. Current step
+    // 2. Steps with existing financial transactions (to prevent data corruption)
     const availableSteps = allSteps.filter(step => {
-      const isCompleted = step.completedStep <= residenceCompletedStep;
-      const isNextStep = step.completedStep === residenceCompletedStep + 1;
       const isNotCurrent = step.value !== currentStep;
-      return (isCompleted || isNextStep) && isNotCurrent;
+      const hasNoTransaction = !step.hasTransaction;
+      return isNotCurrent && hasNoTransaction;
+    });
+
+    const blockedSteps = allSteps.filter(step => {
+      const isNotCurrent = step.value !== currentStep;
+      return isNotCurrent && step.hasTransaction;
     });
 
     if (availableSteps.length === 0) {
-      Swal.fire('Info', 'No other steps available to move to.', 'info');
+      Swal.fire('Info', 'No other steps available. All steps either have transactions or are current.', 'info');
       return;
     }
 
-    // Build options HTML with grouping for completed vs forward steps
-    const completedSteps = availableSteps.filter(step => step.completedStep <= residenceCompletedStep);
-    const forwardSteps = availableSteps.filter(step => step.completedStep === residenceCompletedStep + 1);
+    // Group steps by direction relative to current
+    const currentStepNum = parseInt(currentStep) || 0;
+    const backwardSteps = availableSteps.filter(step => {
+      const stepNum = parseInt(step.value) || 0;
+      return stepNum < currentStepNum;
+    });
+    const forwardSteps = availableSteps.filter(step => {
+      const stepNum = parseInt(step.value) || 0;
+      return stepNum > currentStepNum;
+    });
     
     let optionsHtml = '';
-    if (completedSteps.length > 0) {
-      optionsHtml += '<optgroup label="Completed Steps (Can move backward)">';
-      optionsHtml += completedSteps.map(step => 
+    
+    if (backwardSteps.length > 0) {
+      optionsHtml += '<optgroup label="⬅️ Move Backward (Earlier Steps)">';
+      optionsHtml += backwardSteps.map(step => 
         `<option value="${step.value}">${step.label}</option>`
       ).join('');
       optionsHtml += '</optgroup>';
     }
+    
     if (forwardSteps.length > 0) {
-      optionsHtml += '<optgroup label="Forward Steps">';
+      optionsHtml += '<optgroup label="➡️ Move Forward (Later Steps)">';
       optionsHtml += forwardSteps.map(step => 
         `<option value="${step.value}">${step.label}</option>`
       ).join('');
       optionsHtml += '</optgroup>';
+    }
+
+    // Build blocked steps info
+    let blockedInfo = '';
+    if (blockedSteps.length > 0) {
+      blockedInfo = '<div class="alert alert-warning mt-3 mb-0 text-start" style="font-size: 12px;">';
+      blockedInfo += '<strong>🔒 Steps with Transactions (Cannot Move):</strong><br>';
+      blockedInfo += '<ul class="mb-0 mt-1" style="padding-left: 20px;">';
+      blockedInfo += blockedSteps.map(step => 
+        `<li>${step.label} - Has financial data saved</li>`
+      ).join('');
+      blockedInfo += '</ul>';
+      blockedInfo += '</div>';
     }
 
     const { value: targetStep } = await Swal.fire({
@@ -513,8 +560,15 @@ export default function ResidenceTasks() {
           <small class="text-muted d-block mt-2">
             <strong>Current step:</strong> ${currentStep}<br>
             <strong>Residence completed up to step:</strong> ${residenceCompletedStep}<br>
-            <em>You can move backward to any completed step or forward to the next step.</em>
+            <div class="alert alert-info mt-2 mb-0" style="font-size: 11px; padding: 8px;">
+              <strong>📝 Important:</strong><br>
+              • Moving TO a step places you ON that step (not completed)<br>
+              • Step is marked completed only when you SAVE data to it<br>
+              • ✅ You can freely move backward/forward to empty steps<br>
+              • ❌ Steps with saved transactions are locked (prevents data loss)
+            </div>
           </small>
+          ${blockedInfo}
         </div>
       `,
       showCancelButton: true,
@@ -522,6 +576,7 @@ export default function ResidenceTasks() {
       cancelButtonText: 'Cancel',
       confirmButtonColor: '#007bff',
       cancelButtonColor: '#6c757d',
+      width: '600px',
       didOpen: () => {
         const select = document.getElementById('targetStep') as HTMLSelectElement;
         if (select) {
@@ -539,11 +594,9 @@ export default function ResidenceTasks() {
           Swal.showValidationMessage('Invalid step selected');
           return false;
         }
-        // Validate: can move backward to completed steps OR forward to immediate next step only
-        const isCompleted = selectedStep.completedStep <= residenceCompletedStep;
-        const isNextStep = selectedStep.completedStep === residenceCompletedStep + 1;
-        if (!isCompleted && !isNextStep) {
-          Swal.showValidationMessage('Cannot move to this step. You can only move backward to completed steps or forward to the immediate next step.');
+        // Check if step has transactions
+        if (selectedStep.hasTransaction) {
+          Swal.showValidationMessage('❌ Cannot move to this step - it has financial transactions saved. Moving would cause data inconsistency.');
           return false;
         }
         if (selectedStep.value === currentStep) {
@@ -556,9 +609,38 @@ export default function ResidenceTasks() {
 
     if (targetStep) {
       try {
-        await residenceService.moveResidenceToStep(id, targetStep);
-        await loadTasks();
-        Swal.fire('Success', `Residence moved to step ${targetStep} successfully`, 'success');
+        console.log(`🔄 Moving residence ${id} from step ${currentStep} to step ${targetStep}...`);
+        const moveResponse = await residenceService.moveResidenceToStep(id, targetStep);
+        console.log('✅ Move response:', moveResponse);
+        console.log('Response success?', moveResponse.success);
+        console.log('Response message:', moveResponse.message);
+        console.log('Full response data:', JSON.stringify(moveResponse, null, 2));
+        
+        // Ask user if they want to navigate to the target step or stay
+        const result = await Swal.fire({
+          title: 'Residence Moved Successfully!',
+          html: `
+            <p>Residence has been moved to <strong>Step ${targetStep}</strong>.</p>
+            <p>Would you like to:</p>
+          `,
+          icon: 'success',
+          showCancelButton: true,
+          showDenyButton: true,
+          confirmButtonText: `Go to Step ${targetStep}`,
+          denyButtonText: 'Stay on Current Step',
+          cancelButtonText: 'Cancel',
+          confirmButtonColor: '#007bff',
+          denyButtonColor: '#6c757d',
+          cancelButtonColor: '#6c757d'
+        });
+
+        if (result.isConfirmed) {
+          // Redirect to the target step
+          handleStepChange(targetStep);
+        } else {
+          // Stay on current step, just reload
+          await loadTasks();
+        }
       } catch (error: any) {
         Swal.fire('Error', error.response?.data?.message || error.message || 'Failed to move residence', 'error');
       }
