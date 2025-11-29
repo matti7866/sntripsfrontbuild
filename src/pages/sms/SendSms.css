@@ -1,0 +1,29 @@
+.sms-form-container {
+  max-width: 100%;
+}
+
+.sms-form-container .form-control:focus,
+.sms-form-container .form-select:focus {
+  border-color: #2d353c;
+  box-shadow: 0 0 0 0.2rem rgba(45, 53, 60, 0.25);
+}
+
+.sms-form-container .btn-primary {
+  background-color: #2d353c;
+  border-color: #2d353c;
+}
+
+.sms-form-container .btn-primary:hover {
+  background-color: #232a31;
+  border-color: #232a31;
+}
+
+.sms-form-container .alert {
+  border-radius: 0.25rem;
+}
+
+.sms-form-container textarea.form-control {
+  resize: vertical;
+  min-height: 120px;
+}
+

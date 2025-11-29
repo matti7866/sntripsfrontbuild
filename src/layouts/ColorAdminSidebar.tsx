@@ -208,6 +208,11 @@ const menuItems: MenuItem[] = [
     title: 'Currency'
   },
   {
+    path: '/sms/send',
+    icon: 'fa fa-comment',
+    title: 'Send SMS'
+  },
+  {
     path: '/delete-requests',
     icon: 'fa fa-trash',
     title: 'Delete Requests',

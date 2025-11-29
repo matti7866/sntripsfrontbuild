@@ -69,6 +69,7 @@ import Currency from './pages/currency/Currency';
 import Settings from './pages/settings/Settings';
 import AssetList from './pages/assets/AssetList';
 import CreateAsset from './pages/assets/CreateAsset';
+import SendSms from './pages/sms/SendSms';
 
 function App() {
   return (
@@ -212,6 +213,9 @@ function App() {
               
               {/* Currency */}
               <Route path="currency" element={<Currency />} />
+              
+              {/* SMS */}
+              <Route path="sms/send" element={<SendSms />} />
               
               {/* Notes */}
               <Route path="notes" element={<Notes />} />

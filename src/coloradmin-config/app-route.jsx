@@ -67,6 +67,7 @@ import LoginV2 from './../pages/user/login-v2.js';
 import LoginV3 from './../pages/user/login-v3.js';
 import RegisterV3 from './../pages/user/register-v3.js';
 import HelperCSS from './../pages/helper/helper-css.js';
+import SendSms from './../pages/sms/SendSms.tsx';
 
 const routes = [
   {
@@ -404,6 +405,11 @@ const routes = [
     path: '/helper/css',
     title: 'Predefined CSS Classes',
     component: () => <HelperCSS />,
+  },
+  {
+    path: '/sms/send',
+    title: 'Send SMS',
+    component: () => <SendSms />,
   }
 ];
 
