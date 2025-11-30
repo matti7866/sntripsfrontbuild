@@ -9,20 +9,21 @@
 
 header('Content-Type: text/html; charset=utf-8');
 
-// Database configuration - UPDATE THESE
-$host = 'localhost';
-$dbname = 'your_database_name';  // UPDATE THIS
-$username = 'your_username';      // UPDATE THIS
-$password = 'your_password';      // UPDATE THIS
+// Include the connection file - it will automatically detect local vs production
+// Place this file in the same directory as connection.php or adjust the path
+$connectionPath = __DIR__ . '/../connection.php';
 
-// Connect to database
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERR_EXCEPTION);
-    echo "<h2>✅ Database Connected Successfully</h2>";
-} catch(PDOException $e) {
-    die("<h2>❌ Database Connection Failed: " . $e->getMessage() . "</h2>");
+if (!file_exists($connectionPath)) {
+    die("<h2>❌ Error: connection.php not found at: $connectionPath</h2>");
 }
+
+require_once $connectionPath;
+
+if (!isset($pdo) || $pdo === null) {
+    die("<h2>❌ Database Connection Failed: PDO object not available</h2>");
+}
+
+echo "<h2>✅ Database Connected Successfully</h2>";
 
 /**
  * Format phone number to API standard
@@ -73,12 +74,48 @@ echo "<hr>";
 
 // Tables and columns to update
 $tables = [
-    'customers' => 'customer_phone',
+    'customer' => 'customer_phone',
     'staff' => 'staff_phone',
     // Add more tables as needed
-    // 'suppliers' => 'supplier_phone',
+    // 'supplier' => 'supp_phone',
     // 'establishments_persons' => 'phone',
 ];
+
+// Auto-fix schema: Check and convert INT columns to VARCHAR(20)
+echo "<h2>🔧 Checking Schema...</h2>";
+foreach ($tables as $table => $column) {
+    try {
+        $tableExists = $pdo->query("SHOW TABLES LIKE '$table'")->fetch();
+        if (!$tableExists) {
+            continue;
+        }
+        
+        $columnInfo = $pdo->query("SHOW COLUMNS FROM $table LIKE '$column'")->fetch(PDO::FETCH_ASSOC);
+        if (!$columnInfo) {
+            continue;
+        }
+        
+        $currentType = strtolower($columnInfo['Type']);
+        
+        // If it's INT or numeric type, convert to VARCHAR
+        if (strpos($currentType, 'int') !== false || strpos($currentType, 'bigint') !== false) {
+            echo "<p>🔄 Converting <strong>$table.$column</strong> from <code>$currentType</code> to <code>VARCHAR(20)</code>...</p>";
+            
+            $nullable = $columnInfo['Null'] === 'YES' ? 'NULL' : 'NOT NULL';
+            $default = $columnInfo['Default'] !== null ? "DEFAULT '" . $columnInfo['Default'] . "'" : '';
+            
+            $sql = "ALTER TABLE $table MODIFY COLUMN $column VARCHAR(20) $nullable $default";
+            $pdo->exec($sql);
+            
+            echo "<p style='color: green;'>✅ Successfully converted!</p>";
+        } else {
+            echo "<p style='color: gray;'>✓ <strong>$table.$column</strong> is already VARCHAR - OK</p>";
+        }
+    } catch(PDOException $e) {
+        echo "<p style='color: red;'>❌ Error fixing $table.$column: " . htmlspecialchars($e->getMessage()) . "</p>";
+    }
+}
+echo "<hr>";
 
 $totalUpdated = 0;
 $totalSkipped = 0;

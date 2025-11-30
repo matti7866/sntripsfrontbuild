@@ -55,7 +55,11 @@ const LoginOTP: React.FC = () => {
           setStaffInfo(result.staff);
         }
         setStep('otp');
-        setSuccess('OTP sent successfully! Check your email.');
+        // Show appropriate message based on whether SMS was sent
+        const message = result.sms_sent 
+          ? 'OTP sent to your email and phone! Check both.' 
+          : result.message || 'OTP sent successfully! Check your email.';
+        setSuccess(message);
       } else {
         const errorMsg = result.message || 'Failed to send OTP';
         console.error('OTP Send Failed:', errorMsg);
@@ -221,7 +225,7 @@ const LoginOTP: React.FC = () => {
               {step === 'email' ? 'Welcome Back' : 'Enter OTP'}
             </h1>
             <p className="login-surprise-subtitle">
-              {step === 'email' ? 'Sign in to continue your journey' : 'We sent a code to your email'}
+              {step === 'email' ? 'Sign in to continue your journey' : 'We sent a code to your email and phone'}
             </p>
           </div>
 
