@@ -800,7 +800,7 @@ export default function CreateResidence() {
                       <input
                         type="file"
                         className="form-control"
-                        accept="image/jpeg,image/jpg,image/png"
+                        accept="image/jpeg,image/jpg,image/png,application/pdf"
                         onChange={(e) => handleFileChange('passportFile', e.target.files?.[0] || null)}
                         required
                         disabled={ocrProcessing}
@@ -809,7 +809,7 @@ export default function CreateResidence() {
                         {ocrProcessing ? (
                           <><i className="fa fa-spinner fa-spin me-1"></i>Processing...</>
                         ) : (
-                          <>Upload passport bio-data page (auto-extracts data)</>
+                          <>JPG, PNG, or PDF - Auto-extracts data from passport</>
                         )}
                       </small>
                     </div>
