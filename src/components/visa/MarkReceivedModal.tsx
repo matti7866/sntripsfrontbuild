@@ -25,7 +25,6 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
   const [formData, setFormData] = useState({
     eidNumber: '784-',
     eidExpiryDate: new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    eidIssueDate: '',
     passenger_name: '',
     gender: 'male',
     dob: '',
@@ -44,6 +43,7 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
   const [frontPreview, setFrontPreview] = useState<string | null>(null);
   const [ocrProcessing, setOcrProcessing] = useState(false);
   const [ocrStatus, setOcrStatus] = useState<string>('');
+  const [notFoundWarnings, setNotFoundWarnings] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen && task) {
@@ -161,6 +161,7 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
         
         // Auto-fill form with extracted data from FRONT
         const updates: any = {};
+        const warnings: string[] = [];
         
         if (result.front.eid_number) {
           updates.eidNumber = result.front.eid_number;
@@ -175,13 +176,43 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
           updates.dob = result.front.dob;
           console.log('✅ DOB extracted:', result.front.dob);
         }
-        if (result.front.issue_date) {
-          updates.eidIssueDate = result.front.issue_date;
-          console.log('✅ Issue Date extracted:', result.front.issue_date);
-        }
         if (result.front.expiry_date) {
           updates.eidExpiryDate = result.front.expiry_date;
           console.log('✅ Expiry Date extracted:', result.front.expiry_date);
+        }
+        
+        // Check if profession exists in database
+        if (result.back.profession) {
+          const professionText = result.back.profession.toLowerCase();
+          const matchingPosition = positions.find(p => 
+            p.position_name.toLowerCase().includes(professionText) || 
+            professionText.includes(p.position_name.toLowerCase())
+          );
+          
+          if (matchingPosition) {
+            updates.occupation = String(matchingPosition.position_id);
+            console.log('✅ Matched profession:', matchingPosition.position_name);
+          } else {
+            warnings.push(`Profession "${result.back.profession}" not found in database. Please select manually.`);
+            console.warn('⚠️ Profession not found:', result.back.profession);
+          }
+        }
+        
+        // Check if establishment exists in database
+        if (result.back.establishment) {
+          const establishmentText = result.back.establishment.toLowerCase();
+          const matchingCompany = companies.find(c => 
+            c.company_name.toLowerCase().includes(establishmentText) || 
+            establishmentText.includes(c.company_name.toLowerCase())
+          );
+          
+          if (matchingCompany) {
+            updates.establishmentName = String(matchingCompany.company_id);
+            console.log('✅ Matched establishment:', matchingCompany.company_name);
+          } else {
+            warnings.push(`Establishment "${result.back.establishment}" not found in database. Please select manually.`);
+            console.warn('⚠️ Establishment not found:', result.back.establishment);
+          }
         }
         
         setFormData(prev => ({
@@ -189,13 +220,11 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
           ...updates
         }));
         
-        // Note: Profession and Establishment from back will need manual selection from dropdowns
-        // as they need to match database values
-        if (result.back.profession) {
-          console.log('✅ Detected profession:', result.back.profession);
-        }
-        if (result.back.establishment) {
-          console.log('✅ Detected establishment:', result.back.establishment);
+        setNotFoundWarnings(warnings);
+        
+        // Clear warnings after 10 seconds
+        if (warnings.length > 0) {
+          setTimeout(() => setNotFoundWarnings([]), 10000);
         }
         
         // Show extracted data in console for debugging
@@ -246,7 +275,6 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
         type: task.type,
         eidNumber: formData.eidNumber,
         eidExpiryDate: formData.eidExpiryDate,
-        eidIssueDate: formData.eidIssueDate || undefined,
         passenger_name: formData.passenger_name,
         gender: formData.gender,
         dob: formData.dob,
@@ -296,6 +324,18 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
                   </div>
                 )}
                 
+                {/* Warnings for items not found in database */}
+                {notFoundWarnings.length > 0 && (
+                  <div className="alert alert-warning mb-3">
+                    <strong><i className="fa fa-exclamation-triangle me-2"></i>Not Found in Database:</strong>
+                    <ul className="mb-0 mt-2">
+                      {notFoundWarnings.map((warning, idx) => (
+                        <li key={idx}>{warning}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
                 {/* Instructions */}
                 <div className="alert alert-info mb-3">
                   <strong><i className="fa fa-lightbulb me-2"></i>Tip:</strong> Upload both Emirates ID images (front and back) to auto-extract and fill the form fields automatically.
@@ -303,7 +343,7 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
                 
                 
                 <div className="row">
-                  <div className="col-md-6 mb-3">
+                  <div className="col-md-8 mb-3">
                     <label className="form-label">EID Number <span className="text-danger">*</span></label>
                     <input
                       type="text"
@@ -314,17 +354,8 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
                     />
                     {errors.eidNumber && <div className="invalid-feedback">{errors.eidNumber}</div>}
                   </div>
-                  <div className="col-md-3 mb-3">
-                    <label className="form-label">Issue Date</label>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={formData.eidIssueDate}
-                      onChange={(e) => setFormData(prev => ({ ...prev, eidIssueDate: e.target.value }))}
-                    />
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <label className="form-label">Expiry Date <span className="text-danger">*</span></label>
+                  <div className="col-md-4 mb-3">
+                    <label className="form-label">EID Expiry Date <span className="text-danger">*</span></label>
                     <input
                       type="date"
                       className={`form-control ${errors.eidExpiryDate ? 'is-invalid' : ''}`}
