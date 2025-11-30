@@ -150,10 +150,11 @@ export default function CreateResidence() {
         
         // Try to match nationality
         if (result.data.nationality && lookups?.nationalities) {
-          const matchingNationality = lookups.nationalities.find((n: any) => 
-            n.nationality.toLowerCase().includes(result.data.nationality.toLowerCase()) ||
-            result.data.nationality.toLowerCase().includes(n.nationality.toLowerCase())
-          );
+          const matchingNationality = lookups.nationalities.find((n: any) => {
+            const nName = n.nationality?.toLowerCase() || '';
+            const extractedNat = result.data.nationality?.toLowerCase() || '';
+            return nName.includes(extractedNat) || extractedNat.includes(nName);
+          });
           
           if (matchingNationality) {
             setFormData(prev => ({ ...prev, nationality: matchingNationality.nationalityID }));
