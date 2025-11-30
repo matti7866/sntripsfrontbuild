@@ -156,24 +156,46 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
       if (result.success) {
         setOcrStatus('✅ Data extracted! Fields have been auto-filled.');
         
+        // Log full extracted data for debugging
+        console.log('Full OCR Data:', result);
+        
         // Auto-fill form with extracted data from FRONT
+        const updates: any = {};
+        
+        if (result.front.eid_number) {
+          updates.eidNumber = result.front.eid_number;
+        }
+        if (result.front.full_name && result.front.full_name.length > 2) {
+          updates.passenger_name = result.front.full_name;
+        }
+        if (result.front.gender) {
+          updates.gender = result.front.gender;
+        }
+        if (result.front.dob) {
+          updates.dob = result.front.dob;
+          console.log('✅ DOB extracted:', result.front.dob);
+        }
+        if (result.front.issue_date) {
+          updates.eidIssueDate = result.front.issue_date;
+          console.log('✅ Issue Date extracted:', result.front.issue_date);
+        }
+        if (result.front.expiry_date) {
+          updates.eidExpiryDate = result.front.expiry_date;
+          console.log('✅ Expiry Date extracted:', result.front.expiry_date);
+        }
+        
         setFormData(prev => ({
           ...prev,
-          ...(result.front.eid_number && { eidNumber: result.front.eid_number }),
-          ...(result.front.full_name && { passenger_name: result.front.full_name }),
-          ...(result.front.gender && { gender: result.front.gender }),
-          ...(result.front.dob && { dob: result.front.dob }),
-          ...(result.front.issue_date && { eidIssueDate: result.front.issue_date }),
-          ...(result.front.expiry_date && { eidExpiryDate: result.front.expiry_date }),
+          ...updates
         }));
         
         // Note: Profession and Establishment from back will need manual selection from dropdowns
         // as they need to match database values
         if (result.back.profession) {
-          console.log('Detected profession:', result.back.profession);
+          console.log('✅ Detected profession:', result.back.profession);
         }
         if (result.back.establishment) {
-          console.log('Detected establishment:', result.back.establishment);
+          console.log('✅ Detected establishment:', result.back.establishment);
         }
         
         // Show extracted data in console for debugging
