@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import { customerService } from '../../services/customerService';
 import apiClient from '../../services/api';
 import SearchableSelect from '../../components/form/SearchableSelect';
+import PhoneInput from '../../components/form/PhoneInput';
 import type { Customer, CustomerFilters, CreateCustomerRequest, UpdateCustomerRequest } from '../../types/customer';
 import './Customers.css';
 
@@ -501,16 +502,12 @@ export default function Customers() {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">
-                      <i className="fa fa-phone me-2"></i>Customer Phone:
-                    </label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="customer_phone"
+                    <PhoneInput
+                      label="Customer Phone"
                       value={formData.customer_phone || ''}
-                      onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
-                      placeholder="Customer Phone"
+                      onChange={(value) => setFormData({ ...formData, customer_phone: value })}
+                      placeholder="971 XX XXX XXXX"
+                      showValidation={true}
                     />
                   </div>
                 </div>

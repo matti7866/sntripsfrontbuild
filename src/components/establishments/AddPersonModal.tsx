@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from '../../services/api';
 import Swal from 'sweetalert2';
+import PhoneInput from '../form/PhoneInput';
 
 interface AddPersonModalProps {
   isOpen: boolean;
@@ -206,13 +207,12 @@ export default function AddPersonModal({ isOpen, onClose, onSuccess }: AddPerson
                 </div>
 
                 <div className="col-md-6 mb-2">
-                  <label className="form-label">Phone</label>
-                  <input
-                    type="text"
-                    name="phone"
-                    className="form-control"
+                  <PhoneInput
+                    label="Phone"
                     value={formData.phone}
-                    onChange={handleInputChange}
+                    onChange={(value) => setFormData({ ...formData, phone: value })}
+                    placeholder="971 XX XXX XXXX"
+                    showValidation={true}
                   />
                 </div>
 

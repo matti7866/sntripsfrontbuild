@@ -4,6 +4,7 @@ import { config } from '../../utils/config';
 import Swal from 'sweetalert2';
 import staffService from '../../services/staffService';
 import SearchableSelect from '../../components/form/SearchableSelect';
+import PhoneInput from '../../components/form/PhoneInput';
 import type { Staff, CreateStaffRequest, UpdateStaffRequest } from '../../types/staff';
 import './StaffManagement.css';
 
@@ -528,13 +529,12 @@ export default function StaffManagement() {
                 <div className="form-group row">
                   <label className="col-form-label">Phone:</label>
                   <div className="col-sm-9">
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={formData.staff_phone}
-                      onChange={(e) => setFormData({ ...formData, staff_phone: e.target.value })}
-                      placeholder="Employee Phone"
-                      required
+                    <PhoneInput
+                      value={formData.staff_phone || ''}
+                      onChange={(value) => setFormData({ ...formData, staff_phone: value })}
+                      placeholder="971 XX XXX XXXX"
+                      required={true}
+                      showValidation={true}
                     />
                   </div>
                 </div>
@@ -740,13 +740,12 @@ export default function StaffManagement() {
                 <div className="form-group row">
                   <label className="col-form-label">Phone:</label>
                   <div className="col-sm-9">
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={editFormData.staff_phone}
-                      onChange={(e) => setEditFormData({ ...editFormData, staff_phone: e.target.value })}
-                      placeholder="Employee Phone"
-                      required
+                    <PhoneInput
+                      value={editFormData.staff_phone || ''}
+                      onChange={(value) => setEditFormData({ ...editFormData, staff_phone: value })}
+                      placeholder="971 XX XXX XXXX"
+                      required={true}
+                      showValidation={true}
                     />
                   </div>
                 </div>
