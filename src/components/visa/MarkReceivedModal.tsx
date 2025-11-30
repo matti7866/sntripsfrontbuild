@@ -44,6 +44,14 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
   const [ocrProcessing, setOcrProcessing] = useState(false);
   const [ocrStatus, setOcrStatus] = useState<string>('');
   const [notFoundWarnings, setNotFoundWarnings] = useState<string[]>([]);
+  const [extractedProfession, setExtractedProfession] = useState<string>('');
+  const [extractedEstablishment, setExtractedEstablishment] = useState<string>('');
+  const [showAddPosition, setShowAddPosition] = useState(false);
+  const [showAddCompany, setShowAddCompany] = useState(false);
+  const [newPositionName, setNewPositionName] = useState('');
+  const [newCompanyName, setNewCompanyName] = useState('');
+  const [addingPosition, setAddingPosition] = useState(false);
+  const [addingCompany, setAddingCompany] = useState(false);
 
   useEffect(() => {
     if (isOpen && task) {
@@ -193,7 +201,10 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
             updates.occupation = String(matchingPosition.position_id);
             console.log('✅ Matched profession:', matchingPosition.position_name);
           } else {
-            warnings.push(`Profession "${result.back.profession}" not found in database. Please select manually.`);
+            setExtractedProfession(result.back.profession);
+            setNewPositionName(result.back.profession);
+            setShowAddPosition(true);
+            warnings.push(`Profession "${result.back.profession}" not found in database.`);
             console.warn('⚠️ Profession not found:', result.back.profession);
           }
         }
@@ -210,7 +221,10 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
             updates.establishmentName = String(matchingCompany.company_id);
             console.log('✅ Matched establishment:', matchingCompany.company_name);
           } else {
-            warnings.push(`Establishment "${result.back.establishment}" not found in database. Please select manually.`);
+            setExtractedEstablishment(result.back.establishment);
+            setNewCompanyName(result.back.establishment);
+            setShowAddCompany(true);
+            warnings.push(`Establishment "${result.back.establishment}" not found in database.`);
             console.warn('⚠️ Establishment not found:', result.back.establishment);
           }
         }
@@ -240,6 +254,50 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
       setTimeout(() => setOcrStatus(''), 5000);
     } finally {
       setOcrProcessing(false);
+    }
+  };
+
+  const handleAddNewPosition = async () => {
+    if (!newPositionName.trim()) {
+      Swal.fire('Error', 'Position name is required', 'error');
+      return;
+    }
+    
+    setAddingPosition(true);
+    try {
+      const newPosition = await visaService.addEIDPosition(newPositionName);
+      setPositions([...positions, newPosition]);
+      setFormData(prev => ({ ...prev, occupation: String(newPosition.position_id) }));
+      setShowAddPosition(false);
+      setExtractedProfession('');
+      Swal.fire('Success', 'Profession added successfully!', 'success');
+      setNotFoundWarnings(prev => prev.filter(w => !w.includes('Profession')));
+    } catch (error: any) {
+      Swal.fire('Error', error.message || 'Failed to add profession', 'error');
+    } finally {
+      setAddingPosition(false);
+    }
+  };
+
+  const handleAddNewCompany = async () => {
+    if (!newCompanyName.trim()) {
+      Swal.fire('Error', 'Company name is required', 'error');
+      return;
+    }
+    
+    setAddingCompany(true);
+    try {
+      const newCompany = await visaService.addEIDCompany(newCompanyName);
+      setCompanies([...companies, newCompany]);
+      setFormData(prev => ({ ...prev, establishmentName: String(newCompany.company_id) }));
+      setShowAddCompany(false);
+      setExtractedEstablishment('');
+      Swal.fire('Success', 'Establishment added successfully!', 'success');
+      setNotFoundWarnings(prev => prev.filter(w => !w.includes('Establishment')));
+    } catch (error: any) {
+      Swal.fire('Error', error.message || 'Failed to add establishment', 'error');
+    } finally {
+      setAddingCompany(false);
     }
   };
 
@@ -400,38 +458,126 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
                   </div>
                   <div className="col-md-4 mb-3">
                     <label className="form-label">Occupation <span className="text-muted">(From ID)</span></label>
-                    <select
-                      className="form-select"
-                      value={formData.occupation}
-                      onChange={(e) => setFormData(prev => ({ ...prev, occupation: e.target.value }))}
-                    >
-                      <option value="">-- Select Occupation --</option>
-                      {positions.map((pos) => (
-                        <option key={pos.position_id} value={pos.position_id}>
-                          {pos.position_name}
-                        </option>
-                      ))}
-                    </select>
-                    {residenceData?.positionName && (
-                      <small className="text-muted">Current: {residenceData.positionName}</small>
+                    {showAddPosition ? (
+                      <div className="input-group">
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={newPositionName}
+                          onChange={(e) => setNewPositionName(e.target.value)}
+                          placeholder="Enter profession name"
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-success"
+                          onClick={handleAddNewPosition}
+                          disabled={addingPosition}
+                        >
+                          {addingPosition ? <i className="fa fa-spinner fa-spin"></i> : <i className="fa fa-plus"></i>}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={() => { setShowAddPosition(false); setNewPositionName(''); }}
+                        >
+                          <i className="fa fa-times"></i>
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="input-group">
+                          <select
+                            className="form-select"
+                            value={formData.occupation}
+                            onChange={(e) => setFormData(prev => ({ ...prev, occupation: e.target.value }))}
+                          >
+                            <option value="">-- Select Occupation --</option>
+                            {positions.map((pos) => (
+                              <option key={pos.position_id} value={pos.position_id}>
+                                {pos.position_name}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary"
+                            onClick={() => setShowAddPosition(true)}
+                            title="Add new profession"
+                          >
+                            <i className="fa fa-plus"></i>
+                          </button>
+                        </div>
+                        {residenceData?.positionName && (
+                          <small className="text-muted">Current: {residenceData.positionName}</small>
+                        )}
+                        {extractedProfession && (
+                          <small className="text-warning d-block mt-1">
+                            <i className="fa fa-info-circle"></i> Detected: "{extractedProfession}" - not in database
+                          </small>
+                        )}
+                      </>
                     )}
                   </div>
                   <div className="col-md-8 mb-3">
                     <label className="form-label">Establishment Name <small className="text-muted">(From Emirates ID)</small></label>
-                    <select
-                      className="form-select"
-                      value={formData.establishmentName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, establishmentName: e.target.value }))}
-                    >
-                      <option value="">-- Select Company --</option>
-                      {companies.map((comp) => (
-                        <option key={comp.company_id} value={comp.company_id}>
-                          {comp.company_name}
-                        </option>
-                      ))}
-                    </select>
-                    {residenceData?.company_name && (
-                      <small className="text-muted">Current: {residenceData.company_name}</small>
+                    {showAddCompany ? (
+                      <div className="input-group">
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={newCompanyName}
+                          onChange={(e) => setNewCompanyName(e.target.value)}
+                          placeholder="Enter establishment name"
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-success"
+                          onClick={handleAddNewCompany}
+                          disabled={addingCompany}
+                        >
+                          {addingCompany ? <i className="fa fa-spinner fa-spin"></i> : <i className="fa fa-plus"></i>}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={() => { setShowAddCompany(false); setNewCompanyName(''); }}
+                        >
+                          <i className="fa fa-times"></i>
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="input-group">
+                          <select
+                            className="form-select"
+                            value={formData.establishmentName}
+                            onChange={(e) => setFormData(prev => ({ ...prev, establishmentName: e.target.value }))}
+                          >
+                            <option value="">-- Select Company --</option>
+                            {companies.map((comp) => (
+                              <option key={comp.company_id} value={comp.company_id}>
+                                {comp.company_name}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary"
+                            onClick={() => setShowAddCompany(true)}
+                            title="Add new establishment"
+                          >
+                            <i className="fa fa-plus"></i>
+                          </button>
+                        </div>
+                        {residenceData?.company_name && (
+                          <small className="text-muted">Current: {residenceData.company_name}</small>
+                        )}
+                        {extractedEstablishment && (
+                          <small className="text-warning d-block mt-1">
+                            <i className="fa fa-info-circle"></i> Detected: "{extractedEstablishment}" - not in database
+                          </small>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

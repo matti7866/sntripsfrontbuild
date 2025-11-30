@@ -109,13 +109,48 @@ const visaService = {
     return response.data.data || response.data;
   },
 
+  // Add new position
+  addEIDPosition: async (positionName: string): Promise<{ position_id: number; position_name: string }> => {
+    const formData = new URLSearchParams();
+    formData.append('action', 'addPosition');
+    formData.append('position_name', positionName);
+    
+    const response = await apiClient.post('/visa/eid-tasks-controller.php', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    
+    if (response.data.success) {
+      return response.data.data;
+    }
+    throw new Error(response.data.message || 'Failed to add position');
+  },
+
+  // Add new company
+  addEIDCompany: async (companyName: string): Promise<{ company_id: number; company_name: string }> => {
+    const formData = new URLSearchParams();
+    formData.append('action', 'addCompany');
+    formData.append('company_name', companyName);
+    
+    const response = await apiClient.post('/visa/eid-tasks-controller.php', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    
+    if (response.data.success) {
+      return response.data.data;
+    }
+    throw new Error(response.data.message || 'Failed to add company');
+  },
+
   // Mark EID as Received
   markEIDReceived: async (data: {
     id: number;
     type: string;
     eidNumber: string;
     eidExpiryDate: string;
-    eidIssueDate?: string;
     passenger_name: string;
     gender: string;
     dob: string;
@@ -130,9 +165,6 @@ const visaService = {
     formData.append('type', data.type);
     formData.append('eidNumber', data.eidNumber);
     formData.append('eidExpiryDate', data.eidExpiryDate);
-    if (data.eidIssueDate) {
-      formData.append('eidIssueDate', data.eidIssueDate);
-    }
     formData.append('passenger_name', data.passenger_name);
     formData.append('gender', data.gender);
     formData.append('dob', data.dob);
