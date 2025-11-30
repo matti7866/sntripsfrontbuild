@@ -68,12 +68,16 @@ export default function CustomerLedger() {
   // Add payment mutation
   const addPaymentMutation = useMutation({
     mutationFn: (data: AddPaymentRequest) => customerLedgerService.addPayment(data),
-    onSuccess: () => {
+    onSuccess: (response: any) => {
+      const message = response.sms_sent 
+        ? 'Payment added and SMS notification sent to customer!' 
+        : 'Payment added successfully!';
+      
       Swal.fire({
         icon: 'success',
         title: 'Success!',
-        text: 'Payment added successfully',
-        timer: 1500,
+        html: message + (response.sms_sent ? '<br><small class="text-muted">📱 Customer has been notified via SMS</small>' : ''),
+        timer: 2500,
         showConfirmButton: false
       });
       setShowPaymentModal(false);
