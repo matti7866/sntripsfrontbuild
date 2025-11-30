@@ -127,11 +127,13 @@ export default function CreateResidence() {
         body: formData
       });
       
-      if (!response.ok) {
-        throw new Error('OCR request failed');
-      }
-      
       const result = await response.json();
+      
+      if (!response.ok || !result.success) {
+        const errorMsg = result.message || 'OCR request failed';
+        console.error('OCR Error Response:', result);
+        throw new Error(errorMsg);
+      }
       
       if (result.success && result.data) {
         setOcrStatus('✅ Passport data extracted! Fields auto-filled.');
@@ -168,8 +170,19 @@ export default function CreateResidence() {
       }
     } catch (error: any) {
       console.error('Passport OCR Error:', error);
-      setOcrStatus('⚠️ Auto-extraction failed. Please enter manually.');
-      setTimeout(() => setOcrStatus(''), 5000);
+      const errorMsg = error.message || 'Auto-extraction failed';
+      setOcrStatus(`❌ ${errorMsg}`);
+      
+      // Show error notification
+      Swal.fire({
+        icon: 'warning',
+        title: 'Auto-extraction Failed',
+        text: errorMsg + '. Please enter passport details manually.',
+        timer: 4000,
+        showConfirmButton: false
+      });
+      
+      setTimeout(() => setOcrStatus(''), 8000);
     } finally {
       setOcrProcessing(false);
     }
