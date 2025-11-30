@@ -65,6 +65,8 @@ export default function CreateResidence() {
   const [customerSearch, setCustomerSearch] = useState('');
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
   const customerDropdownRef = useRef<HTMLDivElement>(null);
+  const [ocrProcessing, setOcrProcessing] = useState(false);
+  const [ocrStatus, setOcrStatus] = useState<string>('');
 
   useEffect(() => {
     loadLookups();
@@ -102,8 +104,75 @@ export default function CreateResidence() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileChange = (field: 'passportFile' | 'photoFile' | 'emiratesIdFrontFile' | 'emiratesIdBackFile', file: File | null) => {
+  const handleFileChange = async (field: 'passportFile' | 'photoFile' | 'emiratesIdFrontFile' | 'emiratesIdBackFile', file: File | null) => {
     setFormData(prev => ({ ...prev, [field]: file }));
+    
+    // Trigger OCR for passport
+    if (field === 'passportFile' && file) {
+      await processPassportOCR(file);
+    }
+  };
+
+  const processPassportOCR = async (passportFile: File) => {
+    setOcrProcessing(true);
+    setOcrStatus('Extracting data from passport...');
+    
+    try {
+      const formData = new FormData();
+      formData.append('passport', passportFile);
+      
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+      const response = await fetch(`${apiUrl}/api-ocr-passport.php`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('OCR request failed');
+      }
+      
+      const result = await response.json();
+      
+      if (result.success && result.data) {
+        setOcrStatus('✅ Passport data extracted! Fields auto-filled.');
+        
+        // Auto-fill form with extracted data
+        setFormData(prev => ({
+          ...prev,
+          ...(result.data.full_name && { passengerName: result.data.full_name }),
+          ...(result.data.passport_number && { passportNumber: result.data.passport_number }),
+          ...(result.data.gender && { gender: result.data.gender }),
+          ...(result.data.dob && { dob: result.data.dob }),
+          ...(result.data.expiry_date && { passportExpiryDate: result.data.expiry_date }),
+        }));
+        
+        // Try to match nationality
+        if (result.data.nationality && lookups?.nationalities) {
+          const matchingNationality = lookups.nationalities.find((n: any) => 
+            n.nationality.toLowerCase().includes(result.data.nationality.toLowerCase()) ||
+            result.data.nationality.toLowerCase().includes(n.nationality.toLowerCase())
+          );
+          
+          if (matchingNationality) {
+            setFormData(prev => ({ ...prev, nationality: matchingNationality.nationalityID }));
+            console.log('✅ Matched nationality:', matchingNationality.nationality);
+          } else {
+            console.warn('⚠️ Nationality not matched:', result.data.nationality);
+          }
+        }
+        
+        console.log('Extracted Passport Data:', result.data);
+        setTimeout(() => setOcrStatus(''), 5000);
+      } else {
+        throw new Error(result.message || 'OCR failed');
+      }
+    } catch (error: any) {
+      console.error('Passport OCR Error:', error);
+      setOcrStatus('⚠️ Auto-extraction failed. Please enter manually.');
+      setTimeout(() => setOcrStatus(''), 5000);
+    } finally {
+      setOcrProcessing(false);
+    }
   };
 
   const validateStep1 = (): boolean => {
@@ -618,6 +687,17 @@ export default function CreateResidence() {
                     <strong>Step 2:</strong> Upload passport document for automatic data extraction, plus photo and Emirates ID.
                   </div>
 
+                  {/* OCR Status Banner */}
+                  {(ocrProcessing || ocrStatus) && (
+                    <div className={`alert ${ocrProcessing ? 'alert-info' : ocrStatus.includes('✅') ? 'alert-success' : 'alert-warning'} mb-3`}>
+                      {ocrProcessing ? (
+                        <><i className="fa fa-spinner fa-spin me-2"></i>{ocrStatus}</>
+                      ) : (
+                        <>{ocrStatus}</>
+                      )}
+                    </div>
+                  )}
+
                   {/* Passport Information */}
                   <div className="row mb-4">
                     <div className="col-12">
@@ -714,16 +794,24 @@ export default function CreateResidence() {
                   <div className="row mb-3">
                     <div className="col-lg-3">
                       <label className="form-label">
+                        <i className="fa fa-passport me-2"></i>
                         Passport <span className="text-danger">*</span>
                       </label>
                       <input
                         type="file"
                         className="form-control"
-                        accept="image/jpeg,image/png,application/pdf"
+                        accept="image/jpeg,image/jpg,image/png"
                         onChange={(e) => handleFileChange('passportFile', e.target.files?.[0] || null)}
                         required
+                        disabled={ocrProcessing}
                       />
-                      <small className="text-muted">Upload JPG/PNG/PDF passport documents</small>
+                      <small className="text-muted">
+                        {ocrProcessing ? (
+                          <><i className="fa fa-spinner fa-spin me-1"></i>Processing...</>
+                        ) : (
+                          <>Upload passport bio-data page (auto-extracts data)</>
+                        )}
+                      </small>
                     </div>
 
                     <div className="col-lg-3">
