@@ -42,6 +42,9 @@ export default function EmiratesIdTasks() {
   });
   const [totalRemainingBalance, setTotalRemainingBalance] = useState(0);
   
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  
   // Modal states
   const [showMarkReceivedModal, setShowMarkReceivedModal] = useState(false);
   const [showMarkDeliveredModal, setShowMarkDeliveredModal] = useState(false);
@@ -100,11 +103,25 @@ export default function EmiratesIdTasks() {
     setShowMarkDeliveredModal(true);
   };
 
-  // Calculate pagination
-  const totalPages = Math.ceil(tasks.length / itemsPerPage);
+  // Filter tasks based on search query
+  const filteredTasks = tasks.filter(task => {
+    if (!searchQuery.trim()) return true;
+    
+    const search = searchQuery.toLowerCase();
+    return (
+      task.passenger_name?.toLowerCase().includes(search) ||
+      task.passportNumber?.toLowerCase().includes(search) ||
+      task.EmiratesIDNumber?.toLowerCase().includes(search) ||
+      task.customer_name?.toLowerCase().includes(search) ||
+      task.residenceID?.toString().includes(search)
+    );
+  });
+
+  // Calculate pagination with filtered tasks
+  const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedTasks = tasks.slice(startIndex, endIndex);
+  const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -113,6 +130,16 @@ export default function EmiratesIdTasks() {
 
   const handleItemsPerPageChange = (value: number) => {
     setItemsPerPage(value);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
     setCurrentPage(1);
   };
 
@@ -154,6 +181,49 @@ export default function EmiratesIdTasks() {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="card">
+          <div className="card-body" style={{ padding: '16px' }}>
+            <div className="row align-items-center">
+              <div className="col-md-8 col-lg-6">
+                <div className="input-group">
+                  <span className="input-group-text bg-light border-end-0">
+                    <i className="fa fa-search text-muted"></i>
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control border-start-0 ps-0"
+                    placeholder="Search by ID, Passenger Name, Passport Number, EID Number, or Customer Name..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    style={{ fontSize: '14px' }}
+                  />
+                  {searchQuery && (
+                    <button
+                      className="btn btn-light border"
+                      type="button"
+                      onClick={clearSearch}
+                      title="Clear search"
+                    >
+                      <i className="fa fa-times text-muted"></i>
+                    </button>
+                  )}
+                </div>
+              </div>
+              {searchQuery && (
+                <div className="col-md-4 col-lg-6 mt-2 mt-md-0">
+                  <span className="text-muted" style={{ fontSize: '14px' }}>
+                    <i className="fa fa-filter me-1"></i>
+                    Found {filteredTasks.length} of {tasks.length} records
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Data Table */}
       <div className="card">
         <div className="card-header">
@@ -165,9 +235,17 @@ export default function EmiratesIdTasks() {
               <i className="fa fa-spinner fa-spin fa-2x" style={{ color: '#9ca3af' }}></i>
               <p className="mt-2" style={{ color: '#6b7280' }}>Loading tasks...</p>
             </div>
-          ) : tasks.length === 0 ? (
+          ) : filteredTasks.length === 0 ? (
             <div className="text-center py-8">
-              <p style={{ color: '#6b7280' }}>No records found</p>
+              {searchQuery ? (
+                <>
+                  <i className="fa fa-search fa-3x mb-3" style={{ color: '#d1d5db' }}></i>
+                  <p style={{ color: '#6b7280', fontSize: '16px' }}>No records match your search</p>
+                  <p style={{ color: '#9ca3af', fontSize: '14px' }}>Try different keywords or <button className="btn btn-link p-0" onClick={clearSearch}>clear search</button></p>
+                </>
+              ) : (
+                <p style={{ color: '#6b7280' }}>No records found</p>
+              )}
             </div>
           ) : (
             <>
@@ -237,7 +315,7 @@ export default function EmiratesIdTasks() {
               </div>
               
               {/* Pagination Controls */}
-              {!loading && tasks.length > 0 && (
+              {!loading && filteredTasks.length > 0 && (
                 <div className="pagination-container" style={{ 
                   display: 'flex', 
                   justifyContent: 'space-between', 
@@ -269,7 +347,7 @@ export default function EmiratesIdTasks() {
                       <option value={100}>100</option>
                     </select>
                     <span style={{ fontSize: '14px', color: '#6b7280' }}>
-                      entries (Showing {startIndex + 1}-{Math.min(endIndex, tasks.length)} of {tasks.length})
+                      entries (Showing {startIndex + 1}-{Math.min(endIndex, filteredTasks.length)} of {filteredTasks.length}{searchQuery && ` filtered from ${tasks.length}`})
                     </span>
                   </div>
 
