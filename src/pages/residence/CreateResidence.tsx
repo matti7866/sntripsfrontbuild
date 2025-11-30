@@ -150,17 +150,44 @@ export default function CreateResidence() {
         
         // Try to match nationality
         if (result.data.nationality && lookups?.nationalities) {
+          const extractedNat = (result.data.nationality || '').toLowerCase().trim();
+          
           const matchingNationality = lookups.nationalities.find((n: any) => {
-            const nName = n.nationality?.toLowerCase() || '';
-            const extractedNat = result.data.nationality?.toLowerCase() || '';
-            return nName.includes(extractedNat) || extractedNat.includes(nName);
+            if (!n.nationality) return false;
+            const nName = n.nationality.toLowerCase().trim();
+            
+            // Exact match
+            if (nName === extractedNat) return true;
+            
+            // Contains match (either direction)
+            if (nName.includes(extractedNat) || extractedNat.includes(nName)) return true;
+            
+            // Check 3-letter codes
+            const commonCodes: any = {
+              'afg': 'afghanistan',
+              'pak': 'pakistan', 
+              'ind': 'india',
+              'bgd': 'bangladesh',
+              'npl': 'nepal',
+              'lka': 'sri lanka',
+              'phl': 'philippines',
+              'egy': 'egypt',
+              'gbr': 'united kingdom',
+              'usa': 'united states'
+            };
+            
+            if (commonCodes[extractedNat] && nName.includes(commonCodes[extractedNat])) return true;
+            if (commonCodes[extractedNat.substring(0, 3)] && nName.includes(commonCodes[extractedNat.substring(0, 3)])) return true;
+            
+            return false;
           });
           
           if (matchingNationality) {
             setFormData(prev => ({ ...prev, nationality: matchingNationality.nationalityID }));
-            console.log('✅ Matched nationality:', matchingNationality.nationality);
+            console.log('✅ Matched nationality:', matchingNationality.nationality, '(from:', result.data.nationality + ')');
           } else {
-            console.warn('⚠️ Nationality not matched:', result.data.nationality);
+            console.warn('⚠️ Nationality not matched in database:', result.data.nationality);
+            console.log('Available nationalities:', lookups.nationalities.map((n: any) => n.nationality));
           }
         }
         
