@@ -148,46 +148,52 @@ export default function CreateResidence() {
           ...(result.data.expiry_date && { passportExpiryDate: result.data.expiry_date }),
         }));
         
-        // Try to match nationality
+        // Try to match nationality (uses airports.countryName)
         if (result.data.nationality && lookups?.nationalities) {
           const extractedNat = (result.data.nationality || '').toLowerCase().trim();
           
           const matchingNationality = lookups.nationalities.find((n: any) => {
-            if (!n.nationality) return false;
-            const nName = n.nationality.toLowerCase().trim();
+            // Try both nationality_name and nationality field names
+            const nName = (n.nationality_name || n.nationality || '').toLowerCase().trim();
+            if (!nName) return false;
             
             // Exact match
             if (nName === extractedNat) return true;
             
+            // Starts with match (e.g., "Afghan" matches "Afghanistan")
+            if (nName.startsWith(extractedNat) || extractedNat.startsWith(nName)) return true;
+            
             // Contains match (either direction)
             if (nName.includes(extractedNat) || extractedNat.includes(nName)) return true;
             
-            // Check 3-letter codes
-            const commonCodes: any = {
-              'afg': 'afghanistan',
-              'pak': 'pakistan', 
-              'ind': 'india',
-              'bgd': 'bangladesh',
-              'npl': 'nepal',
-              'lka': 'sri lanka',
-              'phl': 'philippines',
-              'egy': 'egypt',
-              'gbr': 'united kingdom',
-              'usa': 'united states'
+            // Special cases for common variations
+            const variations: any = {
+              'afghan': 'afghanistan',
+              'british': 'united kingdom',
+              'american': 'united states',
+              'indian': 'india',
+              'pakistani': 'pakistan',
+              'bangladeshi': 'bangladesh',
+              'egyptian': 'egypt',
+              'filipino': 'philippines',
+              'chinese': 'china',
+              'japanese': 'japan'
             };
             
-            if (commonCodes[extractedNat] && nName.includes(commonCodes[extractedNat])) return true;
-            if (commonCodes[extractedNat.substring(0, 3)] && nName.includes(commonCodes[extractedNat.substring(0, 3)])) return true;
+            if (variations[extractedNat] && nName.includes(variations[extractedNat])) return true;
             
             return false;
           });
           
           if (matchingNationality) {
-            setFormData(prev => ({ ...prev, nationality: matchingNationality.nationalityID }));
-            console.log('✅ Matched nationality:', matchingNationality.nationality, '(from:', result.data.nationality + ')');
+            // Use nationality_id or nationalityID
+            const natId = matchingNationality.nationality_id || matchingNationality.nationalityID;
+            setFormData(prev => ({ ...prev, nationality: natId }));
+            const natName = matchingNationality.nationality_name || matchingNationality.nationality;
+            console.log('✅ Matched nationality:', natName, '(from:', result.data.nationality + ')');
           } else {
             console.warn('⚠️ Nationality not matched in database:', result.data.nationality);
-            console.log('Available nationalities:', lookups.nationalities.map((n: any) => n.nationality));
+            console.log('Sample nationalities:', lookups.nationalities.slice(0, 10).map((n: any) => n.nationality_name || n.nationality));
           }
         }
         
