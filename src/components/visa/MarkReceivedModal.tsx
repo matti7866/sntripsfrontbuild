@@ -25,6 +25,7 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
   const [formData, setFormData] = useState({
     eidNumber: '784-',
     eidExpiryDate: new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    eidIssueDate: '',
     passenger_name: '',
     gender: 'male',
     dob: '',
@@ -41,6 +42,8 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
   const [emiratesIDFrontFile, setEmiratesIDFrontFile] = useState<File | null>(null);
   const [backPreview, setBackPreview] = useState<string | null>(null);
   const [frontPreview, setFrontPreview] = useState<string | null>(null);
+  const [ocrProcessing, setOcrProcessing] = useState(false);
+  const [ocrStatus, setOcrStatus] = useState<string>('');
 
   useEffect(() => {
     if (isOpen && task) {
@@ -99,7 +102,7 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'back' | 'front') => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'back' | 'front') => {
     const file = e.target.files?.[0];
     if (file) {
       if (type === 'back') {
@@ -117,6 +120,75 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
         };
         reader.readAsDataURL(file);
       }
+      
+      // Trigger OCR if both front and back are uploaded
+      if ((type === 'front' && emiratesIDBackFile) || (type === 'back' && emiratesIDFrontFile)) {
+        const frontFile = type === 'front' ? file : emiratesIDFrontFile;
+        const backFile = type === 'back' ? file : emiratesIDBackFile;
+        if (frontFile && backFile) {
+          await processOCR(frontFile, backFile);
+        }
+      }
+    }
+  };
+
+  const processOCR = async (frontFile: File, backFile: File) => {
+    setOcrProcessing(true);
+    setOcrStatus('Processing Emirates ID images...');
+    
+    try {
+      const formData = new FormData();
+      formData.append('front', frontFile);
+      formData.append('back', backFile);
+      
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+      const response = await fetch(`${apiUrl}/api-ocr-emirates-id.php`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('OCR request failed');
+      }
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setOcrStatus('✅ Data extracted! Fields have been auto-filled.');
+        
+        // Auto-fill form with extracted data from FRONT
+        setFormData(prev => ({
+          ...prev,
+          ...(result.front.eid_number && { eidNumber: result.front.eid_number }),
+          ...(result.front.full_name && { passenger_name: result.front.full_name }),
+          ...(result.front.gender && { gender: result.front.gender }),
+          ...(result.front.dob && { dob: result.front.dob }),
+          ...(result.front.issue_date && { eidIssueDate: result.front.issue_date }),
+          ...(result.front.expiry_date && { eidExpiryDate: result.front.expiry_date }),
+        }));
+        
+        // Note: Profession and Establishment from back will need manual selection from dropdowns
+        // as they need to match database values
+        if (result.back.profession) {
+          console.log('Detected profession:', result.back.profession);
+        }
+        if (result.back.establishment) {
+          console.log('Detected establishment:', result.back.establishment);
+        }
+        
+        // Show extracted data in console for debugging
+        console.log('Extracted Data:', result);
+        
+        setTimeout(() => setOcrStatus(''), 5000);
+      } else {
+        throw new Error(result.message || 'OCR failed');
+      }
+    } catch (error: any) {
+      console.error('OCR Error:', error);
+      setOcrStatus('⚠️ Auto-extraction failed. Please enter manually.');
+      setTimeout(() => setOcrStatus(''), 5000);
+    } finally {
+      setOcrProcessing(false);
     }
   };
 
@@ -152,6 +224,7 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
         type: task.type,
         eidNumber: formData.eidNumber,
         eidExpiryDate: formData.eidExpiryDate,
+        eidIssueDate: formData.eidIssueDate || undefined,
         passenger_name: formData.passenger_name,
         gender: formData.gender,
         dob: formData.dob,
@@ -190,8 +263,25 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
               </div>
             ) : (
               <>
+                {/* OCR Status Banner */}
+                {(ocrProcessing || ocrStatus) && (
+                  <div className={`alert ${ocrProcessing ? 'alert-info' : ocrStatus.includes('✅') ? 'alert-success' : 'alert-warning'} mb-3`}>
+                    {ocrProcessing ? (
+                      <><i className="fa fa-spinner fa-spin me-2"></i>{ocrStatus}</>
+                    ) : (
+                      <>{ocrStatus}</>
+                    )}
+                  </div>
+                )}
+                
+                {/* Instructions */}
+                <div className="alert alert-info mb-3">
+                  <strong><i className="fa fa-lightbulb me-2"></i>Tip:</strong> Upload both Emirates ID images (front and back) to auto-extract and fill the form fields automatically.
+                </div>
+                
+                
                 <div className="row">
-                  <div className="col-md-8 mb-3">
+                  <div className="col-md-6 mb-3">
                     <label className="form-label">EID Number <span className="text-danger">*</span></label>
                     <input
                       type="text"
@@ -202,8 +292,17 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
                     />
                     {errors.eidNumber && <div className="invalid-feedback">{errors.eidNumber}</div>}
                   </div>
-                  <div className="col-md-4 mb-3">
-                    <label className="form-label">EID Expiry Date <span className="text-danger">*</span></label>
+                  <div className="col-md-3 mb-3">
+                    <label className="form-label">Issue Date</label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={formData.eidIssueDate}
+                      onChange={(e) => setFormData(prev => ({ ...prev, eidIssueDate: e.target.value }))}
+                    />
+                  </div>
+                  <div className="col-md-3 mb-3">
+                    <label className="form-label">Expiry Date <span className="text-danger">*</span></label>
                     <input
                       type="date"
                       className={`form-control ${errors.eidExpiryDate ? 'is-invalid' : ''}`}
@@ -284,46 +383,57 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
                   </div>
                 </div>
                 <div className="row">
-                  <div className="col-md-12 mb-3">
-                    <label className="form-label">Emirates ID Front <small className="text-muted">(Upload to auto-extract details)</small></label>
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">
+                      <i className="fa fa-id-card me-2"></i>
+                      Emirates ID Front <span className="text-danger">*</span>
+                      <small className="text-muted d-block">Auto-extracts: Name, EID#, Gender, DOB, Dates</small>
+                    </label>
                     <input
                       type="file"
                       className="form-control"
-                      accept="image/jpeg,image/png,application/pdf"
-                      onChange={(e) => handleFileChange(e, 'back')}
+                      accept="image/jpeg,image/jpg,image/png"
+                      onChange={(e) => handleFileChange(e, 'front')}
+                      disabled={ocrProcessing}
                     />
-                    {backPreview && (
-                      <div className="mt-2">
-                        <img src={backPreview} alt="Preview" className="img-thumbnail" style={{ maxHeight: '200px' }} />
+                    {frontPreview && (
+                      <div className="mt-2 position-relative">
+                        <img src={frontPreview} alt="Front Preview" className="img-thumbnail" style={{ maxHeight: '150px', width: '100%', objectFit: 'contain' }} />
                         <button
                           type="button"
-                          className="btn btn-sm btn-danger mt-1"
-                          onClick={() => { setBackPreview(null); setEmiratesIDBackFile(null); }}
+                          className="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
+                          onClick={() => { setFrontPreview(null); setEmiratesIDFrontFile(null); }}
+                          disabled={ocrProcessing}
                         >
-                          <i className="fa fa-times"></i> Remove
+                          <i className="fa fa-times"></i>
                         </button>
                       </div>
                     )}
                   </div>
-                </div>
-                <div className="row">
-                  <div className="col-md-12 mb-3">
-                    <label className="form-label">Emirates ID Back <small className="text-muted">(Upload to store in database)</small></label>
+                  
+                  <div className="col-md-6 mb-3">
+                    <label className="form-label">
+                      <i className="fa fa-id-card-alt me-2"></i>
+                      Emirates ID Back <span className="text-danger">*</span>
+                      <small className="text-muted d-block">Auto-extracts: Establishment, Profession</small>
+                    </label>
                     <input
                       type="file"
                       className="form-control"
-                      accept="image/jpeg,image/png,application/pdf"
-                      onChange={(e) => handleFileChange(e, 'front')}
+                      accept="image/jpeg,image/jpg,image/png"
+                      onChange={(e) => handleFileChange(e, 'back')}
+                      disabled={ocrProcessing}
                     />
-                    {frontPreview && (
-                      <div className="mt-2">
-                        <img src={frontPreview} alt="Preview" className="img-thumbnail" style={{ maxHeight: '200px' }} />
+                    {backPreview && (
+                      <div className="mt-2 position-relative">
+                        <img src={backPreview} alt="Back Preview" className="img-thumbnail" style={{ maxHeight: '150px', width: '100%', objectFit: 'contain' }} />
                         <button
                           type="button"
-                          className="btn btn-sm btn-danger mt-1"
-                          onClick={() => { setFrontPreview(null); setEmiratesIDFrontFile(null); }}
+                          className="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
+                          onClick={() => { setBackPreview(null); setEmiratesIDBackFile(null); }}
+                          disabled={ocrProcessing}
                         >
-                          <i className="fa fa-times"></i> Remove
+                          <i className="fa fa-times"></i>
                         </button>
                       </div>
                     )}
@@ -333,9 +443,10 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
             )}
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading}>Close</button>
-            <button type="submit" className="btn btn-primary" disabled={loading || loadingData}>
-              {loading ? <i className="fa fa-spinner fa-spin me-2"></i> : null}Submit
+            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={loading || ocrProcessing}>Close</button>
+            <button type="submit" className="btn btn-primary" disabled={loading || loadingData || ocrProcessing}>
+              {loading ? <i className="fa fa-spinner fa-spin me-2"></i> : null}
+              {ocrProcessing ? 'Processing OCR...' : 'Submit'}
             </button>
           </div>
         </form>

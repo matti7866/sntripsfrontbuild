@@ -115,6 +115,7 @@ const visaService = {
     type: string;
     eidNumber: string;
     eidExpiryDate: string;
+    eidIssueDate?: string;
     passenger_name: string;
     gender: string;
     dob: string;
@@ -129,6 +130,9 @@ const visaService = {
     formData.append('type', data.type);
     formData.append('eidNumber', data.eidNumber);
     formData.append('eidExpiryDate', data.eidExpiryDate);
+    if (data.eidIssueDate) {
+      formData.append('eidIssueDate', data.eidIssueDate);
+    }
     formData.append('passenger_name', data.passenger_name);
     formData.append('gender', data.gender);
     formData.append('dob', data.dob);
