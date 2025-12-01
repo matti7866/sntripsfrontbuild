@@ -61,7 +61,12 @@ export default function ResidenceReport() {
   }, []);
 
   useEffect(() => {
-    loadRecords();
+    // Debounce search - wait 500ms after user stops typing
+    const debounceTimer = setTimeout(() => {
+      loadRecords();
+    }, searchQuery ? 500 : 0); // Only debounce if there's a search query
+    
+    return () => clearTimeout(debounceTimer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, currentPage, searchQuery]);
 
