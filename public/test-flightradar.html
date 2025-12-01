@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlightRadar24 API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background: #dc2626;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #b91c1c;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #059669;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc2626;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛫 FlightRadar24 API Test</h1>
+        
+        <div class="input-group">
+            <label for="flightNumber">Flight Number:</label>
+            <input type="text" id="flightNumber" placeholder="e.g., EK226" value="EK226">
+        </div>
+        
+        <div class="input-group">
+            <label for="travelDate">Travel Date (optional):</label>
+            <input type="date" id="travelDate">
+        </div>
+        
+        <button onclick="testSearch()">Test Search</button>
+        <button onclick="testTrack()">Test Track Flight</button>
+        <button onclick="clearResult()">Clear</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_KEY = '019ada0d-01b6-7345-90f8-0e34db2dd9a4|bQ9fMxameIRy70eSWy8RsB5niMKChyxb325sKip913459946';
+        const API_BASE = 'https://fr24api.flightradar24.com/v1';
+
+        function log(message, type = 'info') {
+            const result = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';
+            result.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        function clearResult() {
+            document.getElementById('result').innerHTML = '';
+        }
+
+        async function testSearch() {
+            clearResult();
+            const flightNumber = document.getElementById('flightNumber').value;
+            
+            if (!flightNumber) {
+                log('Please enter a flight number', 'error');
+                return;
+            }
+
+            log(`🔍 Searching for flight: ${flightNumber}`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/search/flight?query=${encodeURIComponent(flightNumber)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Accept': 'application/json',
+                    },
+                });
+
+                log(`Response status: ${response.status} ${response.statusText}`);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log(`API Error: ${errorText}`, 'error');
+                    return;
+                }
+
+                const data = await response.json();
+                log('✅ API Response received!', 'success');
+                log(JSON.stringify(data, null, 2));
+                
+                if (data.results && data.results.length > 0) {
+                    log(`Found ${data.results.length} flights`, 'success');
+                } else if (data.data && data.data.length > 0) {
+                    log(`Found ${data.data.length} flights`, 'success');
+                } else {
+                    log('No flights found', 'error');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        async function testTrack() {
+            clearResult();
+            const flightNumber = document.getElementById('flightNumber').value;
+            const travelDate = document.getElementById('travelDate').value;
+            
+            if (!flightNumber) {
+                log('Please enter a flight number', 'error');
+                return;
+            }
+
+            log(`🛫 Tracking flight: ${flightNumber}${travelDate ? ' on ' + travelDate : ''}`);
+            
+            try {
+                // First search for the flight
+                const searchResponse = await fetch(`${API_BASE}/search/flight?query=${encodeURIComponent(flightNumber)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (!searchResponse.ok) {
+                    log(`Search failed: ${searchResponse.status}`, 'error');
+                    return;
+                }
+
+                const searchData = await searchResponse.json();
+                log('Search results:', JSON.stringify(searchData, null, 2));
+                
+                const flights = searchData.results || searchData.data || [];
+                
+                if (flights.length === 0) {
+                    log('No flights found', 'error');
+                    return;
+                }
+
+                log(`✅ Found ${flights.length} flight(s)`, 'success');
+                
+                // Show first flight details
+                const flight = flights[0];
+                log('\n📋 Flight Details:', 'success');
+                log(`Flight ID: ${flight.id || 'N/A'}`);
+                log(`Flight Number: ${flight.identification?.number?.default || 'N/A'}`);
+                log(`Airline: ${flight.airline?.name || 'N/A'}`);
+                log(`Aircraft: ${flight.aircraft?.model?.text || 'N/A'}`);
+                log(`From: ${flight.airport?.origin?.name || 'N/A'} (${flight.airport?.origin?.code?.iata || 'N/A'})`);
+                log(`To: ${flight.airport?.destination?.name || 'N/A'} (${flight.airport?.destination?.code?.iata || 'N/A'})`);
+                log(`Status: ${flight.status?.text || 'N/A'}`);
+                
+                if (flight.time?.scheduled?.departure) {
+                    const depTime = new Date(flight.time.scheduled.departure * 1000);
+                    log(`Departure: ${depTime.toLocaleString()}`);
+                }
+                if (flight.time?.scheduled?.arrival) {
+                    const arrTime = new Date(flight.time.scheduled.arrival * 1000);
+                    log(`Arrival: ${arrTime.toLocaleString()}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
+

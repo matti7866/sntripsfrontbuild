@@ -57,30 +57,6 @@ export default function CreateTicket() {
     loadDropdowns();
   }, []);
 
-  // Auto-fetch flight data when flight number and date are both set
-  useEffect(() => {
-    if (formData.flight_number && formData.flight_number.length >= 4 && formData.date_of_travel) {
-      const timer = setTimeout(() => {
-        console.log('Auto-fetching flight data for:', formData.flight_number);
-        fetchFlightData(formData.flight_number, 'departure');
-      }, 800); // Debounce 800ms
-      
-      return () => clearTimeout(timer);
-    }
-  }, [formData.flight_number, formData.date_of_travel]);
-
-  // Auto-fetch return flight data
-  useEffect(() => {
-    if (formData.return_flight_number && formData.return_flight_number.length >= 4 && formData.return_date && formData.flight_type === 'RT') {
-      const timer = setTimeout(() => {
-        console.log('Auto-fetching return flight data for:', formData.return_flight_number);
-        fetchFlightData(formData.return_flight_number, 'return');
-      }, 800);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [formData.return_flight_number, formData.return_date]);
-
   const loadDropdowns = async () => {
     try {
       const data = await ticketService.getDropdowns();
@@ -96,54 +72,23 @@ export default function CreateTicket() {
   };
 
   const handleInputChange = (field: string, value: any) => {
+    console.log(`Field changed: ${field} = ${value}`);
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    console.log('Field changed:', field, 'Value:', value);
-    
-    // Auto-fetch flight data when flight number is entered (and date is set)
+    // Auto-fetch flight data when flight number is entered
     if (field === 'flight_number' && value && value.length >= 4) {
-      console.log('Flight number entered, checking date...', formData.date_of_travel);
-      if (!formData.date_of_travel) {
-        Swal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: 'warning',
-          title: 'Please select travel date first',
-          showConfirmButton: false,
-          timer: 2000
-        });
-        return;
-      }
-      console.log('Fetching flight data for:', value);
+      console.log(`🛫 Triggering flight data fetch for: ${value}`);
       fetchFlightData(value, 'departure');
     } else if (field === 'return_flight_number' && value && value.length >= 4) {
-      if (!formData.return_date) {
-        Swal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: 'warning',
-          title: 'Please select return date first',
-          showConfirmButton: false,
-          timer: 2000
-        });
-        return;
-      }
+      console.log(`🛫 Triggering return flight data fetch for: ${value}`);
       fetchFlightData(value, 'return');
     }
   };
 
   const fetchFlightData = async (flightNumber: string, type: 'departure' | 'return') => {
-    console.log('fetchFlightData called with:', { flightNumber, type, date: type === 'departure' ? formData.date_of_travel : formData.return_date });
-    
     try {
-      Swal.fire({
-        title: 'Fetching Flight Data',
-        text: `Looking up ${flightNumber}...`,
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
+      console.log(`📡 Fetching flight data for: ${flightNumber}, Type: ${type}`);
+      console.log(`Travel date: ${type === 'departure' ? formData.date_of_travel : formData.return_date}`);
       
       const flight = await flightRadarService.trackFlight(
         flightNumber, 
@@ -157,9 +102,6 @@ export default function CreateTicket() {
         console.log('Extracted flight info:', flightInfo);
         
         // Find matching airports by IATA code
-        console.log('Looking for airports:', flightInfo.origin.iata, flightInfo.destination.iata);
-        console.log('Available airports:', airports.map(a => ({ id: a.airportID, code: a.airportCode, name: a.airport })));
-        
         const fromAirport = airports.find(a => 
           a.airportCode === flightInfo.origin.iata || 
           a.airport?.toUpperCase().includes(flightInfo.origin.iata)
@@ -169,7 +111,8 @@ export default function CreateTicket() {
           a.airport?.toUpperCase().includes(flightInfo.destination.iata)
         );
         
-        console.log('Matched airports:', { from: fromAirport, to: toAirport });
+        console.log('From airport match:', fromAirport);
+        console.log('To airport match:', toAirport);
         
         if (type === 'departure') {
           setFormData(prev => ({
@@ -179,15 +122,15 @@ export default function CreateTicket() {
             departure_time: flightInfo.departureTime || prev.departure_time,
             arrival_time: flightInfo.arrivalTime || prev.arrival_time,
           }));
+          console.log('✅ Updated departure flight data');
         } else {
           setFormData(prev => ({
             ...prev,
             return_departure_time: flightInfo.departureTime || prev.return_departure_time,
             return_arrival_time: flightInfo.arrivalTime || prev.return_arrival_time,
           }));
+          console.log('✅ Updated return flight data');
         }
-        
-        Swal.close();
         
         // Show success notification with all filled data
         Swal.fire({
@@ -207,25 +150,12 @@ export default function CreateTicket() {
           timer: 4000
         });
       } else {
-        Swal.close();
-        console.log('No flight data found');
+        console.log('❌ No flight data returned');
       }
     } catch (error: any) {
-      console.error('Error fetching flight data - FULL ERROR:', error);
-      console.error('Error message:', error.message);
-      console.error('Error response:', error.response);
-      
-      Swal.close();
-      
-      Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'error',
-        title: 'Could not fetch flight data',
-        text: error.message || 'Please enter manually',
-        showConfirmButton: false,
-        timer: 3000
-      });
+      console.error('❌ Error fetching flight data:', error);
+      console.error('Error details:', error.message, error.stack);
+      // Silent fail - user can still enter manually
     }
   };
 
@@ -430,49 +360,25 @@ export default function CreateTicket() {
               helpText={isOneWay ? 'Only for Round Trip flights' : ''}
             />
             
-            <div style={{ position: 'relative' }}>
-              <FormField
-                label="Flight Number"
-                name="flight_number"
-                value={formData.flight_number}
-                onChange={(value) => handleInputChange('flight_number', value)}
-                icon="fa fa-hashtag"
-                placeholder="e.g. EK001"
-              />
-              {formData.flight_number && formData.flight_number.length >= 3 && formData.date_of_travel && (
-                <button
-                  type="button"
-                  onClick={() => fetchFlightData(formData.flight_number, 'departure')}
-                  className="btn btn-sm btn-primary"
-                  style={{ position: 'absolute', right: '0', top: '32px', zIndex: 10 }}
-                >
-                  <i className="fa fa-plane"></i> Fetch Info
-                </button>
-              )}
-            </div>
+            <FormField
+              label="Flight Number"
+              name="flight_number"
+              value={formData.flight_number}
+              onChange={(value) => handleInputChange('flight_number', value)}
+              icon="fa fa-hashtag"
+              placeholder="e.g. AA123"
+            />
             
-            <div style={{ position: 'relative' }}>
-              <FormField
-                label="Return Flight Number"
-                name="return_flight_number"
-                value={formData.return_flight_number}
-                onChange={(value) => handleInputChange('return_flight_number', value)}
-                disabled={isOneWay}
-                icon="fa fa-hashtag"
-                placeholder="e.g. EK002"
-                helpText={isOneWay ? 'Only for Round Trip flights' : ''}
-              />
-              {!isOneWay && formData.return_flight_number && formData.return_flight_number.length >= 3 && formData.return_date && (
-                <button
-                  type="button"
-                  onClick={() => fetchFlightData(formData.return_flight_number, 'return')}
-                  className="btn btn-sm btn-primary"
-                  style={{ position: 'absolute', right: '0', top: '32px', zIndex: 10 }}
-                >
-                  <i className="fa fa-plane"></i> Fetch Info
-                </button>
-              )}
-            </div>
+            <FormField
+              label="Return Flight Number"
+              name="return_flight_number"
+              value={formData.return_flight_number}
+              onChange={(value) => handleInputChange('return_flight_number', value)}
+              disabled={isOneWay}
+              icon="fa fa-hashtag"
+              placeholder="e.g. AA456"
+              helpText={isOneWay ? 'Only for Round Trip flights' : ''}
+            />
             
             <FormField
               label="Departure Time"
