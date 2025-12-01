@@ -231,6 +231,7 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* Visa & Employment */}
