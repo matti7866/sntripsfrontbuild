@@ -9,6 +9,7 @@ import AttachmentsModal from '../../components/residence/AttachmentsModal';
 import TawjeehModal from '../../components/residence/TawjeehModal';
 import ILOEModal from '../../components/residence/ILOEModal';
 import RemarksModal from '../../components/residence/RemarksModal';
+import PendingPaymentsModal from '../../components/residence/PendingPaymentsModal';
 import './ResidenceTasks.css';
 
 interface ResidenceTask {
@@ -111,7 +112,10 @@ export default function ResidenceTasks() {
   const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
   const [showRemarksModal, setShowRemarksModal] = useState(false);
   const [showRemarksHistory, setShowRemarksHistory] = useState(false);
+  const [showPendingPaymentsModal, setShowPendingPaymentsModal] = useState(false);
   const [selectedResidenceId, setSelectedResidenceId] = useState<number | null>(null);
+  const [selectedCompanyNumber, setSelectedCompanyNumber] = useState<string>('');
+  const [selectedCompanyName, setSelectedCompanyName] = useState<string>('');
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -270,6 +274,14 @@ export default function ResidenceTasks() {
       buttons.push(
         <button key="continue" className="btn btn-success btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowOfferLetterModal(true); }}>
           Continue
+        </button>,
+        <button 
+          key="doc-verify" 
+          className="btn btn-info btn-sm" 
+          onClick={() => handleDocumentVerification(residence)}
+          title="Check Document Verification"
+        >
+          <i className="fa fa-file-check"></i> Doc Verify
         </button>
       );
     } else if (step === '2') {
@@ -345,6 +357,24 @@ export default function ResidenceTasks() {
           }}
         >
           Reject
+        </button>,
+        <button 
+          key="pending-payments" 
+          className="btn btn-warning btn-sm" 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (residence.company_number) {
+              setSelectedCompanyNumber(residence.company_number);
+              setSelectedCompanyName(residence.company_name);
+              setShowPendingPaymentsModal(true);
+            } else {
+              Swal.fire('Error', 'Company number not found for this residence', 'error');
+            }
+          }}
+          title="View Pending Payments"
+        >
+          <i className="fa fa-money-bill-wave"></i> Pending Payments
         </button>
       );
     } else if (step === '4a') {
@@ -417,6 +447,76 @@ export default function ResidenceTasks() {
       Swal.fire('Success', `E-Visa ${status} successfully`, 'success');
     } catch (error: any) {
       Swal.fire('Error', error.response?.data?.message || 'Failed to update status', 'error');
+    }
+  };
+
+  const handleDocumentVerification = async (residence: ResidenceTask) => {
+    if (!residence.passportNumber) {
+      Swal.fire('Error', 'Passport number not found', 'error');
+      return;
+    }
+
+    if (!residence.countryName) {
+      Swal.fire('Error', 'Nationality information not found', 'error');
+      return;
+    }
+
+    try {
+      Swal.fire({
+        title: 'Checking Document Verification',
+        html: 'Please wait while we check the verification status...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // Get nationality code from lookups
+      const nationality = lookups.nationalities.find(
+        (n) => n.countryName === residence.countryName
+      );
+
+      if (!nationality) {
+        Swal.fire('Error', 'Nationality code not found', 'error');
+        return;
+      }
+
+      const response = await fetch(
+        `https://api.sntrips.com/trx/verify.php?passportNumber=${residence.passportNumber}&nationalityCode=${nationality.airport_id}&residenceID=${residence.residenceID}`
+      );
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        await loadTasks(); // Reload to show updated status
+        
+        const statusLower = data.data.verification_status.toLowerCase();
+        let icon: 'success' | 'error' | 'info' | 'warning' = 'info';
+        
+        if (statusLower.includes('approved') || statusLower.includes('verified')) {
+          icon = 'success';
+        } else if (statusLower.includes('rejected') || statusLower.includes('denied')) {
+          icon = 'error';
+        } else if (statusLower.includes('pending')) {
+          icon = 'warning';
+        }
+
+        Swal.fire({
+          title: 'Verification Status',
+          html: `
+            <div style="text-align: left;">
+              <p><strong>Passport:</strong> ${residence.passportNumber}</p>
+              <p><strong>Status:</strong> <span style="font-weight: bold; color: ${icon === 'success' ? 'green' : icon === 'error' ? 'red' : icon === 'warning' ? 'orange' : 'blue'};">${data.data.verification_status}</span></p>
+            </div>
+          `,
+          icon: icon,
+          confirmButtonText: 'OK'
+        });
+      } else {
+        Swal.fire('Error', data.message || 'Failed to check verification status', 'error');
+      }
+    } catch (error: any) {
+      console.error('Error checking document verification:', error);
+      Swal.fire('Error', 'Failed to check document verification', 'error');
     }
   };
 
@@ -787,6 +887,38 @@ export default function ResidenceTasks() {
                         />
                         <strong>{residence.passenger_name.toUpperCase()}</strong>
                         {residence.uid && <><br /><strong>UID: </strong>{residence.uid}</>}
+                        {residence.document_verify && (
+                          <>
+                            <br />
+                            <strong>Doc Verify: </strong>
+                            <span 
+                              className={
+                                residence.document_verify.toLowerCase().includes('approved') || residence.document_verify.toLowerCase().includes('verified')
+                                  ? 'badge bg-success'
+                                  : residence.document_verify.toLowerCase().includes('rejected') || residence.document_verify.toLowerCase().includes('denied')
+                                  ? 'badge bg-danger'
+                                  : residence.document_verify.toLowerCase().includes('pending')
+                                  ? 'badge bg-warning text-dark'
+                                  : residence.document_verify.toLowerCase().includes('no data')
+                                  ? 'badge bg-secondary'
+                                  : 'badge bg-info'
+                              }
+                              style={{ fontSize: '0.75rem' }}
+                            >
+                              {residence.document_verify}
+                            </span>
+                            {residence.document_verify_datetime && (
+                              <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>
+                                {new Date(residence.document_verify_datetime).toLocaleString('en-US', { 
+                                  month: 'short', 
+                                  day: 'numeric', 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })}
+                              </small>
+                            )}
+                          </>
+                        )}
                         <br />
                         <strong>Sale Price: </strong>{residence.sale_price.toLocaleString()}
                         <br />
@@ -1178,6 +1310,18 @@ export default function ResidenceTasks() {
           )}
         </>
       )}
+
+      {/* Pending Payments Modal */}
+      <PendingPaymentsModal
+        isOpen={showPendingPaymentsModal}
+        onClose={() => {
+          setShowPendingPaymentsModal(false);
+          setSelectedCompanyNumber('');
+          setSelectedCompanyName('');
+        }}
+        companyNumber={selectedCompanyNumber}
+        companyName={selectedCompanyName}
+      />
     </div>
   );
 }

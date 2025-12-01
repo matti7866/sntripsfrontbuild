@@ -1,0 +1,129 @@
+.pending-payments-modal {
+  padding: 0 !important;
+  margin: 0 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 1055 !important;
+  overflow: hidden !important;
+}
+
+/* Override modal-backdrop if it exists */
+.pending-payments-modal + .modal-backdrop,
+.modal-backdrop.show {
+  display: none !important;
+}
+
+.pending-payments-modal .modal-dialog {
+  max-width: 50vw !important;
+  width: 50vw !important;
+  margin: 25vh auto !important;
+  padding: 0 !important;
+  height: 50vh !important;
+  max-height: 50vh !important;
+  position: relative !important;
+  top: 0 !important;
+  left: auto !important;
+  right: auto !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  -moz-transform: none !important;
+  -ms-transform: none !important;
+  -o-transform: none !important;
+}
+
+.pending-payments-modal .modal-content {
+  height: 50vh !important;
+  max-height: 50vh !important;
+  width: 50vw !important;
+  max-width: 50vw !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-radius: 0.5rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.pending-payments-modal .modal-body {
+  overflow-y: auto;
+  overflow-x: auto;
+  flex: 1 1 auto;
+  padding: 1rem;
+}
+
+.pending-payments-modal .table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  flex: 1 1 auto;
+}
+
+.pending-payments-modal .table {
+  font-size: 0.9rem;
+  width: 100%;
+  min-width: 800px;
+  table-layout: fixed;
+  margin-bottom: 0;
+}
+
+.pending-payments-modal .table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #212529;
+}
+
+.pending-payments-modal .table td,
+.pending-payments-modal .table th {
+  vertical-align: middle;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.pending-payments-modal .table td:nth-child(2),
+.pending-payments-modal .table td:nth-child(3) {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.pending-payments-modal .card {
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pending-payments-modal .card-body {
+  padding: 1.5rem;
+}
+
+.pending-payments-modal .badge {
+  padding: 0.5rem 0.75rem;
+}
+
+.pending-payments-modal .modal-header {
+  flex-shrink: 0;
+  padding: 1rem 1.5rem;
+}
+
+.pending-payments-modal .modal-footer {
+  flex-shrink: 0;
+  padding: 1rem 1.5rem;
+}
+
+.pending-payments-modal .input-group {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pending-payments-modal .input-group-text {
+  background-color: #f8f9fa;
+  border-right: none;
+}
+
+.pending-payments-modal .form-control:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
