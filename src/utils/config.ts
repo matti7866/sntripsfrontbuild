@@ -6,7 +6,13 @@ export const config = {
   appVersion: import.meta.env.VITE_APP_VERSION || '2.0.0',
   tokenKey: 'snt_auth_token',
   userKey: 'snt_user_data',
+  // FlightRadar24 (for live tracking only)
   flightRadar24ApiKey: import.meta.env.VITE_FLIGHTRADAR24_API_KEY || '019ada0d-01b6-7345-90f8-0e34db2dd9a4|bQ9fMxameIRy70eSWy8RsB5niMKChyxb325sKip913459946',
+  // Amadeus (for flight schedules)
+  amadeusApiKey: import.meta.env.VITE_AMADEUS_API_KEY || 'rA2tBaCri6vD6NryFOnOwrz51Zm3aClC',
+  amadeusApiSecret: import.meta.env.VITE_AMADEUS_API_SECRET || 'Yd0BrUEasrEu3YA5',
+  // AviationStack (for flight schedules - free tier)
+  aviationstackApiKey: import.meta.env.VITE_AVIATIONSTACK_API_KEY || '5f42068dae82e0d9061615522f0209f5',
 };
 
 export default config;

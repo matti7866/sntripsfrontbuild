@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { FormField } from '../form';
-import flightRadarService from '../../services/flightRadarService';
-import Swal from 'sweetalert2';
 import type { Ticket, Supplier, Airport, Currency } from '../../types/ticket';
 import './Modal.css';
 
@@ -56,24 +54,20 @@ export default function EditTicketModal({
 
   const handleChange = (field: keyof Ticket, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Auto-fetch flight data when flight number is entered
-    if (field === 'flight_number' && value && value.length >= 4) {
-      fetchFlightData(value, 'departure');
-    } else if (field === 'return_flight_number' && value && value.length >= 4) {
-      fetchFlightData(value, 'return');
-    }
   };
 
   const fetchFlightData = async (flightNumber: string, type: 'departure' | 'return') => {
     try {
-      const flight = await flightRadarService.trackFlight(
-        flightNumber,
-        type === 'departure' ? formData.date_of_travel : formData.return_date
-      );
+      const travelDate = type === 'departure' ? formData.date_of_travel : formData.return_date;
+      
+      if (!travelDate) {
+        return;
+      }
+      
+      const flight = await aviationstackService.getFlightInfo(flightNumber, travelDate);
       
       if (flight) {
-        const flightInfo = flightRadarService.extractFlightInfo(flight);
+        const flightInfo = aviationstackService.extractFlightInfo(flight);
         
         // Find matching airports by IATA code
         const fromAirport = airports.find(a => 
@@ -109,9 +103,9 @@ export default function EditTicketModal({
           html: `
             <div style="text-align: left; font-size: 12px;">
               <strong>Route:</strong> ${flightInfo.origin.iata} → ${flightInfo.destination.iata}<br>
+              <strong>Aircraft:</strong> ${flightInfo.aircraft}<br>
               <strong>Departure:</strong> ${flightInfo.departureTime}<br>
-              <strong>Arrival:</strong> ${flightInfo.arrivalTime}<br>
-              <strong>Status:</strong> ${flightInfo.status}
+              <strong>Arrival:</strong> ${flightInfo.arrivalTime}
             </div>
           `,
           showConfirmButton: false,

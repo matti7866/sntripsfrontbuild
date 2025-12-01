@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ticketService from '../../services/ticketService';
-import flightRadarService from '../../services/flightRadarService';
 import Swal from 'sweetalert2';
 import FormField from '../../components/form/FormField';
 import FormSection from '../../components/form/FormSection';
@@ -72,33 +71,26 @@ export default function CreateTicket() {
   };
 
   const handleInputChange = (field: string, value: any) => {
-    console.log(`Field changed: ${field} = ${value}`);
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Auto-fetch flight data when flight number is entered
-    if (field === 'flight_number' && value && value.length >= 4) {
-      console.log(`🛫 Triggering flight data fetch for: ${value}`);
-      fetchFlightData(value, 'departure');
-    } else if (field === 'return_flight_number' && value && value.length >= 4) {
-      console.log(`🛫 Triggering return flight data fetch for: ${value}`);
-      fetchFlightData(value, 'return');
-    }
   };
 
   const fetchFlightData = async (flightNumber: string, type: 'departure' | 'return') => {
     try {
-      console.log(`📡 Fetching flight data for: ${flightNumber}, Type: ${type}`);
-      console.log(`Travel date: ${type === 'departure' ? formData.date_of_travel : formData.return_date}`);
+      const travelDate = type === 'departure' ? formData.date_of_travel : formData.return_date;
       
-      const flight = await flightRadarService.trackFlight(
-        flightNumber, 
-        type === 'departure' ? formData.date_of_travel : formData.return_date
-      );
+      if (!travelDate) {
+        console.log('⚠️ No travel date set, skipping flight lookup');
+        return;
+      }
       
-      console.log('Flight data received:', flight);
+      console.log(`📡 Fetching AviationStack data for: ${flightNumber}, Date: ${travelDate}`);
+      
+      const flight = await aviationstackService.getFlightInfo(flightNumber, travelDate);
+      
+      console.log('AviationStack flight data:', flight);
       
       if (flight) {
-        const flightInfo = flightRadarService.extractFlightInfo(flight);
+        const flightInfo = aviationstackService.extractFlightInfo(flight);
         console.log('Extracted flight info:', flightInfo);
         
         // Find matching airports by IATA code
@@ -132,7 +124,7 @@ export default function CreateTicket() {
           console.log('✅ Updated return flight data');
         }
         
-        // Show success notification with all filled data
+        // Show success notification
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -141,20 +133,19 @@ export default function CreateTicket() {
           html: `
             <div style="text-align: left; font-size: 12px;">
               <strong>Route:</strong> ${flightInfo.origin.iata} → ${flightInfo.destination.iata}<br>
+              <strong>Aircraft:</strong> ${flightInfo.aircraft}<br>
               <strong>Departure:</strong> ${flightInfo.departureTime}<br>
-              <strong>Arrival:</strong> ${flightInfo.arrivalTime}<br>
-              <strong>Status:</strong> ${flightInfo.status}
+              <strong>Arrival:</strong> ${flightInfo.arrivalTime}
             </div>
           `,
           showConfirmButton: false,
           timer: 4000
         });
       } else {
-        console.log('❌ No flight data returned');
+        console.log('❌ No flight data found for this date');
       }
     } catch (error: any) {
       console.error('❌ Error fetching flight data:', error);
-      console.error('Error details:', error.message, error.stack);
       // Silent fail - user can still enter manually
     }
   };
