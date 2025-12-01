@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { dashboardService } from '../../services/dashboardService';
 import type { TodayStats, DailyEntry, DashboardFilters } from '../../types/dashboard';
 import { EnhancedCalendar } from '../../components/dashboard/EnhancedCalendar';
+import NotesCard from '../../components/dashboard/NotesCard';
 import './DashboardRedesigned.css';
 
 export const DashboardRedesigned: React.FC = () => {
@@ -284,6 +285,9 @@ export const DashboardRedesigned: React.FC = () => {
             <EnhancedCalendar />
           </div>
         </div>
+
+        {/* Notes Section */}
+        <NotesCard />
 
         {/* Daily Entries Section - Admin Only */}
         {(user?.role_name === 'Admin' || user?.role_id === 1) && (

@@ -1,86 +1,176 @@
-.notes-dashboard-card .card-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 1rem 1.5rem;
+.notes-card-section {
+  /* Will inherit dashboard-section styles */
 }
 
-.notes-dashboard-card .card-header h5 {
-  color: white;
-  font-weight: 600;
-}
-
-.notes-dashboard-card .card-body {
-  padding: 1.5rem;
-  min-height: 250px;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.notes-tabs {
+.notes-card-actions {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  border-bottom: 2px solid #e5e7eb;
-  padding-bottom: 0.5rem;
+  align-items: center;
+  gap: 12px;
 }
 
-.notes-tab {
-  padding: 0.5rem 1rem;
+.category-select {
+  padding: 8px 12px;
   border: 1px solid #e5e7eb;
+  border-radius: 8px;
   background: white;
-  border-radius: 0.5rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 0.875rem;
-  color: #6b7280;
+  min-width: 150px;
+}
+
+.category-select:hover {
+  border-color: #3b82f6;
+}
+
+.category-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.save-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
   font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
-.notes-tab:hover {
+.save-indicator-idle {
   background: #f3f4f6;
-  border-color: #667eea;
-  color: #667eea;
+  color: #6b7280;
 }
 
-.notes-tab.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-color: #667eea;
-  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+.save-indicator-saving {
+  background: #fef3c7;
+  color: #d97706;
 }
 
-.notes-preview {
-  padding: 1rem;
+.save-indicator-saved {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.save-indicator-error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.notes-card-body {
+  padding: 0 !important;
+}
+
+.notes-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px;
   background: #f9fafb;
-  border-radius: 0.5rem;
-  min-height: 150px;
-  max-height: 250px;
-  overflow-y: auto;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 8px 8px 0 0;
 }
 
-.notes-content {
-  font-size: 0.9rem;
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.toolbar-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.toolbar-btn-save {
+  color: #3b82f6;
+}
+
+.toolbar-btn-save:hover {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: #e5e7eb;
+  margin: 0 4px;
+}
+
+.notes-editor {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  font-size: 14px;
   line-height: 1.6;
   color: #374151;
-  white-space: pre-wrap;
-  word-wrap: break-word;
 }
 
-.notes-content:empty::before {
-  content: 'No content in this category yet...';
-  color: #9ca3af;
+.notes-editor:focus {
+  outline: none;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Formatting styles within editor */
+.notes-editor strong,
+.notes-editor b {
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.notes-editor em,
+.notes-editor i {
   font-style: italic;
 }
 
-.notes-dashboard-card .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: none;
-  font-size: 0.875rem;
-  padding: 0.375rem 0.75rem;
+.notes-editor u {
+  text-decoration: underline;
 }
 
-.notes-dashboard-card .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+.notes-editor ul,
+.notes-editor ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.notes-editor li {
+  margin: 4px 0;
+}
+
+.notes-editor p {
+  margin: 8px 0;
+}
+
+/* Scrollbar styling */
+.notes-editor::-webkit-scrollbar {
+  width: 8px;
+}
+
+.notes-editor::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.notes-editor::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.notes-editor::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
