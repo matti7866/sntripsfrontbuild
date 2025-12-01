@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlightRadar24 API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button {
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #991b1b;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛫 FlightRadar24 API Test</h1>
+        
+        <div class="test-section">
+            <h3>Test 1: Search Flight</h3>
+            <input type="text" id="flightNumber" placeholder="Flight Number (e.g., EK001)" value="EK001">
+            <input type="date" id="flightDate" value="">
+            <button onclick="testSearchFlight()">Search Flight</button>
+            <div id="searchResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>API Configuration</h3>
+            <p><strong>API Key:</strong> 019ada0d-01b6-7345-90f8-0e34db2dd9a4|bQ9fMxameIRy70eSWy8RsB5niMKChyxb325sKip913459946</p>
+            <p><strong>Base URL:</strong> https://fr24api.flightradar24.com/v1</p>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '019ada0d-01b6-7345-90f8-0e34db2dd9a4|bQ9fMxameIRy70eSWy8RsB5niMKChyxb325sKip913459946';
+        const API_BASE = 'https://fr24api.flightradar24.com/v1';
+        
+        // Set today's date
+        document.getElementById('flightDate').value = new Date().toISOString().split('T')[0];
+        
+        async function testSearchFlight() {
+            const flightNumber = document.getElementById('flightNumber').value;
+            const resultDiv = document.getElementById('searchResult');
+            
+            if (!flightNumber) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Please enter a flight number';
+                return;
+            }
+            
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = 'Searching...';
+            
+            try {
+                // Try different endpoint formats
+                const endpoints = [
+                    `${API_BASE}/search/flight?query=${flightNumber}`,
+                    `${API_BASE}/flights/search?query=${flightNumber}`,
+                    `${API_BASE}/search?query=${flightNumber}&type=flight`,
+                    `https://api.flightradar24.com/common/v1/search.json?query=${flightNumber}&fetchBy=flight`
+                ];
+                
+                console.log('Testing API endpoints...');
+                
+                for (const endpoint of endpoints) {
+                    console.log('Trying:', endpoint);
+                    
+                    try {
+                        const response = await fetch(endpoint, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${API_KEY}`,
+                                'Accept': 'application/json',
+                            }
+                        });
+                        
+                        console.log(`Response from ${endpoint}:`, response.status);
+                        
+                        if (response.ok) {
+                            const text = await response.text();
+                            console.log('Response text:', text);
+                            
+                            let data;
+                            try {
+                                data = JSON.parse(text);
+                                console.log('Parsed data:', data);
+                                
+                                resultDiv.className = 'result';
+                                resultDiv.textContent = `✓ SUCCESS with endpoint:\n${endpoint}\n\n${JSON.stringify(data, null, 2)}`;
+                                return; // Success, exit
+                            } catch (e) {
+                                console.log('Response not JSON:', text);
+                            }
+                        }
+                    } catch (e) {
+                        console.log(`Failed with ${endpoint}:`, e.message);
+                    }
+                }
+                
+                // If we get here, all endpoints failed
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `All endpoints failed. Possible issues:
+                
+1. CORS Policy: FlightRadar24 API may not allow browser requests
+2. Wrong API endpoint format
+3. Invalid API key
+4. API requires server-side proxy
+
+Solution: Need to create a PHP proxy on your server to call FlightRadar24 API
+
+Check console for detailed attempt logs.`;
+                
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Error: ${error.message}\n\n${error.stack}\n\nCheck console for details`;
+            }
+        }
+    </script>
+</body>
+</html>
+

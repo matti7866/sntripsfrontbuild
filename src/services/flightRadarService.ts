@@ -1,82 +1,36 @@
-import axios from 'axios';
+import SDK from '@flightradar24/fr24sdk';
 import { config } from '../utils/config';
 
-const FLIGHTRADAR24_API_BASE = 'https://fr24api.flightradar24.com/v1';
+// Create a single client instance
+let clientInstance: any = null;
 
-interface FlightData {
-  identification?: {
-    id?: string;
-    number?: {
-      default?: string;
-    };
-    callsign?: string;
+const getClient = () => {
+  if (!clientInstance) {
+    clientInstance = new SDK.Client({ 
+      apiToken: config.flightRadar24ApiKey 
+    });
+  }
+  return clientInstance;
+};
+
+interface FlightInfo {
+  flightNumber: string;
+  airline: string;
+  aircraft: string;
+  departureTime: string;
+  arrivalTime: string;
+  departureDate: string;
+  arrivalDate: string;
+  status: string;
+  origin: {
+    name: string;
+    iata: string;
+    icao: string;
   };
-  status?: {
-    text?: string;
-    icon?: string;
-    estimated?: string;
-    real?: string;
-    diverted?: string;
-  };
-  aircraft?: {
-    model?: {
-      code?: string;
-      text?: string;
-    };
-    registration?: string;
-  };
-  airline?: {
-    name?: string;
-    code?: {
-      iata?: string;
-      icao?: string;
-    };
-  };
-  airport?: {
-    origin?: {
-      name?: string;
-      code?: {
-        iata?: string;
-        icao?: string;
-      };
-      position?: {
-        latitude?: number;
-        longitude?: number;
-      };
-      timezone?: {
-        name?: string;
-        offset?: number;
-      };
-    };
-    destination?: {
-      name?: string;
-      code?: {
-        iata?: string;
-        icao?: string;
-      };
-      position?: {
-        latitude?: number;
-        longitude?: number;
-      };
-      timezone?: {
-        name?: string;
-        offset?: number;
-      };
-    };
-  };
-  time?: {
-    scheduled?: {
-      departure?: number;
-      arrival?: number;
-    };
-    real?: {
-      departure?: number;
-      arrival?: number;
-    };
-    estimated?: {
-      departure?: number;
-      arrival?: number;
-    };
+  destination: {
+    name: string;
+    iata: string;
+    icao: string;
   };
 }
 
@@ -84,19 +38,18 @@ const flightRadarService = {
   /**
    * Search for flights by flight number
    */
-  async searchFlight(flightNumber: string): Promise<FlightData[]> {
+  async searchFlight(flightNumber: string): Promise<any[]> {
     try {
-      const response = await axios.get(`${FLIGHTRADAR24_API_BASE}/search/flight`, {
-        params: {
-          query: flightNumber,
-        },
-        headers: {
-          'Authorization': `Bearer ${config.flightRadar24ApiKey}`,
-          'Accept': 'application/json',
-        },
+      const client = getClient();
+      
+      // Use the search API
+      const result = await client.search.getByQuery({
+        query: flightNumber,
+        limit: 10
       });
       
-      return response.data?.results || [];
+      console.log('Search result:', result);
+      return result?.flights || [];
     } catch (error: any) {
       console.error('FlightRadar24 search error:', error);
       throw error;
@@ -106,16 +59,11 @@ const flightRadarService = {
   /**
    * Get flight details by flight ID
    */
-  async getFlightDetails(flightId: string): Promise<FlightData> {
+  async getFlightDetails(flightId: string): Promise<any> {
     try {
-      const response = await axios.get(`${FLIGHTRADAR24_API_BASE}/flight/${flightId}`, {
-        headers: {
-          'Authorization': `Bearer ${config.flightRadar24ApiKey}`,
-          'Accept': 'application/json',
-        },
-      });
-      
-      return response.data;
+      const client = getClient();
+      const flight = await client.flightSummary.get({ flightId });
+      return flight;
     } catch (error: any) {
       console.error('FlightRadar24 details error:', error);
       throw error;
@@ -125,25 +73,15 @@ const flightRadarService = {
   /**
    * Get live flight tracking data
    */
-  async trackFlight(flightNumber: string, date?: string): Promise<FlightData | null> {
+  async trackFlight(flightNumber: string, date?: string): Promise<any | null> {
     try {
+      console.log('Tracking flight:', flightNumber, 'on date:', date);
+      
       const flights = await this.searchFlight(flightNumber);
+      console.log('Found flights:', flights);
       
       if (flights && flights.length > 0) {
-        // If date provided, find flight matching that date
-        if (date) {
-          const targetDate = new Date(date);
-          const matchingFlight = flights.find((flight: any) => {
-            if (flight.time?.scheduled?.departure) {
-              const flightDate = new Date(flight.time.scheduled.departure * 1000);
-              return flightDate.toDateString() === targetDate.toDateString();
-            }
-            return false;
-          });
-          
-          return matchingFlight || flights[0];
-        }
-        
+        // Return the first matching flight
         return flights[0];
       }
       
@@ -155,62 +93,104 @@ const flightRadarService = {
   },
 
   /**
-   * Format flight times from unix timestamp
+   * Format flight times from unix timestamp or time string
    */
-  formatTime(timestamp?: number): string {
-    if (!timestamp) return '';
+  formatTime(timeValue?: number | string): string {
+    if (!timeValue) return '';
     
-    const date = new Date(timestamp * 1000);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
+    try {
+      let date: Date;
+      
+      if (typeof timeValue === 'number') {
+        // Unix timestamp
+        date = new Date(timeValue * 1000);
+      } else {
+        // ISO string or other format
+        date = new Date(timeValue);
+      }
+      
+      if (isNaN(date.getTime())) return '';
+      
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+    } catch (e) {
+      return '';
+    }
   },
 
   /**
-   * Format flight date from unix timestamp
+   * Format flight date
    */
-  formatDate(timestamp?: number): string {
-    if (!timestamp) return '';
+  formatDate(timeValue?: number | string): string {
+    if (!timeValue) return '';
     
-    const date = new Date(timestamp * 1000);
-    return date.toISOString().split('T')[0];
+    try {
+      let date: Date;
+      
+      if (typeof timeValue === 'number') {
+        date = new Date(timeValue * 1000);
+      } else {
+        date = new Date(timeValue);
+      }
+      
+      if (isNaN(date.getTime())) return '';
+      
+      return date.toISOString().split('T')[0];
+    } catch (e) {
+      return '';
+    }
   },
 
   /**
    * Get flight status text
    */
-  getStatus(flight: FlightData): string {
-    return flight.status?.text || 'Unknown';
+  getStatus(flight: any): string {
+    return flight?.status?.text || flight?.status || 'Scheduled';
   },
 
   /**
    * Extract useful flight info for ticket form
    */
-  extractFlightInfo(flight: FlightData) {
-    return {
-      flightNumber: flight.identification?.number?.default || '',
-      airline: flight.airline?.name || '',
-      aircraft: flight.aircraft?.model?.text || '',
-      departureTime: this.formatTime(flight.time?.scheduled?.departure || flight.time?.estimated?.departure),
-      arrivalTime: this.formatTime(flight.time?.scheduled?.arrival || flight.time?.estimated?.arrival),
-      departureDate: this.formatDate(flight.time?.scheduled?.departure),
-      arrivalDate: this.formatDate(flight.time?.scheduled?.arrival),
+  extractFlightInfo(flight: any): FlightInfo {
+    console.log('Extracting info from flight:', flight);
+    
+    const info: FlightInfo = {
+      flightNumber: flight?.flight?.identification?.number?.default || flight?.flightNumber || '',
+      airline: flight?.airline?.name || flight?.airline || '',
+      aircraft: flight?.aircraft?.model?.text || flight?.aircraft || '',
+      departureTime: this.formatTime(flight?.time?.scheduled?.departure || flight?.departureTime),
+      arrivalTime: this.formatTime(flight?.time?.scheduled?.arrival || flight?.arrivalTime),
+      departureDate: this.formatDate(flight?.time?.scheduled?.departure || flight?.departureDate),
+      arrivalDate: this.formatDate(flight?.time?.scheduled?.arrival || flight?.arrivalDate),
       status: this.getStatus(flight),
       origin: {
-        name: flight.airport?.origin?.name || '',
-        iata: flight.airport?.origin?.code?.iata || '',
-        icao: flight.airport?.origin?.code?.icao || '',
+        name: flight?.airport?.origin?.name || flight?.origin?.name || '',
+        iata: flight?.airport?.origin?.code?.iata || flight?.origin?.iata || '',
+        icao: flight?.airport?.origin?.code?.icao || flight?.origin?.icao || '',
       },
       destination: {
-        name: flight.airport?.destination?.name || '',
-        iata: flight.airport?.destination?.code?.iata || '',
-        icao: flight.airport?.destination?.code?.icao || '',
+        name: flight?.airport?.destination?.name || flight?.destination?.name || '',
+        iata: flight?.airport?.destination?.code?.iata || flight?.destination?.iata || '',
+        icao: flight?.airport?.destination?.code?.icao || flight?.destination?.icao || '',
       },
     };
+    
+    console.log('Extracted flight info:', info);
+    return info;
   },
+
+  /**
+   * Close the client (cleanup)
+   */
+  close() {
+    if (clientInstance) {
+      clientInstance.close();
+      clientInstance = null;
+    }
+  }
 };
 
 export default flightRadarService;
-
