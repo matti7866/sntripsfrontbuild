@@ -330,19 +330,21 @@
   margin-bottom: 20px;
 }
 
-@media (min-width: 1400px) {
+@media (min-width: 1600px) {
   .dashboard-content-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
-@media (min-width: 1200px) and (max-width: 1399px) {
+@media (min-width: 1200px) and (max-width: 1599px) {
+  .dashboard-content-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
   .dashboard-content-grid {
     grid-template-columns: 1fr 1fr;
-  }
-  
-  .entries-section {
-    grid-column: 1 / -1;
   }
 }
 
@@ -362,6 +364,10 @@
 
 .notes-card-section {
   animation-delay: 0.6s;
+}
+
+.flight-tracker-section {
+  animation-delay: 0.65s;
 }
 
 .entries-section {

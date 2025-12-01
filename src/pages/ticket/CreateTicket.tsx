@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ticketService from '../../services/ticketService';
+import flightRadarService from '../../services/flightRadarService';
 import Swal from 'sweetalert2';
 import FormField from '../../components/form/FormField';
 import FormSection from '../../components/form/FormSection';
@@ -72,6 +73,73 @@ export default function CreateTicket() {
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Auto-fetch flight data when flight number is entered
+    if (field === 'flight_number' && value && value.length >= 4) {
+      fetchFlightData(value, 'departure');
+    } else if (field === 'return_flight_number' && value && value.length >= 4) {
+      fetchFlightData(value, 'return');
+    }
+  };
+
+  const fetchFlightData = async (flightNumber: string, type: 'departure' | 'return') => {
+    try {
+      const flight = await flightRadarService.trackFlight(
+        flightNumber, 
+        type === 'departure' ? formData.date_of_travel : formData.return_date
+      );
+      
+      if (flight) {
+        const flightInfo = flightRadarService.extractFlightInfo(flight);
+        
+        // Find matching airports by IATA code
+        const fromAirport = airports.find(a => 
+          a.airportCode === flightInfo.origin.iata || 
+          a.airport?.toUpperCase().includes(flightInfo.origin.iata)
+        );
+        const toAirport = airports.find(a => 
+          a.airportCode === flightInfo.destination.iata || 
+          a.airport?.toUpperCase().includes(flightInfo.destination.iata)
+        );
+        
+        if (type === 'departure') {
+          setFormData(prev => ({
+            ...prev,
+            from_id: fromAirport?.airportID || prev.from_id,
+            to_id: toAirport?.airportID || prev.to_id,
+            departure_time: flightInfo.departureTime || prev.departure_time,
+            arrival_time: flightInfo.arrivalTime || prev.arrival_time,
+          }));
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            return_departure_time: flightInfo.departureTime || prev.return_departure_time,
+            return_arrival_time: flightInfo.arrivalTime || prev.return_arrival_time,
+          }));
+        }
+        
+        // Show success notification with all filled data
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: `✓ Flight ${flightNumber}`,
+          html: `
+            <div style="text-align: left; font-size: 12px;">
+              <strong>Route:</strong> ${flightInfo.origin.iata} → ${flightInfo.destination.iata}<br>
+              <strong>Departure:</strong> ${flightInfo.departureTime}<br>
+              <strong>Arrival:</strong> ${flightInfo.arrivalTime}<br>
+              <strong>Status:</strong> ${flightInfo.status}
+            </div>
+          `,
+          showConfirmButton: false,
+          timer: 4000
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching flight data:', error);
+      // Silent fail - user can still enter manually
+    }
   };
 
   const handlePassengerChange = (index: number, field: keyof TicketPassenger, value: any) => {

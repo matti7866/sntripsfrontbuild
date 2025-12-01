@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { calendarService } from '../../services/calendarService';
+import flightRadarService from '../../services/flightRadarService';
 import type { Cheque, Flight, CustomEvent, CalendarEvent } from '../../types/calendar';
 import Swal from 'sweetalert2';
 import storage from '../../utils/storage';
@@ -99,7 +100,7 @@ export const EnhancedCalendar: React.FC = () => {
     };
   };
 
-  const handleDateClick = (date: Date) => {
+  const handleDateClick = async (date: Date) => {
     const eventInfo = getEventInfo(date);
     const formattedDate = date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     
@@ -107,7 +108,7 @@ export const EnhancedCalendar: React.FC = () => {
       // Show events with option to add new event
       let eventDetails = '<div style="text-align: left;">';
       
-      eventInfo.events.forEach(event => {
+      for (const event of eventInfo.events) {
         let icon = '';
         let color = '';
         
@@ -127,9 +128,29 @@ export const EnhancedCalendar: React.FC = () => {
             const flight = event.details as Flight;
             icon = '✈️';
             color = '#3b82f6';
+            
+            // Try to get flight status if flight number exists
+            let flightStatusHtml = '';
+            if ((flight as any).flight_number) {
+              try {
+                const flightData = await flightRadarService.trackFlight(
+                  (flight as any).flight_number,
+                  flight.date_of_travel
+                );
+                if (flightData) {
+                  const info = flightRadarService.extractFlightInfo(flightData);
+                  const statusColor = info.status.toLowerCase().includes('delay') ? '#dc2626' : '#10b981';
+                  flightStatusHtml = `<br><span style="padding: 2px 8px; background: ${statusColor}; color: white; border-radius: 4px; font-size: 11px;">${info.status}</span>
+                  <br>Departure: ${info.departureTime} | Arrival: ${info.arrivalTime}`;
+                }
+              } catch (e) {
+                console.log('Could not fetch flight status');
+              }
+            }
+            
             eventDetails += `
               <div style="margin-bottom: 15px; padding: 10px; border-left: 4px solid ${color}; background: rgba(59, 130, 246, 0.1);">
-                <strong>${icon} ${event.title}</strong><br>
+                <strong>${icon} ${event.title}</strong>${flightStatusHtml}<br>
                 <small>Customer: ${flight.customer_name}<br>
                 Passenger: ${flight.passenger_name}<br>
                 Departure: ${flight.date_of_travel}</small>
@@ -168,7 +189,7 @@ export const EnhancedCalendar: React.FC = () => {
               </div>`;
             break;
         }
-      });
+      }
       
       eventDetails += '</div>';
       

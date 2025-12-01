@@ -120,6 +120,25 @@ const ticketService = {
       ticket_id: ticketId,
       ...data
     });
+  },
+
+  // Get upcoming flights
+  getUpcomingFlights: async (filters?: { startDate?: string; endDate?: string }): Promise<any[]> => {
+    const params = new URLSearchParams();
+    
+    if (filters?.startDate) params.append('startDate', filters.startDate);
+    if (filters?.endDate) params.append('endDate', filters.endDate);
+    
+    const queryString = params.toString();
+    const url = `/ticket/upcoming.php${queryString ? `?${queryString}` : ''}`;
+    
+    try {
+      const response = await apiClient.get(url);
+      return response.data.data || [];
+    } catch (error) {
+      // Fallback to regular tickets filtered by date
+      return ticketService.getTickets(filters);
+    }
   }
 };
 

@@ -5,6 +5,7 @@ import { dashboardService } from '../../services/dashboardService';
 import type { TodayStats, DailyEntry, DashboardFilters } from '../../types/dashboard';
 import { EnhancedCalendar } from '../../components/dashboard/EnhancedCalendar';
 import NotesCard from '../../components/dashboard/NotesCard';
+import FlightTrackerCard from '../../components/dashboard/FlightTrackerCard';
 import './DashboardRedesigned.css';
 
 export const DashboardRedesigned: React.FC = () => {
@@ -288,6 +289,9 @@ export const DashboardRedesigned: React.FC = () => {
 
         {/* Notes Section */}
         <NotesCard />
+
+        {/* Flight Tracker Section */}
+        <FlightTrackerCard />
 
         {/* Daily Entries Section - Admin Only */}
         {(user?.role_name === 'Admin' || user?.role_id === 1) && (
