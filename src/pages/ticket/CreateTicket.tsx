@@ -57,6 +57,30 @@ export default function CreateTicket() {
     loadDropdowns();
   }, []);
 
+  // Auto-fetch flight data when flight number and date are both set
+  useEffect(() => {
+    if (formData.flight_number && formData.flight_number.length >= 4 && formData.date_of_travel) {
+      const timer = setTimeout(() => {
+        console.log('Auto-fetching flight data for:', formData.flight_number);
+        fetchFlightData(formData.flight_number, 'departure');
+      }, 800); // Debounce 800ms
+      
+      return () => clearTimeout(timer);
+    }
+  }, [formData.flight_number, formData.date_of_travel]);
+
+  // Auto-fetch return flight data
+  useEffect(() => {
+    if (formData.return_flight_number && formData.return_flight_number.length >= 4 && formData.return_date && formData.flight_type === 'RT') {
+      const timer = setTimeout(() => {
+        console.log('Auto-fetching return flight data for:', formData.return_flight_number);
+        fetchFlightData(formData.return_flight_number, 'return');
+      }, 800);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [formData.return_flight_number, formData.return_date]);
+
   const loadDropdowns = async () => {
     try {
       const data = await ticketService.getDropdowns();
@@ -406,25 +430,49 @@ export default function CreateTicket() {
               helpText={isOneWay ? 'Only for Round Trip flights' : ''}
             />
             
-            <FormField
-              label="Flight Number"
-              name="flight_number"
-              value={formData.flight_number}
-              onChange={(value) => handleInputChange('flight_number', value)}
-              icon="fa fa-hashtag"
-              placeholder="e.g. AA123"
-            />
+            <div style={{ position: 'relative' }}>
+              <FormField
+                label="Flight Number"
+                name="flight_number"
+                value={formData.flight_number}
+                onChange={(value) => handleInputChange('flight_number', value)}
+                icon="fa fa-hashtag"
+                placeholder="e.g. EK001"
+              />
+              {formData.flight_number && formData.flight_number.length >= 3 && formData.date_of_travel && (
+                <button
+                  type="button"
+                  onClick={() => fetchFlightData(formData.flight_number, 'departure')}
+                  className="btn btn-sm btn-primary"
+                  style={{ position: 'absolute', right: '0', top: '32px', zIndex: 10 }}
+                >
+                  <i className="fa fa-plane"></i> Fetch Info
+                </button>
+              )}
+            </div>
             
-            <FormField
-              label="Return Flight Number"
-              name="return_flight_number"
-              value={formData.return_flight_number}
-              onChange={(value) => handleInputChange('return_flight_number', value)}
-              disabled={isOneWay}
-              icon="fa fa-hashtag"
-              placeholder="e.g. AA456"
-              helpText={isOneWay ? 'Only for Round Trip flights' : ''}
-            />
+            <div style={{ position: 'relative' }}>
+              <FormField
+                label="Return Flight Number"
+                name="return_flight_number"
+                value={formData.return_flight_number}
+                onChange={(value) => handleInputChange('return_flight_number', value)}
+                disabled={isOneWay}
+                icon="fa fa-hashtag"
+                placeholder="e.g. EK002"
+                helpText={isOneWay ? 'Only for Round Trip flights' : ''}
+              />
+              {!isOneWay && formData.return_flight_number && formData.return_flight_number.length >= 3 && formData.return_date && (
+                <button
+                  type="button"
+                  onClick={() => fetchFlightData(formData.return_flight_number, 'return')}
+                  className="btn btn-sm btn-primary"
+                  style={{ position: 'absolute', right: '0', top: '32px', zIndex: 10 }}
+                >
+                  <i className="fa fa-plane"></i> Fetch Info
+                </button>
+              )}
+            </div>
             
             <FormField
               label="Departure Time"
