@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import dashboardService from '../../services/dashboardService';
 import type { TodayStats, DailyEntry } from '../../types/dashboard';
 import EnhancedCalendar from '../../components/dashboard/EnhancedCalendar';
+import NotesCard from '../../components/dashboard/NotesCard';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -168,6 +169,13 @@ export default function Dashboard() {
           ) : (
             <div className="alert alert-danger">Failed to load statistics</div>
           )}
+        </div>
+      </div>
+
+      {/* Notes Card */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <NotesCard />
         </div>
       </div>
 
