@@ -38,7 +38,7 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
 
   const loadCustomers = async () => {
     try {
-      const response = await customerService.searchCustomers({ page: 1, per_page: 1000 });
+      const response = await customerService.getCustomers({ page: 1, per_page: 1000 });
       setCustomers(response.data || []);
     } catch (error) {
       console.error('Error loading customers:', error);
