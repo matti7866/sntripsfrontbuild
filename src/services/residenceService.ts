@@ -1284,9 +1284,15 @@ const residenceService = {
   },
 
   /**
-   * Update basic residence information (sale price, insurance, tawjeeh, remarks, etc.)
+   * Update basic residence information (sale price, insurance, tawjeeh, remarks, passenger info, etc.)
    */
   async updateResidence(residenceID: number, data: {
+    passenger_name?: string;
+    passportNumber?: string;
+    passportExpiryDate?: string;
+    gender?: string;
+    dob?: string;
+    uid?: string;
     sale_price?: number;
     tawjeehIncluded?: number;
     tawjeeh_amount?: number;
