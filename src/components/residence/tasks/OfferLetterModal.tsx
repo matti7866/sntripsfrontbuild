@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import residenceService from '../../../services/residenceService';
 import SearchableSelect from '../../common/SearchableSelect';
+import * as pdfjsLib from 'pdfjs-dist';
 import '../../modals/Modal.css';
 
 interface OfferLetterModalProps {
@@ -38,6 +39,15 @@ export default function OfferLetterModal({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Initialize PDF.js worker
+  useEffect(() => {
+    // Use CDN worker that matches the installed version
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      console.log('PDF.js worker initialized with version:', pdfjsLib.version);
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen && residenceId) {
       // Reset form
@@ -63,9 +73,108 @@ export default function OfferLetterModal({
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+      const file = e.target.files[0];
+      setSelectedFile(file);
+      
+      console.log('File selected:', file.name, file.type);
+      
+      // Parse PDF to extract MB number and company name
+      if (file.type === 'application/pdf') {
+        try {
+          console.log('Starting PDF parsing...');
+          
+          const pdfText = await extractTextFromPDF(file);
+          console.log('Extracted PDF text length:', pdfText.length);
+          console.log('First 500 chars:', pdfText.substring(0, 500));
+          
+          await autoFillFromPDF(pdfText);
+          
+        } catch (error: any) {
+          console.error('Error parsing PDF - FULL ERROR:', error);
+          console.error('Error message:', error.message);
+          console.error('Error stack:', error.stack);
+          Swal.fire('Error', `PDF parsing failed: ${error.message}. Please enter manually.`, 'error');
+        }
+      }
+    }
+  };
+
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    // Exact copy from working PHP/JS code
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    const page = await pdf.getPage(1);
+    const textContent = await page.getTextContent();
+    const text = textContent.items.map((item: any) => item.str).join(' ');
+    
+    console.log('Extracted text:', text);
+    return text;
+  };
+
+  const autoFillFromPDF = async (pdfText: string) => {
+    console.log('PDF Text extracted:', pdfText.substring(0, 500));
+    
+    // Extract Transaction Number for MB Number (exact match from working PHP code)
+    const transactionNumberMatch = pdfText.match(/Transaction Number\s*[:\-]?\s*([A-Za-z0-9]+)/i);
+    if (transactionNumberMatch && transactionNumberMatch[1]) {
+      const mbNumber = transactionNumberMatch[1];
+      console.log('MB Number found:', mbNumber);
+      setFormData(prev => ({ ...prev, mbNumber }));
+      
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: `✓ MB Number: ${mbNumber}`,
+        showConfirmButton: false,
+        timer: 2000
+      });
+    } else {
+      console.log('Transaction Number not found in PDF');
+    }
+
+    // Extract Establishment Name (include & and stop before "Establishment No")
+    const establishmentMatch = pdfText.match(/Establishment Name\s*([A-Za-z\s&]+)/i);
+    if (establishmentMatch && establishmentMatch[1]) {
+      let establishmentName = establishmentMatch[1].trim();
+      
+      // Remove "Establishment No" and anything following it
+      const noIndex = establishmentName.toLowerCase().indexOf('establishment no');
+      if (noIndex !== -1) {
+        establishmentName = establishmentName.substring(0, noIndex).trim();
+      }
+      
+      const normalizedName = establishmentName.toUpperCase();
+      console.log('Extracted Establishment Name:', normalizedName);
+      
+      // Find matching company in the list (exact match on normalized name)
+      const matchedCompany = companies.find(company => {
+        const companyNameOnly = company.company_name.split(' (')[0].toUpperCase();
+        return companyNameOnly === normalizedName;
+      });
+      
+      if (matchedCompany) {
+        console.log('Matched company:', matchedCompany.company_name);
+        setFormData(prev => ({ ...prev, company_id: String(matchedCompany.company_id) }));
+        
+        setTimeout(() => {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: `✓ Company: ${matchedCompany.company_name}`,
+            showConfirmButton: false,
+            timer: 2000
+          });
+        }, 500);
+      } else {
+        console.log('Establishment not found in options:', normalizedName);
+        console.log('Available companies:', companies.map(c => c.company_name.split(' (')[0].toUpperCase()));
+      }
+    } else {
+      console.log('Establishment Name not found in PDF');
     }
   };
 
