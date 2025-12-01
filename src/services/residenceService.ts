@@ -1284,12 +1284,10 @@ const residenceService = {
   },
 
   /**
-   * Update basic residence information (sale price, insurance, tawjeeh, remarks, passenger info, customer info, etc.)
+   * Update basic residence information (sale price, insurance, tawjeeh, remarks, passenger info, customer reassignment, etc.)
    */
   async updateResidence(residenceID: number, data: {
-    customer_name?: string;
-    customer_phone?: string;
-    customer_email?: string;
+    customer_id?: number | null;
     passenger_name?: string;
     passportNumber?: string;
     passportExpiryDate?: string;

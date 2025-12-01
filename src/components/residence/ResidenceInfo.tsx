@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Residence } from '../../types/residence';
 import residenceService from '../../services/residenceService';
+import { customerService } from '../../services/customerService';
 import Button from '../common/Button';
+import SearchableSelect from '../form/SearchableSelect';
 import Swal from 'sweetalert2';
 
 interface ResidenceInfoProps {
@@ -12,9 +14,7 @@ interface ResidenceInfoProps {
 export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
-    customer_name: residence.customer_name || '',
-    customer_phone: residence.customer_phone || '',
-    customer_email: residence.customer_email || '',
+    customer_id: residence.customer_id || null,
     passenger_name: residence.passenger_name || '',
     passportNumber: residence.passportNumber || '',
     passportExpiryDate: residence.passportExpiryDate || '',
@@ -30,6 +30,20 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
     salary_amount: residence.salary_amount || 0,
   });
   const [saving, setSaving] = useState(false);
+  const [customers, setCustomers] = useState<any[]>([]);
+
+  useEffect(() => {
+    loadCustomers();
+  }, []);
+
+  const loadCustomers = async () => {
+    try {
+      const response = await customerService.searchCustomers({ page: 1, per_page: 1000 });
+      setCustomers(response.data || []);
+    } catch (error) {
+      console.error('Error loading customers:', error);
+    }
+  };
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
@@ -69,9 +83,7 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
 
   const handleCancel = () => {
     setEditData({
-      customer_name: residence.customer_name || '',
-      customer_phone: residence.customer_phone || '',
-      customer_email: residence.customer_email || '',
+      customer_id: residence.customer_id || null,
       passenger_name: residence.passenger_name || '',
       passportNumber: residence.passportNumber || '',
       passportExpiryDate: residence.passportExpiryDate || '',
@@ -116,33 +128,23 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
         {isEditing ? (
           <div className="space-y-3">
             <div>
-              <label className="text-gray-400 text-sm block mb-1">Customer Name:</label>
-              <input
-                type="text"
-                className="form-control"
-                value={editData.customer_name}
-                onChange={(e) => setEditData({ ...editData, customer_name: e.target.value })}
+              <label className="text-gray-400 text-sm block mb-1">Select Customer:</label>
+              <SearchableSelect
+                options={[
+                  { value: '', label: '-- Select Customer --' },
+                  ...customers.map(c => ({
+                    value: String(c.customer_id),
+                    label: `${c.customer_name} - ${c.customer_phone || 'No phone'}`
+                  }))
+                ]}
+                value={editData.customer_id ? String(editData.customer_id) : ''}
+                onChange={(value) => setEditData({ ...editData, customer_id: value ? Number(value) : null })}
+                placeholder="Search customer..."
               />
-            </div>
-            <div>
-              <label className="text-gray-400 text-sm block mb-1">Customer Phone:</label>
-              <input
-                type="text"
-                className="form-control"
-                value={editData.customer_phone}
-                onChange={(e) => setEditData({ ...editData, customer_phone: e.target.value })}
-                placeholder="971XXXXXXXXX"
-              />
-            </div>
-            <div>
-              <label className="text-gray-400 text-sm block mb-1">Customer Email:</label>
-              <input
-                type="email"
-                className="form-control"
-                value={editData.customer_email}
-                onChange={(e) => setEditData({ ...editData, customer_email: e.target.value })}
-                placeholder="customer@example.com"
-              />
+              <small className="text-muted d-block mt-1">
+                <i className="fa fa-info-circle me-1"></i>
+                Select a different customer to reassign this residence
+              </small>
             </div>
           </div>
         ) : (
