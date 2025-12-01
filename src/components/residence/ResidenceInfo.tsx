@@ -12,6 +12,12 @@ interface ResidenceInfoProps {
 export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
+    passenger_name: residence.passenger_name || '',
+    passportNumber: residence.passportNumber || '',
+    passportExpiryDate: residence.passportExpiryDate || '',
+    gender: residence.gender || '',
+    dob: residence.dob || '',
+    uid: residence.uid || '',
     sale_price: residence.sale_price || 0,
     tawjeehIncluded: residence.tawjeehIncluded || 0,
     tawjeeh_amount: residence.tawjeeh_amount || 150,
@@ -60,6 +66,12 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
 
   const handleCancel = () => {
     setEditData({
+      passenger_name: residence.passenger_name || '',
+      passportNumber: residence.passportNumber || '',
+      passportExpiryDate: residence.passportExpiryDate || '',
+      gender: residence.gender || '',
+      dob: residence.dob || '',
+      uid: residence.uid || '',
       sale_price: residence.sale_price || 0,
       tawjeehIncluded: residence.tawjeehIncluded || 0,
       tawjeeh_amount: residence.tawjeeh_amount || 150,
@@ -101,37 +113,99 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
           <i className="fa fa-passport mr-2"></i>
           Passenger Information
         </h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-400">Name:</span>
-            <span className="text-white font-medium">{residence.passenger_name}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Nationality:</span>
-            <span className="text-white">{residence.nationality_name || '-'}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">DOB:</span>
-            <span className="text-white">{formatDate(residence.dob)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Gender:</span>
-            <span className="text-white">{residence.gender || '-'}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-400">Passport:</span>
-            <span className="text-white">{residence.passportNumber || '-'}</span>
-          </div>
-          {residence.passportExpiryDate && (
-            <div className="flex justify-between">
-              <span className="text-gray-400">Passport Expiry:</span>
-              <span className="text-white">{formatDate(residence.passportExpiryDate)}</span>
+        {isEditing ? (
+          <div className="space-y-3">
+            <div>
+              <label className="text-gray-400 text-sm block mb-1">Passenger Name:</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editData.passenger_name}
+                onChange={(e) => setEditData({ ...editData, passenger_name: e.target.value })}
+              />
             </div>
-          )}
-          {residence.uid && (
+            <div>
+              <label className="text-gray-400 text-sm block mb-1">Passport Number:</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editData.passportNumber}
+                onChange={(e) => setEditData({ ...editData, passportNumber: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm block mb-1">Passport Expiry Date:</label>
+              <input
+                type="date"
+                className="form-control"
+                value={editData.passportExpiryDate}
+                onChange={(e) => setEditData({ ...editData, passportExpiryDate: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm block mb-1">Gender:</label>
+              <select
+                className="form-control"
+                value={editData.gender}
+                onChange={(e) => setEditData({ ...editData, gender: e.target.value })}
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm block mb-1">Date of Birth:</label>
+              <input
+                type="date"
+                className="form-control"
+                value={editData.dob}
+                onChange={(e) => setEditData({ ...editData, dob: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm block mb-1">UID Number:</label>
+              <input
+                type="text"
+                className="form-control"
+                value={editData.uid}
+                onChange={(e) => setEditData({ ...editData, uid: e.target.value })}
+                placeholder="Optional"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-400">UID:</span>
-              <span className="text-white">{residence.uid}</span>
+              <span className="text-gray-400">Name:</span>
+              <span className="text-white font-medium">{residence.passenger_name}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Nationality:</span>
+              <span className="text-white">{residence.nationality_name || '-'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">DOB:</span>
+              <span className="text-white">{formatDate(residence.dob)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Gender:</span>
+              <span className="text-white">{residence.gender || '-'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-400">Passport:</span>
+              <span className="text-white">{residence.passportNumber || '-'}</span>
+            </div>
+            {residence.passportExpiryDate && (
+              <div className="flex justify-between">
+                <span className="text-gray-400">Passport Expiry:</span>
+                <span className="text-white">{formatDate(residence.passportExpiryDate)}</span>
+              </div>
+            )}
+            {residence.uid && (
+              <div className="flex justify-between">
+                <span className="text-gray-400">UID:</span>
+                <span className="text-white">{residence.uid}</span>
             </div>
           )}
           {residence.EmiratesIDNumber && (
