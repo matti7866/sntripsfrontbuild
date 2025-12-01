@@ -74,25 +74,68 @@ export default function CreateTicket() {
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Auto-fetch flight data when flight number is entered
+    console.log('Field changed:', field, 'Value:', value);
+    
+    // Auto-fetch flight data when flight number is entered (and date is set)
     if (field === 'flight_number' && value && value.length >= 4) {
+      console.log('Flight number entered, checking date...', formData.date_of_travel);
+      if (!formData.date_of_travel) {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'warning',
+          title: 'Please select travel date first',
+          showConfirmButton: false,
+          timer: 2000
+        });
+        return;
+      }
+      console.log('Fetching flight data for:', value);
       fetchFlightData(value, 'departure');
     } else if (field === 'return_flight_number' && value && value.length >= 4) {
+      if (!formData.return_date) {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'warning',
+          title: 'Please select return date first',
+          showConfirmButton: false,
+          timer: 2000
+        });
+        return;
+      }
       fetchFlightData(value, 'return');
     }
   };
 
   const fetchFlightData = async (flightNumber: string, type: 'departure' | 'return') => {
+    console.log('fetchFlightData called with:', { flightNumber, type, date: type === 'departure' ? formData.date_of_travel : formData.return_date });
+    
     try {
+      Swal.fire({
+        title: 'Fetching Flight Data',
+        text: `Looking up ${flightNumber}...`,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+      
       const flight = await flightRadarService.trackFlight(
         flightNumber, 
         type === 'departure' ? formData.date_of_travel : formData.return_date
       );
       
+      console.log('Flight data received:', flight);
+      
       if (flight) {
         const flightInfo = flightRadarService.extractFlightInfo(flight);
+        console.log('Extracted flight info:', flightInfo);
         
         // Find matching airports by IATA code
+        console.log('Looking for airports:', flightInfo.origin.iata, flightInfo.destination.iata);
+        console.log('Available airports:', airports.map(a => ({ id: a.airportID, code: a.airportCode, name: a.airport })));
+        
         const fromAirport = airports.find(a => 
           a.airportCode === flightInfo.origin.iata || 
           a.airport?.toUpperCase().includes(flightInfo.origin.iata)
@@ -101,6 +144,8 @@ export default function CreateTicket() {
           a.airportCode === flightInfo.destination.iata || 
           a.airport?.toUpperCase().includes(flightInfo.destination.iata)
         );
+        
+        console.log('Matched airports:', { from: fromAirport, to: toAirport });
         
         if (type === 'departure') {
           setFormData(prev => ({
@@ -117,6 +162,8 @@ export default function CreateTicket() {
             return_arrival_time: flightInfo.arrivalTime || prev.return_arrival_time,
           }));
         }
+        
+        Swal.close();
         
         // Show success notification with all filled data
         Swal.fire({
@@ -135,10 +182,26 @@ export default function CreateTicket() {
           showConfirmButton: false,
           timer: 4000
         });
+      } else {
+        Swal.close();
+        console.log('No flight data found');
       }
-    } catch (error) {
-      console.error('Error fetching flight data:', error);
-      // Silent fail - user can still enter manually
+    } catch (error: any) {
+      console.error('Error fetching flight data - FULL ERROR:', error);
+      console.error('Error message:', error.message);
+      console.error('Error response:', error.response);
+      
+      Swal.close();
+      
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'error',
+        title: 'Could not fetch flight data',
+        text: error.message || 'Please enter manually',
+        showConfirmButton: false,
+        timer: 3000
+      });
     }
   };
 
