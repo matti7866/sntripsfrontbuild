@@ -109,10 +109,26 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
 
       {/* Passenger Information */}
       <div className="card p-4" style={{ backgroundColor: '#2d353c', border: '1px solid #495057' }}>
-        <h3 className="text-lg font-bold text-white mb-3 border-b border-gray-700 pb-2">
-          <i className="fa fa-passport mr-2"></i>
-          Passenger Information
-        </h3>
+        <div className="flex justify-between items-center mb-3 border-b border-gray-700 pb-2">
+          <h3 className="text-lg font-bold text-white">
+            <i className="fa fa-passport mr-2"></i>
+            Passenger Information
+          </h3>
+          {!isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-3 py-1 text-xs rounded"
+              style={{
+                background: 'linear-gradient(to right, #dc2626, #991b1b)',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              <i className="fa fa-edit mr-1"></i> Edit
+            </button>
+          )}
+        </div>
         {isEditing ? (
           <div className="space-y-3">
             <div>
