@@ -9,4 +9,12 @@ export default defineConfig({
     port: 5174,
     strictPort: false, // Try other ports if 5174 is busy
   },
+  optimizeDeps: {
+    include: ['pdfjs-dist']
+  },
+  build: {
+    commonjsOptions: {
+      include: [/pdfjs-dist/, /node_modules/]
+    }
+  }
 })

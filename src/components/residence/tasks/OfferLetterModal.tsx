@@ -2,8 +2,14 @@ import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import residenceService from '../../../services/residenceService';
 import SearchableSelect from '../../common/SearchableSelect';
-import * as pdfjsLib from 'pdfjs-dist';
 import '../../modals/Modal.css';
+
+// Declare pdfjs as global (loaded from CDN in index.html)
+declare global {
+  interface Window {
+    pdfjsLib: any;
+  }
+}
 
 interface OfferLetterModalProps {
   isOpen: boolean;
@@ -38,15 +44,6 @@ export default function OfferLetterModal({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Initialize PDF.js worker
-  useEffect(() => {
-    // Use CDN worker that matches the installed version
-    if (typeof pdfjsLib !== 'undefined') {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
-      console.log('PDF.js worker initialized with version:', pdfjsLib.version);
-    }
-  }, []);
 
   useEffect(() => {
     if (isOpen && residenceId) {
@@ -102,9 +99,13 @@ export default function OfferLetterModal({
   };
 
   const extractTextFromPDF = async (file: File): Promise<string> => {
-    // Exact copy from working PHP/JS code
+    // Use global pdfjsLib from CDN (loaded in index.html)
+    if (!window.pdfjsLib) {
+      throw new Error('PDF.js library not loaded');
+    }
+    
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    const pdf = await window.pdfjsLib.getDocument(arrayBuffer).promise;
     const page = await pdf.getPage(1);
     const textContent = await page.getTextContent();
     const text = textContent.items.map((item: any) => item.str).join(' ');
