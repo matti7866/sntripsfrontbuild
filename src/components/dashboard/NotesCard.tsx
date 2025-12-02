@@ -209,8 +209,8 @@ export default function NotesCard() {
           onBlur={handleEditorBlur}
           suppressContentEditableWarning={true}
           style={{
-            minHeight: '300px',
-            maxHeight: '400px',
+            minHeight: '800px',
+            maxHeight: '800px',
             overflowY: 'auto',
             padding: '16px',
             border: '1px solid #e5e7eb',

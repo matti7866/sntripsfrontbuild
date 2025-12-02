@@ -354,6 +354,9 @@
   animation: fadeInUp 0.8s ease;
   animation-fill-mode: backwards;
   border: none;
+  height: 800px;
+  display: flex;
+  flex-direction: column;
 }
 
 .calendar-section {
@@ -394,6 +397,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .section-title {
@@ -419,6 +423,10 @@
 .section-body {
   padding: 18px;
   border: none;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ============================================ */
