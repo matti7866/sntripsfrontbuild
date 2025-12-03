@@ -1,662 +1,637 @@
+/* Modern Ticket Copy Template - Red, Black, White Theme */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
 .ticket-copy-template {
   width: 100%;
-  max-width: 210mm; /* A4 width - for PDF */
-  margin: 0;
+  max-width: 210mm;
+  margin: 0 auto;
   background: white;
-  padding: 15px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
+  padding: 20px;
+  font-family: 'DM Sans', sans-serif;
+  color: #000000;
   box-sizing: border-box;
   position: relative;
-  background-image: 
-    linear-gradient(135deg, rgba(220, 38, 38, 0.03) 0%, transparent 50%),
-    linear-gradient(225deg, rgba(59, 130, 246, 0.03) 0%, transparent 50%);
-  display: block;
-  overflow: visible;
 }
 
-/* For PDF generation, use full A4 page with NO margins */
-@media print {
-  .ticket-copy-template {
-    padding: 0;
-    margin: 0;
-    max-width: 210mm;
-    width: 210mm;
-    min-height: 297mm; /* A4 height */
-  }
-  
-  .ticket-logo-section,
-  .ticket-section,
-  .ticket-title-section {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    border-radius: 0 !important;
-  }
-}
-
-.ticket-logo-section {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  background: #000000;
-  padding: 12px 15px;
-  border-radius: 0;
-  margin-bottom: 10px;
-  margin-left: 0;
-  margin-right: 0;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  width: 100%;
-}
-
-.ticket-logo {
-  height: 45px;
-  width: auto;
-  object-fit: contain;
-}
-
-.company-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.company-info p {
-  margin: 4px 0 0 0;
-  font-size: 12px;
-  color: #e5e7eb;
-}
-
-.license-no {
-  font-size: 10px !important;
-  color: #ffffff !important;
-  margin-top: 2px !important;
-  margin: 0 !important;
-}
-
-.ticket-type-badge {
-  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-  color: white;
-  padding: 8px 15px;
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
-}
-
-.badge-text {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-
-/* Title Section */
-.ticket-title-section {
-  text-align: center;
-  margin-bottom: 10px;
-  padding: 10px;
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  border-radius: 8px;
-}
-
-.ticket-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.ticket-title-section h2 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #1f2937;
-  letter-spacing: 1px;
-}
-
-.ticket-type-badge-small {
-  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-  color: white;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
-}
-
-.ticket-number-display {
-  font-size: 14px;
-  color: #374151;
-  margin-bottom: 5px;
-}
-
-.ticket-number-display span {
-  font-weight: 700;
-  color: #dc2626;
-  font-family: 'Courier New', monospace;
-}
-
-.pnr-display {
-  font-size: 12px;
-  color: #374151;
-}
-
-.pnr-display span {
-  font-weight: 700;
-  color: #1d4ed8;
-  font-family: 'Courier New', monospace;
-}
-
-/* Sections */
-.ticket-section {
-  margin-bottom: 8px;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  overflow: hidden;
+/* Main Ticket Card */
+.ticket-card {
   background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.section-header {
-  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
-  color: white;
-  padding: 8px 12px;
-  font-weight: 700;
-  font-size: 11px;
-  letter-spacing: 0.5px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.section-header i {
-  font-size: 14px;
-}
-
-.section-content {
-  padding: 10px;
-}
-
-/* For print/PDF - add internal padding but sections extend to edges */
-@media print {
-  .section-content {
-    padding: 6mm 4mm;
-  }
-  
-  .ticket-logo-section {
-    padding: 8mm 4mm !important;
-    margin-bottom: 6mm !important;
-  }
-  
-  .ticket-title-section {
-    padding: 6mm 4mm !important;
-    margin-bottom: 6mm !important;
-  }
-  
-  .ticket-section {
-    margin-bottom: 5mm !important;
-  }
-  
-  .ticket-footer {
-    margin-top: 6mm !important;
-    padding-top: 6mm !important;
-  }
-  
-  .flight-route {
-    padding: 6mm !important;
-    margin-bottom: 5mm !important;
-  }
-  
-  .price-grid {
-    padding: 6mm !important;
-  }
-}
-
-/* Info Grid */
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 8px;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.info-label {
-  font-size: 9px;
-  color: #6b7280;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.info-value {
-  font-size: 12px;
-  color: #1f2937;
-  font-weight: 600;
-}
-
-/* Flight Route */
-.flight-route {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  border-radius: 8px;
-  margin-bottom: 8px;
-}
-
-.airport-box {
-  text-align: center;
-  flex: 1;
-}
-
-.airport-code {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1d4ed8;
-  letter-spacing: 1.5px;
-  font-family: 'Arial Black', sans-serif;
-}
-
-.airport-label {
-  font-size: 10px;
-  color: #1e40af;
-  font-weight: 600;
-  margin-top: 3px;
-  text-transform: uppercase;
-}
-
-.flight-arrow {
-  flex: 0.5;
-  text-align: center;
+  border-radius: 16px;
+  border: 2px solid #000000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
   position: relative;
 }
 
-.flight-arrow i {
-  font-size: 32px;
-  color: #3b82f6;
-}
-
-.flight-number-label {
-  font-size: 9px;
-  color: #1e40af;
-  font-weight: 600;
-  margin-top: 3px;
-  background: white;
-  padding: 3px 10px;
-  border-radius: 15px;
-  display: inline-block;
-}
-
-/* Pricing */
-.price-grid {
-  background: #f9fafb;
-  padding: 10px;
-  border-radius: 8px;
-}
-
-.price-row {
+/* Header Section - Red Background */
+.ticket-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #e5e7eb;
+  justify-content: space-between;
+  padding: 24px 32px;
+  background: #dc2626;
+  color: white;
 }
 
-.price-row:last-child {
-  border-bottom: none;
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-.price-label {
-  font-size: 12px;
-  color: #374151;
+.ticket-logo-img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.agency-name {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.5px;
+  color: white;
+}
+
+.boarding-pass-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  opacity: 0.95;
+  margin: 4px 0 0 0;
+  color: white;
+}
+
+.header-right {
+  text-align: right;
+}
+
+.flight-label {
+  display: block;
+  font-size: 10px;
+  opacity: 0.9;
+  margin-bottom: 4px;
+  color: white;
+}
+
+.flight-number {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 2px;
+  color: white;
+}
+
+/* Booking Info Top Section */
+.booking-info-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  background: #f9fafb;
+  border-bottom: 2px solid #000000;
+  gap: 24px;
+}
+
+.booking-ref-section-top,
+.ticket-number-section-top {
+  flex: 1;
+  text-align: center;
+}
+
+.booking-label-top,
+.ticket-label-top {
+  display: block;
+  font-size: 9px;
+  color: #666666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
   font-weight: 600;
 }
 
-.price-value {
-  font-size: 14px;
-  color: #1f2937;
+.booking-ref-value-top,
+.ticket-number-value-top {
+  font-size: 20px;
   font-weight: 700;
-  font-family: 'Courier New', monospace;
+  color: #dc2626;
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 2px;
 }
 
-.total-row {
-  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-  margin: -10px -10px -10px -10px;
-  margin-top: 8px;
-  padding: 10px 12px !important;
-  border-bottom: none !important;
-  border-radius: 0 0 8px 8px;
-}
-
-.total-row .price-label,
-.total-row .price-value {
-  color: white;
-  font-size: 16px;
-}
-
-/* Remarks */
-.remarks-text {
-  font-size: 11px;
-  color: #4b5563;
-  line-height: 1.4;
-  margin: 0;
-  padding: 10px;
-  background: #fef3c7;
-  border-left: 3px solid #f59e0b;
-  border-radius: 4px;
-}
-
-/* Footer */
-.ticket-footer {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 2px solid #e5e7eb;
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 8px;
-  padding: 10px;
-  background: #f9fafb;
+.flight-type-badge-top {
+  padding: 10px 20px;
   border-radius: 8px;
+  background: #000000;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  white-space: nowrap;
 }
 
-.footer-section {
+/* Segments Section */
+.segments-section {
+  padding: 24px 32px;
+}
+
+.segment-card {
+  background: white;
+  border: 2px solid #000000;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.segment-card:last-child {
+  margin-bottom: 0;
+}
+
+.segment-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #000000;
+  font-size: 12px;
+  font-weight: 700;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.segment-header i {
+  font-size: 16px;
+  color: #dc2626;
+}
+
+/* Segment Route */
+.segment-route {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.segment-airport {
+  flex: 1;
+  text-align: center;
+}
+
+.segment-airport.departure-segment {
+  text-align: left;
+}
+
+.segment-airport.arrival-segment {
+  text-align: right;
+}
+
+.segment-airport-code {
+  font-size: 48px;
+  font-weight: 700;
+  color: #dc2626;
+  letter-spacing: 2px;
+  font-family: 'Arial Black', sans-serif;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.segment-airport-label {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
-  color: #374151;
+  font-size: 11px;
+  color: #666666;
+  font-weight: 600;
+  justify-content: flex-start;
 }
 
-.footer-section i {
+.segment-airport.arrival-segment .segment-airport-label {
+  justify-content: flex-end;
+}
+
+.segment-airport-label i {
+  font-size: 10px;
   color: #dc2626;
+}
+
+/* Segment Flight Path */
+.segment-flight-path {
+  flex: 1;
+  padding: 0 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.segment-path-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #000000, #dc2626, #000000);
+  opacity: 0.4;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.segment-path-dots {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1;
+}
+
+.segment-dot-start,
+.segment-dot-end {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #000000;
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
+}
+
+.segment-plane-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.segment-plane-icon i {
+  font-size: 16px;
+  color: white;
+  transform: rotate(90deg);
+}
+
+.segment-flight-number {
+  margin-top: 12px;
+  font-size: 10px;
+  color: #dc2626;
+  font-weight: 700;
+  background: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid #000000;
+  display: inline-block;
+}
+
+/* Segment Details */
+.segment-details {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.segment-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.segment-detail-label {
+  font-size: 9px;
+  color: #666666;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.segment-detail-item strong {
+  font-size: 14px;
+  color: #000000;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Passenger Card */
+.passenger-card {
+  background: #f9fafb;
+  border: 1px solid #000000;
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin: 0 32px 24px;
+}
+
+.passenger-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.passenger-header i {
+  font-size: 14px;
+  color: #dc2626;
+}
+
+.passenger-header span {
+  font-size: 10px;
+  color: #666666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.passenger-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.5px;
+}
+
+/* Details Grid */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 0 32px 24px;
+}
+
+.detail-item {
+  background: #f9fafb;
+  border: 1px solid #000000;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.detail-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.detail-label i {
+  font-size: 12px;
+  color: #dc2626;
+}
+
+.detail-label span {
+  font-size: 9px;
+  color: #666666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #000000;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Additional Information Section */
+.additional-info-section {
+  padding: 24px 32px;
+  border-top: 2px solid #000000;
+}
+
+.info-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.info-item-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label-modern {
+  font-size: 9px;
+  color: #666666;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.info-value-modern {
+  font-size: 13px;
+  color: #000000;
+  font-weight: 600;
+}
+
+/* Pricing Section */
+.pricing-section {
+  background: #dc2626;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.pricing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pricing-label {
+  font-size: 14px;
+  color: white;
+  font-weight: 600;
+}
+
+.pricing-value {
+  font-size: 20px;
+  color: white;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Remarks Section */
+.remarks-section {
+  background: #fff5f5;
+  border-left: 4px solid #dc2626;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.remarks-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 10px;
+  color: #dc2626;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.remarks-label i {
   font-size: 12px;
 }
 
-.footer-note {
-  text-align: center;
-  font-size: 9px;
-  color: #6b7280;
-  line-height: 1.4;
+.remarks-content {
+  font-size: 12px;
+  color: #000000;
+  line-height: 1.5;
 }
 
-.footer-note p {
-  margin: 4px 0;
+/* Bottom Bar */
+.ticket-bottom-bar {
+  background: #000000;
+  padding: 12px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.footer-note strong {
+.bottom-bar-text {
+  font-size: 10px;
+  color: white;
+  margin: 0;
+}
+
+.bottom-bar-eticket {
+  font-size: 10px;
+  color: white;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  margin: 0;
+}
+
+/* Footer Section */
+.ticket-footer-modern {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #000000;
+}
+
+.footer-info {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+  background: #f9fafb;
+  border: 1px solid #000000;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.footer-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #000000;
+}
+
+.footer-item i {
+  font-size: 12px;
   color: #dc2626;
 }
 
-.small-print {
+.footer-note-modern {
+  text-align: center;
+  font-size: 10px;
+  color: #666666;
+  line-height: 1.6;
+}
+
+.footer-note-modern p {
+  margin: 4px 0;
+}
+
+.footer-note-modern strong {
+  color: #dc2626;
+}
+
+.small-print-modern {
   font-size: 8px !important;
-  color: #9ca3af !important;
+  color: #999999 !important;
   margin-top: 8px !important;
   padding-top: 8px;
   border-top: 1px solid #e5e7eb;
 }
 
-/* Responsive Styles - Only apply when NOT in modal */
+/* Responsive Styles */
 @media (max-width: 768px) {
   .ticket-copy-template {
-    padding: 15px 10px;
-    max-width: 100%;
-    min-width: auto;
-  }
-  
-  /* Override for modal - maintain A4 width for proper display */
-  .modal-body .ticket-copy-template {
-    max-width: 100% !important;
-    width: 100% !important;
-    padding: 10px !important;
+    padding: 15px;
   }
 
-  .ticket-logo-section {
+  .ticket-header {
     flex-direction: column;
+    gap: 16px;
     text-align: center;
-    padding: 20px 15px;
-    gap: 15px;
   }
 
-  .ticket-logo {
-    height: 60px;
+  .header-right {
+    text-align: center;
   }
 
-  .company-info h1 {
-    font-size: 16px;
+  .booking-info-top {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
   }
 
-  .company-info p {
-    font-size: 11px;
+  .segment-route {
+    flex-direction: column;
+    gap: 20px;
   }
 
-  .ticket-title-section {
-    padding: 15px;
+  .segment-airport {
+    text-align: center !important;
   }
 
-  .ticket-title-section h2 {
-    font-size: 18px;
-    letter-spacing: 1px;
+  .segment-airport-label {
+    justify-content: center !important;
   }
 
-  .ticket-number-display {
-    font-size: 14px;
+  .segment-flight-path {
+    padding: 0;
+    width: 100%;
   }
 
-  .pnr-display {
-    font-size: 12px;
+  .segment-path-dots {
+    flex-direction: column;
   }
 
-  .section-header {
-    padding: 10px 15px;
-    font-size: 11px;
+  .segment-plane-icon {
+    transform: rotate(0deg);
   }
 
-  .section-content {
-    padding: 15px;
-  }
-
-  .info-grid {
+  .details-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    padding: 0 16px 16px;
   }
 
-  .flight-route {
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
+  .passenger-card {
+    margin: 0 16px 16px;
   }
 
-  .airport-box {
-    width: 100%;
+  .info-row {
+    grid-template-columns: 1fr;
   }
 
-  .airport-code {
-    font-size: 24px;
-  }
-
-  .flight-arrow {
-    transform: rotate(90deg);
-    flex: none;
-    margin: 8px 0;
-  }
-  
-  /* Keep horizontal layout in modal on tablet+ */
-  .modal-body .flight-route {
-    flex-direction: row !important;
-  }
-  
-  .modal-body .flight-arrow {
-    transform: none !important;
-  }
-
-  .flight-arrow i {
-    font-size: 30px;
-  }
-
-  .flight-number-label {
-    font-size: 10px;
-    padding: 3px 10px;
-  }
-
-  .price-grid {
-    padding: 15px;
-  }
-
-  .price-row {
+  .footer-info {
     flex-direction: column;
     align-items: flex-start;
-    gap: 5px;
-    padding: 10px 0;
-  }
-
-  .total-row {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .footer-content {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
-
-  .footer-section {
-    width: 100%;
-  }
-
-  .ticket-type-badge {
-    padding: 12px 20px;
-  }
-
-  .badge-icon {
-    font-size: 24px;
-  }
-
-  .badge-text {
-    font-size: 11px;
-  }
-}
-
-@media (max-width: 480px) {
-  .ticket-copy-template {
-    padding: 15px 10px;
-  }
-
-  .ticket-logo-section {
-    padding: 15px 10px;
-  }
-
-  .ticket-logo {
-    height: 50px;
-  }
-
-  .company-info h1 {
-    font-size: 14px;
-  }
-
-  .company-info p {
-    font-size: 10px;
-  }
-
-  .ticket-title-section h2 {
-    font-size: 16px;
-  }
-
-  .ticket-number-display {
-    font-size: 12px;
-  }
-
-  .pnr-display {
-    font-size: 11px;
-  }
-
-  .section-header {
-    padding: 8px 12px;
-    font-size: 10px;
-  }
-
-  .section-content {
-    padding: 12px;
-  }
-
-  .airport-code {
-    font-size: 24px;
-  }
-
-  .airport-label {
-    font-size: 10px;
-  }
-
-  .info-label {
-    font-size: 10px;
-  }
-
-  .info-value {
-    font-size: 12px;
-  }
-
-  .price-label {
-    font-size: 12px;
-  }
-
-  .price-value {
-    font-size: 14px;
-  }
-
-  .total-row .price-label,
-  .total-row .price-value {
-    font-size: 16px;
-  }
-
-  .remarks-text {
-    font-size: 12px;
-    padding: 12px;
-  }
-
-  .footer-section {
-    font-size: 11px;
-  }
-
-  .footer-note {
-    font-size: 10px;
-  }
-
-  .small-print {
-    font-size: 8px !important;
-  }
-}
-
-/* Tablet Styles */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .ticket-copy-template {
-    padding: 30px 25px;
-    max-width: 90%;
-  }
-
-  .ticket-logo {
-    height: 70px;
-  }
-
-  .company-info h1 {
-    font-size: 18px;
-  }
-
-  .airport-code {
-    font-size: 32px;
   }
 }
 
@@ -665,112 +640,77 @@
   @page {
     size: A4 portrait;
     margin: 0;
-    padding: 0;
   }
-  
+
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-  
-  body {
-    margin: 0;
-    padding: 0;
-    width: 210mm;
-    height: 297mm;
-  }
-  
+
   .ticket-copy-template {
     width: 210mm !important;
     max-width: 210mm !important;
-    height: 297mm !important;
-    max-height: 297mm !important;
     padding: 0 !important;
     margin: 0 !important;
-    overflow: hidden !important;
-    page-break-after: avoid !important;
-    page-break-inside: avoid !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-  
-  .ticket-logo-section {
-    padding: 5mm 4mm !important;
-    margin-bottom: 3mm !important;
-    flex-shrink: 0;
-  }
-  
-  .ticket-title-section {
-    padding: 4mm 3mm !important;
-    margin-bottom: 3mm !important;
-    flex-shrink: 0;
-  }
-  
-  .ticket-section {
-    margin-bottom: 3mm !important;
-    page-break-inside: avoid !important;
-    page-break-after: avoid !important;
-    flex-shrink: 1;
-    min-height: auto !important;
-  }
-  
-  .ticket-section:last-child {
-    margin-bottom: 0 !important;
-  }
-  
-  .section-content {
-    padding: 3mm 2mm !important;
-  }
-  
-  .flight-route {
-    padding: 3mm !important;
-    margin-bottom: 2mm !important;
-    flex-direction: row !important;
-  }
-  
-  .price-grid {
-    padding: 3mm !important;
-  }
-  
-  .ticket-footer {
-    margin-top: 3mm !important;
-    padding-top: 3mm !important;
-    flex-shrink: 0;
-  }
-  
-  .footer-content {
-    padding: 4mm !important;
-    margin-bottom: 2mm !important;
-  }
-  
-  .ticket-logo {
-    max-height: 40px !important;
-  }
-  
-  .airport-code {
-    font-size: 24px !important;
   }
 
-  .flight-arrow {
-    transform: none !important;
+  .ticket-card {
+    border-radius: 0;
+    box-shadow: none;
+    border: 2px solid #000000;
   }
-  
-  .ticket-title-section h2 {
-    font-size: 16px !important;
-    margin-bottom: 4px !important;
+
+  .ticket-header {
+    padding: 8mm 6mm !important;
+    background: #dc2626 !important;
   }
-  
-  .section-header {
-    padding: 5px 8px !important;
-    font-size: 10px !important;
+
+  .booking-info-top {
+    padding: 5mm 4mm !important;
   }
-  
-  .info-label {
-    font-size: 8px !important;
+
+  .segments-section {
+    padding: 5mm 4mm !important;
   }
-  
-  .info-value {
-    font-size: 10px !important;
+
+  .segment-card {
+    margin-bottom: 4mm !important;
+    padding: 4mm !important;
+  }
+
+  .passenger-card {
+    margin: 0 4mm 4mm !important;
+    padding: 4mm !important;
+  }
+
+  .details-grid {
+    padding: 0 4mm 4mm !important;
+    gap: 3mm !important;
+  }
+
+  .additional-info-section {
+    padding: 4mm !important;
+  }
+
+  .ticket-bottom-bar {
+    padding: 3mm 4mm !important;
+    background: #000000 !important;
+  }
+
+  .ticket-footer-modern {
+    margin-top: 4mm !important;
+    padding-top: 4mm !important;
+  }
+
+  .segment-airport-code {
+    font-size: 36px !important;
+  }
+
+  .agency-name {
+    font-size: 18px !important;
+  }
+
+  .flight-number {
+    font-size: 18px !important;
   }
 }
-

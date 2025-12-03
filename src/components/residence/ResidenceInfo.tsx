@@ -40,34 +40,51 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
   const loadCustomers = async () => {
     setLoadingCustomers(true);
     try {
-      console.log('Loading ALL customers for dropdown...');
-      const response = await customerService.getCustomers({ page: 1, per_page: 10000 }); // Request all customers
-      console.log('Customer response:', response);
-      console.log('Raw response.data:', response.data);
-      console.log('Is array?', Array.isArray(response.data));
-      console.log('First customer:', response.data?.[0]);
-      console.log('Number of customers loaded:', response.data?.length || 0);
-      console.log('Pagination info:', response.pagination);
+      console.log('Loading ALL customers for dropdown (fetching multiple pages)...');
       
-      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-        setCustomers(response.data);
-        console.log('✓ Successfully loaded', response.data.length, 'customers');
-        console.log('Sample customer fields:', Object.keys(response.data[0]));
-      } else {
-        console.error('⚠️ Invalid customers data structure or empty array:', response);
-        console.error('Response.data type:', typeof response.data);
-        console.error('Response.data value:', response.data);
-        setCustomers([]);
+      let allCustomers: any[] = [];
+      let currentPage = 1;
+      let hasMore = true;
+      const perPage = 100; // Backend limit
+      
+      // Fetch all pages
+      while (hasMore) {
+        console.log(`Fetching page ${currentPage}...`);
+        const response = await customerService.getCustomers({ page: currentPage, per_page: perPage });
         
-        // Show warning if no customers loaded
-        if (!response.data || response.data.length === 0) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'No Customers Found',
-            text: 'The system returned 0 customers. This might be a database or API issue.',
-            confirmButtonText: 'OK'
-          });
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          allCustomers = [...allCustomers, ...response.data];
+          console.log(`Page ${currentPage}: Got ${response.data.length} customers. Total so far: ${allCustomers.length}`);
+          
+          // Check if there are more pages
+          if (response.data.length < perPage) {
+            // Last page - got fewer than requested
+            hasMore = false;
+          } else {
+            currentPage++;
+          }
+          
+          // Safety limit to prevent infinite loop
+          if (currentPage > 10) {
+            console.warn('Reached safety limit of 10 pages (1000 customers max)');
+            hasMore = false;
+          }
+        } else {
+          hasMore = false;
         }
+      }
+      
+      console.log('✓ Successfully loaded ALL customers:', allCustomers.length);
+      console.log('Sample customer fields:', allCustomers[0] ? Object.keys(allCustomers[0]) : 'No customers');
+      setCustomers(allCustomers);
+      
+      if (allCustomers.length === 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'No Customers Found',
+          text: 'The system returned 0 customers. This might be a database or API issue.',
+          confirmButtonText: 'OK'
+        });
       }
     } catch (error: any) {
       console.error('❌ Error loading customers:', error);
@@ -145,9 +162,9 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" style={{ overflow: 'visible' }}>
       {/* Customer Information */}
-      <div className="card p-4" style={{ backgroundColor: '#2d353c', border: '1px solid #495057' }}>
+      <div className="card p-4" style={{ backgroundColor: '#2d353c', border: '1px solid #495057', overflow: 'visible', position: 'relative', zIndex: 10 }}>
         <div className="flex justify-between items-center mb-3 border-b border-gray-700 pb-2">
           <h3 className="text-lg font-bold text-white">
             <i className="fa fa-user mr-2"></i>
@@ -169,8 +186,8 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
           )}
         </div>
         {isEditing ? (
-          <div className="space-y-3">
-            <div>
+          <div className="space-y-3" style={{ overflow: 'visible' }}>
+            <div style={{ overflow: 'visible', position: 'relative', zIndex: 100001 }}>
               <label className="text-gray-400 text-sm block mb-1">
                 Select Customer:
                 {loadingCustomers && (

@@ -3,7 +3,7 @@
 .searchable-select {
   position: relative;
   width: 100%;
-  z-index: auto;
+  z-index: 10000;
 }
 
 .searchable-select.disabled {
@@ -14,7 +14,7 @@
 
 /* Increase z-index when dropdown is open */
 .searchable-select:has(.searchable-select-menu) {
-  z-index: 1001;
+  z-index: 100000 !important;
 }
 
 .searchable-select-control {
@@ -84,13 +84,13 @@
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  z-index: 10002;
+  z-index: 99999 !important;
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   max-height: 250px;
-  overflow: hidden;
+  overflow: visible;
   animation: slideDown 0.2s ease-out;
 }
 
