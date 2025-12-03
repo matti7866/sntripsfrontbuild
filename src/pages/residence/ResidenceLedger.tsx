@@ -55,7 +55,7 @@ export default function ResidenceLedger() {
   const [totalPaid, setTotalPaid] = useState(0);
   const [outstandingBalance, setOutstandingBalance] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage, setRecordsPerPage] = useState(10);
+  const [recordsPerPage, setRecordsPerPage] = useState(1000); // Show all records by default for complete financial view
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
 
@@ -950,15 +950,16 @@ export default function ResidenceLedger() {
                           <select
                             id="recordsPerPage"
                             className="form-control form-control-sm"
-                            style={{ width: '80px', display: 'inline-block' }}
+                            style={{ width: '100px', display: 'inline-block' }}
                             value={recordsPerPage}
                             onChange={(e) => setRecordsPerPage(Number(e.target.value))}
                           >
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={25}>25</option>
-                            <option value={50}>50</option>
+                            <option value={1000}>All</option>
                             <option value={100}>100</option>
+                            <option value={50}>50</option>
+                            <option value={25}>25</option>
+                            <option value={10}>10</option>
+                            <option value={5}>5</option>
                           </select>
                           <span className="ms-2 text-muted">
                             Showing {indexOfFirstRecord} to {indexOfLastRecord} of {totalRecords} records
