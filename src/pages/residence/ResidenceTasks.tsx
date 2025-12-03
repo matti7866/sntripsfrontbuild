@@ -249,6 +249,48 @@ export default function ResidenceTasks() {
     setSearchParams(params);
   };
 
+  // Check eligibility based on payment thresholds for each step
+  const checkEligibility = (residence: ResidenceTask, step: string): { eligible: boolean; message: string } => {
+    const paidAmount = Number(residence.paid_amount) || 0;
+    const salePrice = Number(residence.sale_price) || 0;
+    const paymentPercentage = salePrice > 0 ? (paidAmount / salePrice) * 100 : 0;
+
+    const thresholds: Record<string, number> = {
+      '1': 2000,
+      '1a': 2000,
+      '2': 2000,
+      '3': 3000,
+      '4': 4000,
+      '4a': 4000,
+      '5': 4000,
+      '6': 4000,
+      '7': 4000,
+      '8': 100 // 100% payment required for step 8
+    };
+
+    const threshold = thresholds[step];
+    
+    if (!threshold) {
+      return { eligible: true, message: '' };
+    }
+
+    // For step 8, check full payment (100%)
+    if (step === '8') {
+      if (paymentPercentage >= 100) {
+        return { eligible: true, message: 'Eligible' };
+      } else {
+        return { eligible: false, message: 'Not Eligible' };
+      }
+    }
+
+    // For other steps, check minimum payment amount
+    if (paidAmount >= threshold) {
+      return { eligible: true, message: 'Eligible' };
+    } else {
+      return { eligible: false, message: 'Not Eligible' };
+    }
+  };
+
   const getActionButtons = (residence: ResidenceTask) => {
     const buttons: React.ReactNode[] = [];
     const step = currentStep;
@@ -936,18 +978,32 @@ export default function ResidenceTasks() {
                             </span>
                           </div>
                         )}
+                        {/* Eligibility Indicator */}
+                        {['1', '1a', '2', '3', '4', '4a', '5', '6', '7', '8'].includes(currentStep) && (() => {
+                          const eligibility = checkEligibility(residence, currentStep);
+                          return (
+                            <div style={{ marginTop: '3px' }}>
+                              <span 
+                                className={`badge ${eligibility.eligible ? 'bg-success' : 'bg-danger'}`}
+                                style={{ fontSize: '9px', padding: '2px 6px', fontWeight: '700' }}
+                              >
+                                {eligibility.eligible ? '✓ Eligible' : '✗ Not Eligible'}
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td style={{ padding: '4px 6px', fontSize: '11px' }}>{residence.customer_name}</td>
                       <td style={{ padding: '4px 6px', fontSize: '11px' }}>
                         {currentStep === '1' ? (
-                          // For Step 1: Show Sale Price and Paid Amount
+                          // For Step 1: Show Sale Price and Paid Amount with Eligibility
                           <div>
                             <div style={{ marginBottom: '3px' }}>
                               <strong style={{ fontSize: '11px', color: '#667eea' }}>Sale:</strong>
                               <br />
                               <strong style={{ fontSize: '12px', color: '#000' }}>{residence.sale_price.toLocaleString()}</strong>
                             </div>
-                            <div>
+                            <div style={{ marginBottom: '3px' }}>
                               <strong style={{ fontSize: '11px', color: '#11998e' }}>Paid:</strong>
                               <br />
                               <strong style={{ fontSize: '12px', color: '#000' }}>{residence.paid_amount.toLocaleString()}</strong>
@@ -956,6 +1012,18 @@ export default function ResidenceTasks() {
                                 ({residence.paid_amount === 0 ? 0 : Math.round((residence.paid_amount / residence.sale_price) * 100)}%)
                               </span>
                             </div>
+                            {/* Eligibility Indicator for Step 1 */}
+                            {(() => {
+                              const eligibility = checkEligibility(residence, currentStep);
+                              return (
+                                <span 
+                                  className={`badge ${eligibility.eligible ? 'bg-success' : 'bg-danger'}`}
+                                  style={{ fontSize: '9px', padding: '2px 6px', fontWeight: '700' }}
+                                >
+                                  {eligibility.eligible ? '✓ Eligible' : '✗ Not Eligible'}
+                                </span>
+                              );
+                            })()}
                           </div>
                         ) : (
                           // For Other Steps: Show Company Info
