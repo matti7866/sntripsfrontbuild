@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import ticketService from '../../services/ticketService';
 import Swal from 'sweetalert2';
 import { FormSection, FormField } from '../../components/form';
 import { DateChangeModal, RefundModal, EditTicketModal, type DateChangeData, type RefundData } from '../../components/modals';
+import TicketCopyTemplate from '../../components/ticket/TicketCopyTemplate';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import type { Ticket, TicketFilters, Customer, Supplier, Airport, Currency } from '../../types/ticket';
 import './TicketList.css';
 
@@ -49,6 +52,10 @@ export default function TicketList() {
     isOpen: boolean;
     ticket: Ticket | null;
   }>({ isOpen: false, ticket: null });
+
+  const [showTicketCopy, setShowTicketCopy] = useState(false);
+  const [selectedTicketForCopy, setSelectedTicketForCopy] = useState<Ticket | null>(null);
+  const ticketCopyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadDropdowns();
@@ -209,6 +216,232 @@ export default function TicketList() {
 
   const handleEdit = (ticket: Ticket) => {
     setEditModal({ isOpen: true, ticket });
+  };
+
+  const handleGenerateTicket = (ticket: Ticket) => {
+    setSelectedTicketForCopy(ticket);
+    setShowTicketCopy(true);
+  };
+
+  const handleDownloadTicketPDF = async () => {
+    if (!ticketCopyRef.current || !selectedTicketForCopy) return;
+
+    try {
+      Swal.fire({
+        title: 'Generating Ticket',
+        html: 'Please wait while we generate your ticket PDF...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // Wait a bit for any images/fonts to load
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Get the actual dimensions of the content
+      const element = ticketCopyRef.current;
+      const rect = element.getBoundingClientRect();
+      
+      // Set to A4 dimensions for PDF generation (210mm x 297mm)
+      const A4_WIDTH_MM = 210;
+      const A4_HEIGHT_MM = 297;
+      const A4_WIDTH_PX = A4_WIDTH_MM * 3.779527559; // Convert mm to px (1mm = 3.779527559px at 96dpi)
+      const A4_HEIGHT_PX = A4_HEIGHT_MM * 3.779527559;
+      
+      // Temporarily set to A4 dimensions with no margins/padding for full page PDF
+      const originalMaxWidth = element.style.maxWidth;
+      const originalWidth = element.style.width;
+      const originalPadding = element.style.padding;
+      const originalMargin = element.style.margin;
+      const originalBoxSizing = element.style.boxSizing;
+      
+      // Apply full-page styles
+      element.style.maxWidth = `${A4_WIDTH_PX}px`;
+      element.style.width = `${A4_WIDTH_PX}px`;
+      element.style.padding = '0';
+      element.style.margin = '0';
+      element.style.boxSizing = 'border-box';
+      
+      // Also remove padding from child sections for full page
+      const sections = element.querySelectorAll('.ticket-logo-section, .ticket-section, .ticket-title-section');
+      const originalSectionStyles: { element: HTMLElement; marginLeft: string; marginRight: string; borderRadius: string }[] = [];
+      sections.forEach((section: Element) => {
+        const el = section as HTMLElement;
+        originalSectionStyles.push({
+          element: el,
+          marginLeft: el.style.marginLeft,
+          marginRight: el.style.marginRight,
+          borderRadius: el.style.borderRadius
+        });
+        el.style.marginLeft = '0';
+        el.style.marginRight = '0';
+        el.style.borderRadius = '0';
+      });
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        width: element.scrollWidth,
+        height: element.scrollHeight,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+        scrollX: 0,
+        scrollY: 0,
+        allowTaint: true
+      });
+
+      // Restore original styles
+      element.style.maxWidth = originalMaxWidth;
+      element.style.width = originalWidth;
+      element.style.padding = originalPadding;
+      element.style.margin = originalMargin;
+      element.style.boxSizing = originalBoxSizing;
+      
+      // Restore section styles
+      originalSectionStyles.forEach(({ element: el, marginLeft, marginRight, borderRadius }) => {
+        el.style.marginLeft = marginLeft;
+        el.style.marginRight = marginRight;
+        el.style.borderRadius = borderRadius;
+      });
+
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      
+      // Use portrait orientation with no margins
+      const pdf = new jsPDF('p', 'mm', 'a4'); // portrait, millimeters, A4
+      
+      // Set margins to 0 for full page
+      const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
+      const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
+      
+      // Convert pixels to mm (1px = 0.264583mm at 96dpi)
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const imgWidthMM = imgWidth * 0.264583;
+      const imgHeightMM = imgHeight * 0.264583;
+      
+      // Scale to fit full page width (210mm) maintaining aspect ratio
+      const widthRatio = pdfWidth / imgWidthMM;
+      let scaledWidth = pdfWidth; // Full page width
+      let scaledHeight = imgHeightMM * widthRatio;
+      
+      // If content is taller than one page, scale down to fit on single page
+      if (scaledHeight > pdfHeight) {
+        const heightRatio = pdfHeight / scaledHeight;
+        scaledWidth = scaledWidth * heightRatio;
+        scaledHeight = pdfHeight;
+      }
+      
+      // Add single page - start at 0,0 (no margins)
+      pdf.addImage(imgData, 'PNG', 0, 0, scaledWidth, scaledHeight);
+      
+      const fileName = `Ticket_${selectedTicketForCopy.ticketNumber || selectedTicketForCopy.Pnr}_${selectedTicketForCopy.passenger_name.replace(/\s+/g, '_')}.pdf`;
+      pdf.save(fileName);
+
+      Swal.fire('Success!', 'Ticket PDF downloaded successfully', 'success');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Swal.fire('Error', 'Failed to generate PDF', 'error');
+    }
+  };
+
+  const handlePrintTicket = () => {
+    // Create a new window with just the ticket content
+    const printWindow = window.open('', '_blank');
+    if (!printWindow || !ticketCopyRef.current) return;
+
+    const ticketHTML = ticketCopyRef.current.innerHTML;
+    const styles = Array.from(document.styleSheets)
+      .map(styleSheet => {
+        try {
+          return Array.from(styleSheet.cssRules)
+            .map(rule => rule.cssText)
+            .join('\n');
+        } catch (e) {
+          return '';
+        }
+      })
+      .join('\n');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Ticket Copy - ${selectedTicketForCopy?.passenger_name}</title>
+        <style>
+          ${styles}
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            background: white;
+          }
+          @page {
+            size: A4 portrait;
+            margin: 0;
+          }
+          .ticket-copy-template {
+            width: 210mm !important;
+            max-width: 210mm !important;
+            height: 297mm !important;
+            max-height: 297mm !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          .ticket-logo-section {
+            padding: 6mm 4mm !important;
+            margin-bottom: 4mm !important;
+          }
+          .ticket-title-section {
+            padding: 5mm 4mm !important;
+            margin-bottom: 4mm !important;
+          }
+          .ticket-section {
+            margin-bottom: 4mm !important;
+          }
+          .section-content {
+            padding: 4mm 3mm !important;
+          }
+          .flight-route {
+            padding: 4mm !important;
+            margin-bottom: 3mm !important;
+          }
+          .price-grid {
+            padding: 4mm !important;
+          }
+          .ticket-footer {
+            margin-top: 4mm !important;
+            padding-top: 4mm !important;
+          }
+          .footer-content {
+            padding: 5mm !important;
+            margin-bottom: 3mm !important;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="ticket-copy-template">
+          ${ticketHTML}
+        </div>
+        <script>
+          window.onload = function() {
+            window.print();
+            setTimeout(() => window.close(), 100);
+          };
+        </script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const handleEditSubmit = async (ticketId: number, data: Partial<Ticket>) => {
@@ -430,10 +663,10 @@ export default function TicketList() {
                       <div className="btn-group-vertical d-flex flex-row gap-1" role="group">
                         <button
                           className="btn btn-sm btn-primary"
-                          title="View"
-                          onClick={() => Swal.fire('Coming Soon', 'View feature will be implemented soon', 'info')}
+                          title="Generate Ticket Copy"
+                          onClick={() => handleGenerateTicket(ticket)}
                         >
-                          <i className="fa fa-eye"></i>
+                          <i className="fa fa-file-pdf"></i>
                         </button>
                         <button
                           className="btn btn-sm btn-info"
@@ -526,6 +759,56 @@ export default function TicketList() {
           airports={airports}
           currencies={currencies}
         />
+      )}
+
+      {/* Ticket Copy Modal */}
+      {showTicketCopy && selectedTicketForCopy && (
+        <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div className="modal-content">
+              <div className="modal-header bg-primary text-white">
+                <h5 className="modal-title">
+                  <i className="fa fa-ticket-alt me-2"></i>
+                  Ticket Copy - {selectedTicketForCopy.passenger_name}
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close btn-close-white" 
+                  onClick={() => setShowTicketCopy(false)}
+                ></button>
+              </div>
+              <div className="modal-body" style={{ padding: 0, overflow: 'auto' }}>
+                <TicketCopyTemplate ref={ticketCopyRef} ticket={selectedTicketForCopy} />
+              </div>
+              <div className="modal-footer">
+                <button 
+                  type="button" 
+                  className="btn btn-secondary" 
+                  onClick={() => setShowTicketCopy(false)}
+                >
+                  <i className="fa fa-times me-2"></i>
+                  Close
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-success" 
+                  onClick={handlePrintTicket}
+                >
+                  <i className="fa fa-print me-2"></i>
+                  Print
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-primary" 
+                  onClick={handleDownloadTicketPDF}
+                >
+                  <i className="fa fa-download me-2"></i>
+                  Download PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

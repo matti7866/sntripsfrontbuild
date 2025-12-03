@@ -8,6 +8,7 @@ import './CreateResidence.css';
 interface FormData {
   // Step 1: Basic Information
   customer_id: number | null;
+  ref: string;
   insideOutside: string;
   res_type: string;
   uid: string;
@@ -38,6 +39,7 @@ export default function CreateResidence() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     customer_id: null,
+    ref: '',
     insideOutside: '',
     res_type: 'mainland',
     uid: '',
@@ -227,6 +229,10 @@ export default function CreateResidence() {
       Swal.fire('Validation Error', 'Please select a customer', 'error');
       return false;
     }
+    if (!formData.ref || !formData.ref.trim()) {
+      Swal.fire('Validation Error', 'Reference is required', 'error');
+      return false;
+    }
     if (!formData.insideOutside) {
       Swal.fire('Validation Error', 'Please select Inside/Outside', 'error');
       return false;
@@ -314,6 +320,7 @@ export default function CreateResidence() {
     try {
       const submitData: any = {
         customer_id: formData.customer_id,
+        ref: formData.ref,
         passengerName: formData.passengerName,
         nationality: formData.nationality,
         passportNumber: formData.passportNumber,
@@ -484,7 +491,7 @@ export default function CreateResidence() {
 
                   {/* Customer Selection */}
                   <div className="row mb-3">
-                    <div className="col-md-6">
+                    <div className="col-md-4">
                       <label className="form-label">
                         Customer <span className="text-danger">*</span>
                       </label>
@@ -561,6 +568,19 @@ export default function CreateResidence() {
                       </div>
                     </div>
                     <div className="col-md-3">
+                      <label className="form-label">
+                        Reference <span className="text-danger">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={formData.ref}
+                        onChange={(e) => handleChange('ref', e.target.value)}
+                        placeholder="Enter Reference"
+                        required
+                      />
+                    </div>
+                    <div className="col-md-2">
                       <label className="form-label">
                         Inside/Outside <span className="text-danger">*</span>
                       </label>

@@ -253,17 +253,19 @@ export default function ResidenceTasks() {
     const buttons: React.ReactNode[] = [];
     const step = currentStep;
 
+    const buttonStyle = { padding: '2px 6px', fontSize: '11px', lineHeight: '1.2' };
+    
     if (step === '10') {
       if (residence.tawjeeh_charge === 0) {
         buttons.push(
-          <button key="tawjeeh" className="btn btn-warning btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowTawjeehModal(true); }}>
+          <button key="tawjeeh" className="btn btn-warning btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowTawjeehModal(true); }}>
             Tawjeeh
           </button>
         );
       }
       if (residence.iloe_charge === 0) {
         buttons.push(
-          <button key="iloe" className="btn btn-warning btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowILOEModal(true); }}>
+          <button key="iloe" className="btn btn-warning btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowILOEModal(true); }}>
             ILOE
           </button>
         );
@@ -272,63 +274,64 @@ export default function ResidenceTasks() {
 
     if (step === '1') {
       buttons.push(
-        <button key="continue" className="btn btn-success btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowOfferLetterModal(true); }}>
+        <button key="continue" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowOfferLetterModal(true); }}>
           Continue
         </button>,
         <button 
           key="doc-verify" 
-          className="btn btn-info btn-sm" 
+          className="btn btn-info btn-xs" 
+          style={buttonStyle}
           onClick={() => handleDocumentVerification(residence)}
           title="Check Document Verification"
         >
-          <i className="fa fa-file-check"></i> Doc Verify
+          <i className="fa fa-file-check"></i>
         </button>
       );
     } else if (step === '2') {
       buttons.push(
-        <button key="continue" className="btn btn-success btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowInsuranceModal(true); }}>
+        <button key="continue" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowInsuranceModal(true); }}>
           Continue
         </button>
       );
     } else if (step === '3') {
       buttons.push(
-        <button key="continue" className="btn btn-success btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowLabourCardModal(true); }}>
+        <button key="continue" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowLabourCardModal(true); }}>
           Continue
         </button>
       );
     } else if (step === '4') {
       buttons.push(
-        <button key="continue" className="btn btn-success btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowEVisaModal(true); }}>
+        <button key="continue" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowEVisaModal(true); }}>
           Continue
         </button>
       );
     } else if (step === '5') {
       buttons.push(
-        <button key="continue" className="btn btn-success btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowChangeStatusModal(true); }}>
+        <button key="continue" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowChangeStatusModal(true); }}>
           Continue
         </button>
       );
     } else if (step === '6') {
       buttons.push(
-        <button key="continue" className="btn btn-success btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowMedicalModal(true); }}>
+        <button key="continue" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowMedicalModal(true); }}>
           Continue
         </button>
       );
     } else if (step === '7') {
       buttons.push(
-        <button key="continue" className="btn btn-success btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowEmiratesIDModal(true); }}>
+        <button key="continue" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowEmiratesIDModal(true); }}>
           Continue
         </button>
       );
     } else if (step === '8') {
       buttons.push(
-        <button key="continue" className="btn btn-success btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowVisaStampingModal(true); }}>
+        <button key="continue" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowVisaStampingModal(true); }}>
           Continue
         </button>
       );
     } else if (step === '9') {
       buttons.push(
-        <button key="continue" className="btn btn-success btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowContractSubmissionModal(true); }}>
+        <button key="continue" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowContractSubmissionModal(true); }}>
           Continue
         </button>
       );
@@ -338,7 +341,8 @@ export default function ResidenceTasks() {
       buttons.push(
         <button 
           key="accept" 
-          className="btn btn-success btn-sm" 
+          className="btn btn-success btn-xs" 
+          style={buttonStyle}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -349,7 +353,8 @@ export default function ResidenceTasks() {
         </button>,
         <button 
           key="reject" 
-          className="btn btn-danger btn-sm" 
+          className="btn btn-danger btn-xs" 
+          style={buttonStyle}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -360,7 +365,8 @@ export default function ResidenceTasks() {
         </button>,
         <button 
           key="pending-payments" 
-          className="btn btn-warning btn-sm" 
+          className="btn btn-warning btn-xs" 
+          style={buttonStyle}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -374,22 +380,22 @@ export default function ResidenceTasks() {
           }}
           title="View Pending Payments"
         >
-          <i className="fa fa-money-bill-wave"></i> Pending Payments
+          <i className="fa fa-money-bill-wave"></i>
         </button>
       );
     } else if (step === '4a') {
       if (residence.eVisaStatus === 'rejected') {
         buttons.push(
-          <button key="reapply" className="btn btn-warning btn-sm" onClick={() => { setSelectedResidenceId(residence.residenceID); setShowEVisaModal(true); }}>
-            <i className="fa fa-redo"></i> Re-apply
+          <button key="reapply" className="btn btn-warning btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowEVisaModal(true); }}>
+            <i className="fa fa-redo"></i>
           </button>
         );
       } else {
         buttons.push(
-          <button key="accept" className="btn btn-success btn-sm" onClick={() => handleEVisaStatus(residence.residenceID, 'accepted')}>
+          <button key="accept" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => handleEVisaStatus(residence.residenceID, 'accepted')}>
             Accept
           </button>,
-          <button key="reject" className="btn btn-danger btn-sm" onClick={() => handleEVisaStatus(residence.residenceID, 'rejected')}>
+          <button key="reject" className="btn btn-danger btn-xs" style={buttonStyle} onClick={() => handleEVisaStatus(residence.residenceID, 'rejected')}>
             Reject
           </button>
         );
@@ -399,7 +405,7 @@ export default function ResidenceTasks() {
     // Common buttons
     if (residence.hold === 0) {
       buttons.push(
-        <a key="file" href={`/residence/${residence.residenceID}?stp=${step}`} target="_blank" className="btn btn-sm btn-primary">
+        <a key="file" href={`/residence/${residence.residenceID}?stp=${step}`} target="_blank" className="btn btn-xs btn-primary" style={buttonStyle}>
           <i className="fa fa-file"></i>
         </a>
       );
@@ -407,7 +413,7 @@ export default function ResidenceTasks() {
 
     if (step !== '1a' && step !== '4a') {
       buttons.push(
-        <button key="move" className="btn btn-sm btn-primary" onClick={() => handleMoveToStep(residence.residenceID, step)}>
+        <button key="move" className="btn btn-xs btn-primary" style={buttonStyle} onClick={() => handleMoveToStep(residence.residenceID, step)}>
           Move
         </button>
       );
@@ -417,7 +423,8 @@ export default function ResidenceTasks() {
     buttons.push(
       <button 
         key="attachments" 
-        className="btn btn-info btn-sm" 
+        className="btn btn-info btn-xs" 
+        style={buttonStyle}
         onClick={() => { setSelectedResidenceId(residence.residenceID); setShowAttachmentsModal(true); }}
         title="View/Upload Attachments"
       >
@@ -744,83 +751,85 @@ export default function ResidenceTasks() {
   };
 
   return (
-    <div className="residence-tasks-page">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="d-flex align-items-center justify-content-between mb-4">
+    <div className="residence-tasks-page-compact">
+      {/* Compact Header */}
+      <div className="compact-header mb-2">
+        <div className="d-flex align-items-center justify-content-between mb-2">
           <div>
-            <h1 className="mb-2" style={{ fontSize: '1.75rem', fontWeight: 'bold', color: '#000000' }}>
+            <h1 className="mb-0" style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#000000' }}>
               <i className="fa fa-tasks me-2"></i>
-              Residence Tasks (Mainland)
+              Residence Tasks ({residences.length})
             </h1>
-            <p style={{ color: '#000000' }}>Manage residence processing steps</p>
           </div>
           <div className="d-flex gap-2">
-            <button className="btn btn-primary" onClick={() => navigate('/residence/list')}>
-              <i className="fa fa-list me-2"></i>
-              Residence List
+            <button className="btn btn-sm btn-primary" onClick={() => navigate('/residence/list')}>
+              <i className="fa fa-list me-1"></i>
+              List
             </button>
-            <a href="/residence/cancellation" className="btn btn-danger">
-              <i className="fa fa-times-circle me-2"></i>
-              Cancellations
+            <a href="/residence/cancellation" className="btn btn-sm btn-danger">
+              <i className="fa fa-times-circle me-1"></i>
+              Cancel
             </a>
-            <a href="/residence/replacements" className="btn btn-warning">
-              <i className="fa fa-exchange me-2"></i>
-              Replacements
+            <a href="/residence/replacements" className="btn btn-sm btn-warning">
+              <i className="fa fa-exchange me-1"></i>
+              Replace
             </a>
           </div>
         </div>
-      </div>
 
-      {/* Search */}
-      <div className="mb-6">
-        <form onSubmit={handleSearch} className="card p-4">
-          <div className="input-group">
+        {/* Compact Search */}
+        <form onSubmit={handleSearch} className="mb-2">
+          <div className="input-group input-group-sm">
             <input
               type="text"
-              className="form-control"
+              className="form-control form-control-sm"
               name="search"
               defaultValue={searchQuery}
-              placeholder="Search by name or Passport Number"
+              placeholder="Search..."
             />
-            <button type="submit" className="btn btn-primary">
-              <i className="fa fa-search mr-2"></i>
-              Search
+            <button type="submit" className="btn btn-sm btn-primary">
+              <i className="fa fa-search"></i>
             </button>
           </div>
         </form>
       </div>
 
-      {/* Step Navigation */}
-      <div className="mb-6">
-        <div className="btn-group btn-group-block w-100">
+      {/* Enhanced Step Navigation Tabs */}
+      <div className="mb-2">
+        <div className="step-tabs-container">
           {(['1', '1a', '2', '3', '4', '4a', '5', '6', '7', '8', '9', '10'] as const).map((key) => {
             const step = steps[key];
             if (!step) return null;
+            const isActive = currentStep === key;
             return (
               <button
                 key={key}
                 type="button"
-                className={`btn btn-white btn-block step-nav-link ${currentStep === key ? 'active' : ''}`}
+                className={`step-tab ${isActive ? 'active' : ''}`}
                 onClick={(e) => {
                   e.preventDefault();
                   handleStepChange(key);
                 }}
               >
-                <span>{step.name}</span>
-                {stepCounts[key] > 0 && (
-                  <span className="badge bg-red ms-1">{stepCounts[key]}</span>
-                )}
+                <div className="step-tab-content">
+                  <span className="step-tab-icon">
+                    <i className={step.icon}></i>
+                  </span>
+                  <span className="step-tab-label">{step.name}</span>
+                  {stepCounts[key] > 0 && (
+                    <span className="step-tab-badge">{stepCounts[key]}</span>
+                  )}
+                </div>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Establishment Filter */}
-      <div className="mb-6">
-        <div className="card p-4">
-          <label className="form-label mb-2" style={{ color: '#374151', fontWeight: 500 }}>Establishment</label>
+      {/* Compact Establishment Filter */}
+      <div className="mb-2 establishment-filter-wrapper">
+        <div className="card p-2 establishment-filter-card">
+          <label className="form-label mb-1" style={{ color: '#374151', fontWeight: 500, fontSize: '12px' }}>Establishment</label>
           <SearchableSelect
             options={[
               { value: '0', label: 'All' },
@@ -843,54 +852,59 @@ export default function ResidenceTasks() {
         </div>
       </div>
 
-      {/* Data Table */}
-      <div className="card">
-        <div className="card-header">
-          <h3 className="mb-0" style={{ color: '#1f2937', fontWeight: 600 }}>Resident</h3>
-        </div>
-        <div className="card-body">
+      {/* Compact Data Table */}
+      <div className="card compact-table-card">
+        <div className="card-body p-2">
           {loading ? (
-            <div className="text-center py-8">
+            <div className="text-center py-4">
               <i className="fa fa-spinner fa-spin fa-2x" style={{ color: '#9ca3af' }}></i>
-              <p className="mt-2" style={{ color: '#6b7280' }}>Loading residences...</p>
+              <p className="mt-2" style={{ color: '#6b7280', fontSize: '14px' }}>Loading residences...</p>
             </div>
           ) : residences.length === 0 ? (
-            <div className="text-center py-8">
-              <p style={{ color: '#6b7280' }}>No residences found</p>
+            <div className="text-center py-4">
+              <p style={{ color: '#6b7280', fontSize: '14px' }}>No residences found</p>
             </div>
           ) : (
             <div className="table-responsive">
-              <table className="table table-striped table-bordered align-middle text-nowrap">
+              <table className="table table-sm table-striped table-bordered align-middle compact-table">
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>App. Date</th>
-                    <th>Passenger Name</th>
-                    <th>Customer</th>
-                    <th>Establishment</th>
-                    <th>Passport</th>
-                    <th>Remarks</th>
-                    <th>Action</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>ID</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Date</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Passenger</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Customer</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Company</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Passport</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Remarks</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedResidences.map((residence) => (
-                    <tr key={residence.residenceID} className={residence.hold === 1 ? 'bg-hold' : ''}>
-                      <td>{residence.residenceID}</td>
-                      <td>{new Date(residence.datetime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-                      <td>
-                        <img
-                          src={`https://flagpedia.net/data/flags/h24/${residence.countryCode?.toLowerCase()}.png`}
-                          alt={residence.countryName}
-                          height="12"
-                          className="me-2"
-                        />
-                        <strong>{residence.passenger_name.toUpperCase()}</strong>
-                        {residence.uid && <><br /><strong>UID: </strong>{residence.uid}</>}
+                    <tr key={residence.residenceID} className={residence.hold === 1 ? 'bg-hold' : ''} style={{ fontSize: '12px' }}>
+                      <td style={{ padding: '4px 6px' }}>
+                        <strong style={{ fontSize: '12px' }}>#{residence.residenceID}</strong>
+                      </td>
+                      <td style={{ padding: '4px 6px', fontSize: '11px' }}>
+                        {new Date(residence.datetime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </td>
+                      <td style={{ padding: '4px 6px' }}>
+                        <div style={{ fontSize: '11px' }}>
+                          <img
+                            src={`https://flagpedia.net/data/flags/h24/${residence.countryCode?.toLowerCase()}.png`}
+                            alt={residence.countryName}
+                            height="10"
+                            className="me-1"
+                          />
+                          <strong style={{ fontSize: '11px' }}>{residence.passenger_name.toUpperCase()}</strong>
+                        </div>
+                        {residence.uid && (
+                          <div className="text-muted" style={{ fontSize: '9px' }}>
+                            UID: {residence.uid}
+                          </div>
+                        )}
                         {residence.document_verify && (
-                          <>
-                            <br />
-                            <strong>Doc Verify: </strong>
+                          <div style={{ marginTop: '2px' }}>
                             <span 
                               className={
                                 residence.document_verify.toLowerCase().includes('approved') || residence.document_verify.toLowerCase().includes('verified')
@@ -903,99 +917,83 @@ export default function ResidenceTasks() {
                                   ? 'badge bg-secondary'
                                   : 'badge bg-info'
                               }
-                              style={{ fontSize: '0.75rem' }}
+                              style={{ fontSize: '9px', padding: '1px 4px' }}
                             >
                               {residence.document_verify}
                             </span>
-                            {residence.document_verify_datetime && (
-                              <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>
-                                {new Date(residence.document_verify_datetime).toLocaleString('en-US', { 
-                                  month: 'short', 
-                                  day: 'numeric', 
-                                  hour: '2-digit', 
-                                  minute: '2-digit' 
-                                })}
-                              </small>
-                            )}
-                          </>
+                          </div>
                         )}
-                        <br />
-                        <strong>Sale Price: </strong>{residence.sale_price.toLocaleString()}
-                        <br />
-                        <strong>Paid Amount: </strong>{residence.paid_amount.toLocaleString()}
-                        {' '}
-                        <span className={residence.paid_amount === residence.sale_price ? 'text-success' : 'text-danger'}>
-                          ({residence.paid_amount === 0 ? 0 : Math.round((residence.paid_amount / residence.sale_price) * 100)}%)
-                        </span>
+                        <div className="text-muted" style={{ fontSize: '9px', marginTop: '2px' }}>
+                          Sale: {residence.sale_price.toLocaleString()} | Paid: {residence.paid_amount.toLocaleString()} ({residence.paid_amount === 0 ? 0 : Math.round((residence.paid_amount / residence.sale_price) * 100)}%)
+                        </div>
                       </td>
-                      <td>{residence.customer_name}</td>
-                      <td>
+                      <td style={{ padding: '4px 6px', fontSize: '11px' }}>{residence.customer_name}</td>
+                      <td style={{ padding: '4px 6px', fontSize: '11px' }}>
                         {residence.company_name && (
                           <>
-                            <strong>{residence.company_name}</strong>
-                            {residence.company_number && <> - {residence.company_number}</>}
+                            <strong style={{ fontSize: '11px' }}>{residence.company_name}</strong>
+                            {residence.company_number && <span style={{ fontSize: '10px' }}> - {residence.company_number}</span>}
                           </>
                         )}
-                        {residence.mb_number && <><br /><strong>MB Number: </strong>{residence.mb_number}</>}
+                        {residence.mb_number && (
+                          <div className="text-muted" style={{ fontSize: '9px' }}>
+                            MB: {residence.mb_number}
+                          </div>
+                        )}
                         {residence.mohreStatus && (
-                          <><br /><strong>MOHRE Status: </strong>
-                            <span 
-                              className={residence.mb_number ? '' : 'text-danger'}
-                              style={{ 
-                                color: '#000000',
-                                fontWeight: '600',
-                                backgroundColor: 'transparent'
-                              }}
-                            >
-                              {residence.mb_number ? residence.mohreStatus : 'Provide MB Number'}
+                          <div style={{ fontSize: '9px' }}>
+                            <span className={residence.mb_number ? '' : 'text-danger'}>
+                              {residence.mb_number ? residence.mohreStatus : 'Provide MB'}
                             </span>
-                          </>
+                          </div>
                         )}
                         {steps[currentStep]?.showAccess && residence.username && (
-                          <>
-                            <br /><strong>Username: </strong>{residence.username}
-                            {residence.password && <><br /><strong>Password: </strong>{residence.password}</>}
-                          </>
+                          <div className="text-muted" style={{ fontSize: '9px' }}>
+                            User: {residence.username}
+                            {residence.password && <> | Pass: {residence.password}</>}
+                          </div>
                         )}
                       </td>
-                      <td>
+                      <td style={{ padding: '4px 6px', fontSize: '11px' }}>
                         {residence.passportNumber}
                         {(currentStep === '4' || currentStep === '5') && residence.insideOutside && (
-                          <span className={`badge bg-${residence.insideOutside === 'inside' ? 'success' : 'danger'} ms-2`}>
+                          <span className={`badge bg-${residence.insideOutside === 'inside' ? 'success' : 'danger'} ms-1`} style={{ fontSize: '9px', padding: '1px 4px' }}>
                             {residence.insideOutside.toUpperCase()}
                           </span>
                         )}
                       </td>
-                      <td>
+                      <td style={{ padding: '4px 6px' }}>
                         {residence.remarks && (
-                          <div className="remarks-content" style={{ maxWidth: '200px', wordWrap: 'break-word' }}>
-                            <strong>Current Remarks:</strong><br />
-                            <span className="text-info">{residence.remarks}</span>
+                          <div className="remarks-content" style={{ maxWidth: '150px', wordWrap: 'break-word', fontSize: '10px' }}>
+                            <strong style={{ fontSize: '10px' }}>Remarks:</strong><br />
+                            <span className="text-info" style={{ fontSize: '10px' }}>{residence.remarks}</span>
                             <br />
                             <button 
-                              className="btn btn-sm btn-outline-primary btn-view-remarks-history mt-1"
+                              className="btn btn-xs btn-outline-primary"
                               onClick={() => { 
                                 setSelectedResidenceId(residence.residenceID); 
                                 setShowRemarksHistory(true);
                                 setShowRemarksModal(true); 
                               }}
+                              style={{ padding: '1px 4px', fontSize: '9px', marginTop: '2px' }}
                             >
-                              <i className="fa fa-history"></i> History
+                              <i className="fa fa-history"></i>
                             </button>
                           </div>
                         )}
                         <button
-                          className="btn btn-sm btn-outline-success btn-add-remarks"
+                          className="btn btn-xs btn-outline-success"
                           onClick={() => { 
                             setSelectedResidenceId(residence.residenceID); 
                             setShowRemarksHistory(false);
                             setShowRemarksModal(true); 
                           }}
+                          style={{ padding: '1px 4px', fontSize: '9px' }}
                         >
-                          <i className="fa fa-plus"></i> {residence.remarks ? 'Edit' : 'Add'} Remarks
+                          <i className="fa fa-plus"></i> {residence.remarks ? 'Edit' : 'Add'}
                         </button>
                       </td>
-                      <td>
+                      <td style={{ padding: '4px 6px' }}>
                         <div className="d-flex flex-wrap gap-1">
                           {getActionButtons(residence)}
                         </div>
@@ -1007,28 +1005,29 @@ export default function ResidenceTasks() {
             </div>
           )}
           
-          {/* Pagination Controls */}
+          {/* Compact Pagination */}
           {!loading && residences.length > 0 && (
             <div className="pagination-container" style={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center', 
-              padding: '16px 20px',
+              padding: '8px 12px',
               borderTop: '1px solid #e5e7eb',
               flexWrap: 'wrap',
-              gap: '12px'
+              gap: '8px',
+              fontSize: '12px'
             }}>
               {/* Items per page selector */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '14px', color: '#6b7280' }}>Show</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '12px', color: '#6b7280' }}>Show</span>
                 <select 
                   value={itemsPerPage} 
                   onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
                   style={{
-                    padding: '6px 10px',
+                    padding: '4px 8px',
                     border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    fontSize: '14px',
+                    borderRadius: '4px',
+                    fontSize: '12px',
                     backgroundColor: '#ffffff',
                     cursor: 'pointer'
                   }}
@@ -1039,8 +1038,8 @@ export default function ResidenceTasks() {
                   <option value={50}>50</option>
                   <option value={100}>100</option>
                 </select>
-                <span style={{ fontSize: '14px', color: '#6b7280' }}>
-                  entries (Showing {startIndex + 1}-{Math.min(endIndex, residences.length)} of {residences.length})
+                <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                  ({startIndex + 1}-{Math.min(endIndex, residences.length)} of {residences.length})
                 </span>
               </div>
 
@@ -1050,12 +1049,12 @@ export default function ResidenceTasks() {
                   onClick={() => handlePageChange(1)}
                   disabled={currentPage === 1}
                   style={{
-                    padding: '6px 12px',
+                    padding: '4px 8px',
                     border: '1px solid #d1d5db',
-                    borderRadius: '6px',
+                    borderRadius: '4px',
                     backgroundColor: currentPage === 1 ? '#f3f4f6' : '#ffffff',
                     cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
+                    fontSize: '12px',
                     color: currentPage === 1 ? '#9ca3af' : '#374151'
                   }}
                 >
@@ -1065,12 +1064,12 @@ export default function ResidenceTasks() {
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
                   style={{
-                    padding: '6px 12px',
+                    padding: '4px 8px',
                     border: '1px solid #d1d5db',
-                    borderRadius: '6px',
+                    borderRadius: '4px',
                     backgroundColor: currentPage === 1 ? '#f3f4f6' : '#ffffff',
                     cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
+                    fontSize: '12px',
                     color: currentPage === 1 ? '#9ca3af' : '#374151'
                   }}
                 >
@@ -1095,15 +1094,15 @@ export default function ResidenceTasks() {
                       key={pageNum}
                       onClick={() => handlePageChange(pageNum)}
                       style={{
-                        padding: '6px 12px',
+                        padding: '4px 8px',
                         border: '1px solid #d1d5db',
-                        borderRadius: '6px',
+                        borderRadius: '4px',
                         backgroundColor: currentPage === pageNum ? '#000000' : '#ffffff',
                         color: currentPage === pageNum ? '#ffffff' : '#374151',
                         cursor: 'pointer',
-                        fontSize: '14px',
+                        fontSize: '12px',
                         fontWeight: currentPage === pageNum ? '600' : '400',
-                        minWidth: '36px'
+                        minWidth: '28px'
                       }}
                     >
                       {pageNum}
@@ -1115,12 +1114,12 @@ export default function ResidenceTasks() {
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
                   style={{
-                    padding: '6px 12px',
+                    padding: '4px 8px',
                     border: '1px solid #d1d5db',
-                    borderRadius: '6px',
+                    borderRadius: '4px',
                     backgroundColor: currentPage === totalPages ? '#f3f4f6' : '#ffffff',
                     cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
+                    fontSize: '12px',
                     color: currentPage === totalPages ? '#9ca3af' : '#374151'
                   }}
                 >
@@ -1130,12 +1129,12 @@ export default function ResidenceTasks() {
                   onClick={() => handlePageChange(totalPages)}
                   disabled={currentPage === totalPages}
                   style={{
-                    padding: '6px 12px',
+                    padding: '4px 8px',
                     border: '1px solid #d1d5db',
-                    borderRadius: '6px',
+                    borderRadius: '4px',
                     backgroundColor: currentPage === totalPages ? '#f3f4f6' : '#ffffff',
                     cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
+                    fontSize: '12px',
                     color: currentPage === totalPages ? '#9ca3af' : '#374151'
                   }}
                 >

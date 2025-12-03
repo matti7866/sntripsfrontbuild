@@ -147,5 +147,226 @@
   .btn-group .btn {
     width: 100%;
   }
+
+  /* Ticket Copy Modal Responsive */
+  .modal-dialog.modal-xl {
+    max-width: 98%;
+    margin: 0.5rem auto;
+  }
+
+  .modal-content {
+    border-radius: 8px;
+    max-height: 95vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-header {
+    padding: 0.75rem 1rem;
+    flex-shrink: 0;
+  }
+
+  .modal-header .modal-title {
+    font-size: 0.9rem;
+  }
+
+  .modal-body {
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: auto;
+    padding: 10px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-footer {
+    padding: 0.75rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+    margin: 0;
+  }
+  
+  .modal-body .ticket-copy-template {
+    min-width: auto !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Ticket Copy Modal - Ensure proper horizontal layout */
+.modal-dialog.modal-xl {
+  max-width: min(95%, 1200px) !important;
+  width: min(95%, 1200px) !important;
+}
+
+.modal-dialog.modal-xl .modal-body {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: auto;
+  min-height: 400px;
+}
+
+.modal-dialog.modal-xl .ticket-copy-template {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  flex-shrink: 0;
+  padding: 30px;
+}
+
+/* Force horizontal layout in modal regardless of screen size */
+.modal-body .ticket-copy-template .flight-route {
+  flex-direction: row !important;
+  display: flex !important;
+  justify-content: space-between !important;
+}
+
+.modal-body .ticket-copy-template .flight-arrow {
+  transform: none !important;
+  flex: 0.5 !important;
+  margin: 0 !important;
+}
+
+.modal-body .ticket-copy-template .info-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+}
+
+.modal-body .ticket-copy-template .footer-content {
+  flex-direction: row !important;
+  justify-content: space-around !important;
+}
+
+.modal-body .ticket-copy-template .ticket-logo-section {
+  flex-direction: row !important;
+}
+
+.modal-body .ticket-copy-template .price-row {
+  flex-direction: row !important;
+  justify-content: space-between !important;
+}
+
+@media (max-width: 480px) {
+  .modal-dialog.modal-xl {
+    max-width: 100%;
+    margin: 0;
+    height: 100vh;
+    max-height: 100vh;
+  }
+
+  .modal-content {
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-body {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 5px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-header {
+    flex-shrink: 0;
+    padding: 0.5rem !important;
+  }
+  
+  .modal-header .modal-title {
+    font-size: 0.8rem !important;
+  }
+
+  .modal-footer {
+    flex-shrink: 0;
+    padding: 0.5rem !important;
+  }
+  
+  .modal-footer .btn {
+    font-size: 0.85rem !important;
+    padding: 0.4rem !important;
+  }
+  
+  .modal-body .ticket-copy-template {
+    padding: 8px !important;
+  }
+  
+  .modal-body .ticket-copy-template .ticket-logo-section {
+    padding: 10px !important;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .modal-body .ticket-copy-template .flight-route {
+    flex-direction: column !important;
+    gap: 10px;
+  }
+  
+  .modal-body .ticket-copy-template .flight-arrow {
+    transform: rotate(90deg) !important;
+  }
+}
+
+/* Print Styles */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  
+  body * {
+    visibility: hidden !important;
+  }
+  
+  .modal-body,
+  .modal-body * {
+    visibility: visible !important;
+  }
+  
+  .ticket-copy-template,
+  .ticket-copy-template * {
+    visibility: visible !important;
+  }
+  
+  .modal {
+    position: static !important;
+    display: block !important;
+    background: white !important;
+  }
+  
+  .modal-dialog {
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .modal-content {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  .modal-body {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important;
+  }
+  
+  .modal-header,
+  .modal-footer {
+    display: none !important;
+  }
+  
+  .ticket-copy-template {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20mm !important;
+  }
 }
 
