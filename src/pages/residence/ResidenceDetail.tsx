@@ -30,9 +30,15 @@ export default function ResidenceDetail() {
     setLoading(true);
     setError('');
     try {
+      console.log('🔄 Reloading residence data for ID:', id);
       const data = await residenceService.getResidence(parseInt(id));
+      console.log('✅ Residence data loaded:', data);
+      console.log('Customer ID in loaded data:', data.customer_id);
+      console.log('Customer name in loaded data:', data.customer_name);
       setResidence(data);
+      console.log('✅ Residence state updated');
     } catch (err: any) {
+      console.error('❌ Error loading residence:', err);
       setError(err.response?.data?.message || 'An error occurred while loading residence');
     } finally {
       setLoading(false);
