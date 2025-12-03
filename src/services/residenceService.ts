@@ -1302,10 +1302,20 @@ const residenceService = {
     remarks?: string;
     salary_amount?: number;
   }) {
-    const response = await axios.post('/residence/update-basic-info.php', {
+    const payload = {
       residenceID,
       ...data
-    });
+    };
+    
+    console.log('🔧 updateResidence - Sending to API:', payload);
+    console.log('API endpoint: /residence/update-basic-info.php');
+    
+    const response = await axios.post('/residence/update-basic-info.php', payload);
+    
+    console.log('🔧 updateResidence - API Response:', response.data);
+    console.log('Response success:', response.data?.success);
+    console.log('Response message:', response.data?.message);
+    
     return response.data;
   }
 };

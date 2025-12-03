@@ -118,7 +118,18 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
   const handleSave = async () => {
     setSaving(true);
     try {
-      await residenceService.updateResidence(residence.residenceID, editData);
+      console.log('💾 Saving residence information...');
+      console.log('Residence ID:', residence.residenceID);
+      console.log('Edit data being sent:', editData);
+      console.log('Customer ID change:', { 
+        old: residence.customer_id, 
+        new: editData.customer_id,
+        changed: residence.customer_id !== editData.customer_id
+      });
+      
+      const response = await residenceService.updateResidence(residence.residenceID, editData);
+      console.log('✅ Save response:', response);
+      
       setIsEditing(false);
       await Swal.fire({
         icon: 'success',
@@ -128,9 +139,13 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
         showConfirmButton: false,
       });
       if (onUpdate) {
+        console.log('Calling onUpdate to refresh data...');
         onUpdate();
       }
     } catch (error: any) {
+      console.error('❌ Save failed:', error);
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
       await Swal.fire({
         icon: 'error',
         title: 'Error',
