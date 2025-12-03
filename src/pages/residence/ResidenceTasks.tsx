@@ -250,7 +250,7 @@ export default function ResidenceTasks() {
   };
 
   const getActionButtons = (residence: ResidenceTask) => {
-    const buttons: JSX.Element[] = [];
+    const buttons: React.ReactNode[] = [];
     const step = currentStep;
 
     if (step === '10') {
@@ -756,9 +756,9 @@ export default function ResidenceTasks() {
             <p style={{ color: '#000000' }}>Manage residence processing steps</p>
           </div>
           <div className="d-flex gap-2">
-            <button className="btn btn-primary" onClick={() => setShowNewResidenceModal(true)}>
-              <i className="fa fa-plus-circle me-2"></i>
-              Add New Residence
+            <button className="btn btn-primary" onClick={() => navigate('/residence/list')}>
+              <i className="fa fa-list me-2"></i>
+              Residence List
             </button>
             <a href="/residence/cancellation" className="btn btn-danger">
               <i className="fa fa-times-circle me-2"></i>
@@ -1325,4 +1325,3 @@ export default function ResidenceTasks() {
     </div>
   );
 }
-

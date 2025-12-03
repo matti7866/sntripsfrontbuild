@@ -1,498 +1,725 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import residenceService from '../../services/residenceService';
-import type { Residence, ResidenceFilters } from '../../types/residence';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
-import Button from '../../components/common/Button';
+import Swal from 'sweetalert2';
+import './ResidenceList.css';
+
+interface ResidenceWithDetails {
+  residenceID: number;
+  datetime: string;
+  passenger_name: string;
+  customer_name: string;
+  company_name: string;
+  passportNumber: string;
+  countryName: string;
+  countryCode: string;
+  sale_price: number;
+  paid_amount: number;
+  completedStep: number;
+  hold: number;
+  cancelled: number;
+  remarks: string;
+  visa_type_name: string;
+  uid: string;
+  mb_number: string;
+  LabourCardNumber: string;
+  sale_currency_symbol: string;
+  // Step dates for calculating time in step
+  offerLetterDate?: string;
+  insuranceDate?: string;
+  laborCardDate?: string;
+  eVisaDate?: string;
+  changeStatusDate?: string;
+  medicalDate?: string;
+  emiratesIDDate?: string;
+  visaStampingDate?: string;
+  contractSubmissionDate?: string;
+}
+
+// Map step numbers to names
+const STEP_NAMES: Record<number, string> = {
+  0: 'New',
+  1: 'Offer Letter',
+  2: 'Offer Letter (Submitted)',
+  3: 'Insurance',
+  4: 'Labour Card',
+  5: 'E-Visa',
+  6: 'Change Status',
+  7: 'Medical',
+  8: 'Emirates ID',
+  9: 'Visa Stamping',
+  10: 'Completed'
+};
 
 export default function ResidenceList() {
   const navigate = useNavigate();
-  const [residences, setResidences] = useState<Residence[]>([]);
+  const [residences, setResidences] = useState<ResidenceWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const limit = 50;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
-  // Filters
-  const [filters, setFilters] = useState<ResidenceFilters>({});
+  // Search and Filters
   const [search, setSearch] = useState('');
+  const [stepFilter, setStepFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all'); // all, active, hold, cancelled
   const [showFilters, setShowFilters] = useState(false);
-  
-  // Lookups
-  const [lookups, setLookups] = useState<any>(null);
-  
-  // Stats
-  const [stats, setStats] = useState<any>(null);
-  const [showStats, setShowStats] = useState(false);
-
-  useEffect(() => {
-    loadLookups();
-  }, []);
 
   useEffect(() => {
     loadResidences();
-  }, [currentPage, filters]);
-
-  const loadLookups = async () => {
-    try {
-      const data = await residenceService.getLookups();
-      setLookups(data);
-    } catch (err: any) {
-      console.error('Error loading lookups:', err);
-    }
-  };
+  }, []);
 
   const loadResidences = async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await residenceService.getResidences({
-        ...filters,
-        search,
-        page: currentPage,
-        limit
-      });
+      // Get all residences from all steps
+      const steps = ['1', '1a', '2', '3', '4', '4a', '5', '6', '7', '8', '9', '10'];
+      const allResidences: ResidenceWithDetails[] = [];
       
-      setResidences(response.data);
-      setTotal(response.total);
-      setTotalPages(response.totalPages);
+      for (const step of steps) {
+        try {
+          const data = await residenceService.getTasks({ step, search: '' });
+          if (data && data.residences) {
+            allResidences.push(...data.residences);
+          }
+        } catch (err) {
+          console.error(`Error loading step ${step}:`, err);
+        }
+      }
+      
+      // Remove duplicates based on residenceID
+      const uniqueResidences = allResidences.reduce((acc, current) => {
+        const existing = acc.find(item => item.residenceID === current.residenceID);
+        if (!existing) {
+          acc.push(current);
+        }
+        return acc;
+      }, [] as ResidenceWithDetails[]);
+      
+      setResidences(uniqueResidences);
     } catch (err: any) {
       setError(err.response?.data?.message || 'An error occurred while loading residences');
+      Swal.fire('Error', error, 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const loadStats = async () => {
-    try {
-      const data = await residenceService.getStats();
-      setStats(data);
-      setShowStats(true);
-    } catch (err: any) {
-      console.error('Error loading stats:', err);
+  // Calculate time in current step
+  const calculateTimeInStep = (residence: ResidenceWithDetails): string => {
+    const stepDates: Record<number, string | undefined> = {
+      1: residence.offerLetterDate,
+      3: residence.insuranceDate,
+      4: residence.laborCardDate,
+      5: residence.eVisaDate,
+      6: residence.changeStatusDate,
+      7: residence.medicalDate,
+      8: residence.emiratesIDDate,
+      9: residence.visaStampingDate,
+      10: residence.contractSubmissionDate
+    };
+
+    const stepDate = stepDates[residence.completedStep] || residence.datetime;
+    
+    if (!stepDate) return 'N/A';
+    
+    const stepStartDate = new Date(stepDate);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - stepStartDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return '1 day';
+    if (diffDays < 30) return `${diffDays} days`;
+    
+    const months = Math.floor(diffDays / 30);
+    const remainingDays = diffDays % 30;
+    
+    if (months === 1 && remainingDays === 0) return '1 month';
+    if (months === 1) return `1 month ${remainingDays} days`;
+    if (remainingDays === 0) return `${months} months`;
+    return `${months} months ${remainingDays} days`;
+  };
+
+  // Filter residences
+  const getFilteredResidences = () => {
+    let filtered = [...residences];
+
+    // Exclude completed residences (step 10 and above)
+    filtered = filtered.filter(r => r.completedStep < 10);
+
+    // Search filter
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter(r => 
+        r.passenger_name.toLowerCase().includes(searchLower) ||
+        r.passportNumber?.toLowerCase().includes(searchLower) ||
+        r.customer_name?.toLowerCase().includes(searchLower) ||
+        r.company_name?.toLowerCase().includes(searchLower) ||
+        r.uid?.toLowerCase().includes(searchLower) ||
+        r.mb_number?.toLowerCase().includes(searchLower) ||
+        r.residenceID.toString().includes(searchLower)
+      );
     }
-  };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCurrentPage(1);
-    loadResidences();
-  };
-
-  const handleFilterChange = (key: string, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setCurrentPage(1);
-  };
-
-  const clearFilters = () => {
-    setFilters({});
-    setSearch('');
-    setCurrentPage(1);
-  };
-
-  const getStatusBadge = (residence: Residence) => {
-    if (residence.cancelled) {
-      return <span className="px-2 py-1 text-xs font-semibold rounded bg-red-600 text-white">Cancelled</span>;
+    // Step filter
+    if (stepFilter !== 'all') {
+      filtered = filtered.filter(r => r.completedStep === parseInt(stepFilter));
     }
-    if (residence.hold) {
-      return <span className="px-2 py-1 text-xs font-semibold rounded bg-yellow-600 text-white">On Hold</span>;
+
+    // Status filter
+    if (statusFilter === 'active') {
+      filtered = filtered.filter(r => r.hold === 0 && r.cancelled === 0);
+    } else if (statusFilter === 'hold') {
+      filtered = filtered.filter(r => r.hold === 1);
+    } else if (statusFilter === 'cancelled') {
+      filtered = filtered.filter(r => r.cancelled === 1);
+    }
+
+    // Sort by date - most recent first
+    filtered.sort((a, b) => {
+      const dateA = new Date(a.datetime).getTime();
+      const dateB = new Date(b.datetime).getTime();
+      return dateB - dateA; // Descending order (newest first)
+    });
+
+    return filtered;
+  };
+
+  const filteredResidences = getFilteredResidences();
+  const totalPages = Math.ceil(filteredResidences.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedResidences = filteredResidences.slice(startIndex, endIndex);
+
+  // Calculate totals
+  const calculateTotals = () => {
+    const totals = filteredResidences.reduce((acc, residence) => {
+      // Convert to numbers to ensure proper addition (not concatenation)
+      const salePrice = Number(residence.sale_price) || 0;
+      const paidAmount = Number(residence.paid_amount) || 0;
+      
+      acc.totalSale += salePrice;
+      acc.totalPaid += paidAmount;
+      acc.totalBalance += (salePrice - paidAmount);
+      return acc;
+    }, { totalSale: 0, totalPaid: 0, totalBalance: 0 });
+    
+    return totals;
+  };
+
+  const totals = calculateTotals();
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (value: number) => {
+    setItemsPerPage(value);
+    setCurrentPage(1);
+  };
+
+  const getStatusBadge = (residence: ResidenceWithDetails) => {
+    if (residence.cancelled === 1) {
+      return <span className="badge bg-danger">Cancelled</span>;
+    }
+    if (residence.hold === 1) {
+      return <span className="badge bg-warning text-dark">On Hold</span>;
     }
     if (residence.completedStep === 10) {
-      return <span className="px-2 py-1 text-xs font-semibold rounded bg-green-600 text-white">Completed</span>;
+      return <span className="badge bg-success">Completed</span>;
     }
-    return (
-      <span className="px-2 py-1 text-xs font-semibold rounded bg-blue-600 text-white">
-        Step {residence.completedStep}/10
-      </span>
-    );
+    return <span className="badge bg-primary">In Progress</span>;
   };
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-GB');
+  const getBalancePercentage = (residence: ResidenceWithDetails): number => {
+    if (residence.sale_price === 0) return 0;
+    return Math.round((residence.paid_amount / residence.sale_price) * 100);
   };
 
   const formatCurrency = (amount: number, symbol: string = 'AED') => {
     return `${symbol} ${amount.toLocaleString()}`;
   };
 
-  if (loading && residences.length === 0) {
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
+
+  if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <LoadingSpinner />
+      <div className="residence-list-page">
+        <div className="text-center py-8">
+          <i className="fa fa-spinner fa-spin fa-2x" style={{ color: '#9ca3af' }}></i>
+          <p className="mt-2" style={{ color: '#6b7280' }}>Loading all residences...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
+    <div className="residence-list-page-compact">
+      {/* Compact Header */}
+      <div className="compact-header">
+        <div className="d-flex align-items-center justify-content-between mb-2">
           <div>
-            <h1 className="text-3xl font-bold text-white">Residence Report</h1>
-            <p className="text-gray-400 mt-1">
-              Manage visa processing workflow - {total} total records
-            </p>
+            <h1 className="mb-0" style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#000000' }}>
+              <i className="fa fa-list me-2"></i>
+              In-Progress Residences ({filteredResidences.length})
+            </h1>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={loadStats} variant="secondary">
-              <i className="fa fa-chart-bar mr-2"></i>
-              Statistics
-            </Button>
-            <Button onClick={() => navigate('/residence/create')}>
-              <i className="fa fa-plus-circle mr-2"></i>
-              Add New Residence
-            </Button>
+          <div className="d-flex gap-2">
+            <button 
+              className="btn btn-sm btn-secondary" 
+              onClick={() => navigate('/residence/tasks')}
+            >
+              <i className="fa fa-arrow-left me-1"></i>
+              Back
+            </button>
+            <button 
+              className="btn btn-sm btn-primary" 
+              onClick={() => navigate('/residence/create')}
+            >
+              <i className="fa fa-plus-circle me-1"></i>
+              Add New
+            </button>
           </div>
         </div>
+        
+        {/* Compact Filters Row */}
+        <div className="d-flex gap-2 mb-2 flex-wrap">
+          <input
+            type="text"
+            className="form-control form-control-sm"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
+            style={{ flex: '1', minWidth: '200px' }}
+          />
+          <select 
+            className="form-select form-select-sm"
+            value={stepFilter}
+            onChange={(e) => {
+              setStepFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            style={{ width: '180px' }}
+          >
+            <option value="all">All Steps</option>
+            {Object.entries(STEP_NAMES)
+              .filter(([value]) => parseInt(value) < 10)
+              .map(([value, label]) => (
+                <option key={value} value={value}>
+                  Step {value} - {label}
+                </option>
+              ))}
+          </select>
+          <select 
+            className="form-select form-select-sm"
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            style={{ width: '140px' }}
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="hold">On Hold</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button 
+            className="btn btn-sm btn-outline-secondary"
+            onClick={() => {
+              setSearch('');
+              setStepFilter('all');
+              setStatusFilter('all');
+              setCurrentPage(1);
+            }}
+          >
+            <i className="fa fa-times"></i>
+          </button>
+        </div>
+      </div>
 
-        {/* Search & Quick Filters */}
-        <div className="card p-4">
-          <form onSubmit={handleSearch} className="flex gap-3 items-end">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Search
-              </label>
-              <input
-                type="text"
-                className="input-field w-full"
-                placeholder="Search by passenger name, passport, UID, Emirates ID, company..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+      {/* Summary Cards - Above Table */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'nowrap' }}>
+        <div className="card summary-card" style={{ flex: '1', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', border: 'none', minWidth: 0 }}>
+          <div className="card-body text-white" style={{ padding: '10px 12px' }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                <div style={{ fontSize: '10px', opacity: 0.9, marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Sale</div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {totals.totalSale.toLocaleString()}
+                </div>
+              </div>
+              <div style={{ fontSize: '24px', opacity: 0.3, flexShrink: 0, marginLeft: '8px' }}>
+                <i className="fa fa-dollar-sign"></i>
+              </div>
             </div>
-            <Button type="submit">
-              <i className="fa fa-search mr-2"></i>
-              Search
-            </Button>
-            <Button type="button" variant="secondary" onClick={() => setShowFilters(!showFilters)}>
-              <i className={`fa fa-filter mr-2 ${showFilters ? 'text-primary-red' : ''}`}></i>
-              {showFilters ? 'Hide' : 'Show'} Filters
-            </Button>
-            {(Object.keys(filters).length > 0 || search) && (
-              <Button type="button" variant="danger" onClick={clearFilters}>
-                <i className="fa fa-times mr-2"></i>
-                Clear
-              </Button>
-            )}
-          </form>
-
-          {/* Advanced Filters */}
-          {showFilters && lookups && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-700">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Company</label>
-                <select
-                  className="input-field w-full"
-                  value={filters.company || ''}
-                  onChange={(e) => handleFilterChange('company', e.target.value ? parseInt(e.target.value) : undefined)}
-                >
-                  <option value="">All Companies</option>
-                  {lookups.companies.map((c: any) => (
-                    <option key={c.company_id} value={c.company_id}>{c.company_name}</option>
-                  ))}
-                </select>
+          </div>
+        </div>
+        <div className="card summary-card" style={{ flex: '1', background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', border: 'none', minWidth: 0 }}>
+          <div className="card-body text-white" style={{ padding: '10px 12px' }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                <div style={{ fontSize: '10px', opacity: 0.9, marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Paid</div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {totals.totalPaid.toLocaleString()}
+                </div>
+                <div style={{ fontSize: '9px', opacity: 0.9, marginTop: '2px' }}>
+                  {totals.totalSale > 0 && isFinite(totals.totalPaid / totals.totalSale) 
+                    ? Math.round((totals.totalPaid / totals.totalSale) * 100) 
+                    : 0}% collected
+                </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Nationality</label>
-                <select
-                  className="input-field w-full"
-                  value={filters.nationality || ''}
-                  onChange={(e) => handleFilterChange('nationality', e.target.value ? parseInt(e.target.value) : undefined)}
-                >
-                  <option value="">All Nationalities</option>
-                  {lookups.nationalities.map((n: any) => (
-                    <option key={n.nationality_id} value={n.nationality_id}>{n.nationality_name}</option>
-                  ))}
-                </select>
+              <div style={{ fontSize: '24px', opacity: 0.3, flexShrink: 0, marginLeft: '8px' }}>
+                <i className="fa fa-check-circle"></i>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Visa Type</label>
-                <select
-                  className="input-field w-full"
-                  value={filters.visaType || ''}
-                  onChange={(e) => handleFilterChange('visaType', e.target.value ? parseInt(e.target.value) : undefined)}
-                >
-                  <option value="">All Visa Types</option>
-                  {lookups.visaTypes.map((v: any) => (
-                    <option key={v.visa_id} value={v.visa_id}>{v.visa_name}</option>
-                  ))}
-                </select>
+            </div>
+          </div>
+        </div>
+        <div className="card summary-card" style={{ flex: '1', background: 'linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)', border: 'none', minWidth: 0 }}>
+          <div className="card-body text-white" style={{ padding: '10px 12px' }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <div className="flex-grow-1" style={{ minWidth: 0 }}>
+                <div style={{ fontSize: '10px', opacity: 0.9, marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Balance</div>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {totals.totalBalance.toLocaleString()}
+                </div>
+                <div style={{ fontSize: '9px', opacity: 0.9, marginTop: '2px' }}>
+                  Outstanding
+                </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Completed Step</label>
-                <select
-                  className="input-field w-full"
-                  value={filters.completedStep !== undefined ? filters.completedStep : ''}
-                  onChange={(e) => handleFilterChange('completedStep', e.target.value ? parseInt(e.target.value) : undefined)}
-                >
-                  <option value="">All Steps</option>
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(step => (
-                    <option key={step} value={step}>Step {step}</option>
-                  ))}
-                </select>
+              <div style={{ fontSize: '24px', opacity: 0.3, flexShrink: 0, marginLeft: '8px' }}>
+                <i className="fa fa-exclamation-circle"></i>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Date From</label>
-                <input
-                  type="date"
-                  className="input-field w-full"
-                  value={filters.dateFrom || ''}
-                  onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Date To</label>
-                <input
-                  type="date"
-                  className="input-field w-full"
-                  value={filters.dateTo || ''}
-                  onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Status</label>
-                <select
-                  className="input-field w-full"
-                  value={filters.cancelled !== undefined ? (filters.cancelled ? 'cancelled' : 'active') : ''}
-                  onChange={(e) => {
-                    if (e.target.value === 'cancelled') {
-                      handleFilterChange('cancelled', true);
-                    } else if (e.target.value === 'active') {
-                      handleFilterChange('cancelled', false);
-                    } else {
-                      handleFilterChange('cancelled', undefined);
-                    }
+      {/* Data Table - Below Cards */}
+      <div className="card compact-table-card">
+        <div className="card-body p-2">
+          {error && (
+            <div className="alert alert-danger alert-sm mb-2">
+              {error}
+            </div>
+          )}
+          
+          {filteredResidences.length === 0 ? (
+            <div className="text-center py-4">
+              <p style={{ color: '#6b7280', fontSize: '14px' }}>No residences found</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="table table-sm table-striped table-bordered align-middle compact-table">
+                <thead>
+                  <tr>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>ID</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>
+                      Date <i className="fa fa-arrow-down" style={{ fontSize: '8px' }}></i>
+                    </th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Passenger</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Passport</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Customer</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Company</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Step</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Time</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Sale</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Paid</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Balance</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Status</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedResidences.map((residence) => {
+                    const balancePercentage = getBalancePercentage(residence);
+                    const balance = residence.sale_price - residence.paid_amount;
+                    
+                    return (
+                      <tr 
+                        key={residence.residenceID} 
+                        className={
+                          residence.hold === 1 ? 'bg-hold' : 
+                          residence.cancelled === 1 ? 'bg-cancelled' : ''
+                        }
+                        style={{ fontSize: '12px' }}
+                      >
+                        <td style={{ padding: '4px 6px' }}>
+                          <strong style={{ fontSize: '12px' }}>#{residence.residenceID}</strong>
+                        </td>
+                        <td style={{ padding: '4px 6px', fontSize: '11px' }}>{formatDate(residence.datetime)}</td>
+                        <td style={{ padding: '4px 6px' }}>
+                          <div style={{ fontSize: '11px' }}>
+                            <img
+                              src={`https://flagpedia.net/data/flags/h24/${residence.countryCode?.toLowerCase()}.png`}
+                              alt={residence.countryName}
+                              height="10"
+                              className="me-1"
+                            />
+                            <strong style={{ fontSize: '11px' }}>{residence.passenger_name.toUpperCase()}</strong>
+                          </div>
+                          {residence.uid && (
+                            <div className="text-muted" style={{ fontSize: '9px' }}>
+                              UID: {residence.uid}
+                            </div>
+                          )}
+                        </td>
+                        <td style={{ padding: '4px 6px', fontSize: '11px' }}>{residence.passportNumber || '-'}</td>
+                        <td style={{ padding: '4px 6px', fontSize: '11px' }}>{residence.customer_name || '-'}</td>
+                        <td style={{ padding: '4px 6px', fontSize: '11px' }}>
+                          {residence.company_name ? (
+                            <>
+                              <strong style={{ fontSize: '11px' }}>{residence.company_name}</strong>
+                              {residence.mb_number && (
+                                <div className="text-muted" style={{ fontSize: '9px' }}>
+                                  MB: {residence.mb_number}
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            '-'
+                          )}
+                        </td>
+                        <td style={{ padding: '4px 6px' }}>
+                          <span className="badge bg-info" style={{ fontSize: '10px', padding: '2px 6px' }}>
+                            {residence.completedStep}
+                          </span>
+                        </td>
+                        <td style={{ padding: '4px 6px' }}>
+                          <span className="badge bg-secondary" style={{ fontSize: '10px', padding: '2px 6px' }}>
+                            {calculateTimeInStep(residence)}
+                          </span>
+                        </td>
+                        <td className="price-cell" style={{ padding: '4px 6px' }}>
+                          <strong style={{ fontSize: '11px' }}>
+                            {residence.sale_price.toLocaleString()}
+                          </strong>
+                        </td>
+                        <td className="price-cell" style={{ padding: '4px 6px' }}>
+                          <span className="text-success" style={{ fontSize: '11px', fontWeight: '600' }}>
+                            {residence.paid_amount.toLocaleString()}
+                          </span>
+                          <div className="text-muted" style={{ fontSize: '9px' }}>
+                            {balancePercentage}%
+                          </div>
+                        </td>
+                        <td className="price-cell" style={{ padding: '4px 6px' }}>
+                          <span className={balance > 0 ? 'balance-negative' : 'balance-positive'} style={{ fontSize: '11px', fontWeight: '600' }}>
+                            {balance.toLocaleString()}
+                          </span>
+                        </td>
+                        <td style={{ padding: '4px 6px' }}>{getStatusBadge(residence)}</td>
+                        <td style={{ padding: '4px 6px' }}>
+                          <div className="d-flex gap-1">
+                            <button
+                              className="btn btn-xs btn-primary"
+                              onClick={() => navigate(`/residence/${residence.residenceID}`)}
+                              title="View Details"
+                              style={{ padding: '2px 6px', fontSize: '11px' }}
+                            >
+                              <i className="fa fa-eye"></i>
+                            </button>
+                            <button
+                              className="btn btn-xs btn-info"
+                              onClick={() => navigate(`/residence/tasks?step=${residence.completedStep}`)}
+                              title="Go to Step Tasks"
+                              style={{ padding: '2px 6px', fontSize: '11px' }}
+                            >
+                              <i className="fa fa-tasks"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot style={{ background: '#f9fafb', borderTop: '2px solid #e5e7eb' }}>
+                  <tr>
+                    <td colSpan={8} style={{ textAlign: 'right', fontWeight: 'bold', padding: '6px 8px', fontSize: '11px' }}>
+                      TOTALS:
+                    </td>
+                    <td className="price-cell" style={{ fontWeight: 'bold', fontSize: '12px', background: '#f3f4f6', padding: '6px 8px' }}>
+                      {totals.totalSale.toLocaleString()}
+                    </td>
+                    <td className="price-cell" style={{ fontWeight: 'bold', fontSize: '12px', background: '#f3f4f6', padding: '6px 8px' }}>
+                      <span className="text-success">
+                        {totals.totalPaid.toLocaleString()}
+                      </span>
+                      <div className="text-muted" style={{ fontSize: '9px' }}>
+                        {totals.totalSale > 0 && isFinite(totals.totalPaid / totals.totalSale)
+                          ? Math.round((totals.totalPaid / totals.totalSale) * 100) 
+                          : 0}%
+                      </div>
+                    </td>
+                    <td className="price-cell" style={{ fontWeight: 'bold', fontSize: '12px', background: '#f3f4f6', padding: '6px 8px' }}>
+                      <span className="balance-negative">
+                        {totals.totalBalance.toLocaleString()}
+                      </span>
+                    </td>
+                    <td colSpan={2} style={{ background: '#f3f4f6', padding: '6px 8px' }}></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+          
+          {/* Compact Pagination */}
+          {filteredResidences.length > 0 && (
+            <div className="pagination-container" style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              padding: '8px 12px',
+              borderTop: '1px solid #e5e7eb',
+              flexWrap: 'wrap',
+              gap: '8px',
+              fontSize: '12px'
+            }}>
+              {/* Items per page selector */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '12px', color: '#6b7280' }}>Show</span>
+                <select 
+                  value={itemsPerPage} 
+                  onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                  style={{
+                    padding: '4px 8px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer'
                   }}
                 >
-                  <option value="">All</option>
-                  <option value="active">Active</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
                 </select>
+                <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                  ({startIndex + 1}-{Math.min(endIndex, filteredResidences.length)} of {filteredResidences.length})
+                </span>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Hold Status</label>
-                <select
-                  className="input-field w-full"
-                  value={filters.hold !== undefined ? (filters.hold ? 'hold' : 'active') : ''}
-                  onChange={(e) => {
-                    if (e.target.value === 'hold') {
-                      handleFilterChange('hold', true);
-                    } else if (e.target.value === 'active') {
-                      handleFilterChange('hold', false);
+              {/* Page navigation */}
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                  <button
+                    onClick={() => handlePageChange(1)}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      backgroundColor: currentPage === 1 ? '#f3f4f6' : '#ffffff',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                      fontSize: '12px',
+                      color: currentPage === 1 ? '#9ca3af' : '#374151'
+                    }}
+                  >
+                    <i className="fa fa-angle-double-left"></i>
+                  </button>
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      backgroundColor: currentPage === 1 ? '#f3f4f6' : '#ffffff',
+                      cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                      fontSize: '12px',
+                      color: currentPage === 1 ? '#9ca3af' : '#374151'
+                    }}
+                  >
+                    <i className="fa fa-angle-left"></i>
+                  </button>
+                  
+                  {/* Page numbers */}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
                     } else {
-                      handleFilterChange('hold', undefined);
+                      pageNum = currentPage - 2 + i;
                     }
-                  }}
-                >
-                  <option value="">All</option>
-                  <option value="active">Active</option>
-                  <option value="hold">On Hold</option>
-                </select>
-              </div>
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        style={{
+                          padding: '4px 8px',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '4px',
+                          backgroundColor: currentPage === pageNum ? '#000000' : '#ffffff',
+                          color: currentPage === pageNum ? '#ffffff' : '#374151',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          fontWeight: currentPage === pageNum ? '600' : '400',
+                          minWidth: '28px'
+                        }}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                  
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      backgroundColor: currentPage === totalPages ? '#f3f4f6' : '#ffffff',
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                      fontSize: '12px',
+                      color: currentPage === totalPages ? '#9ca3af' : '#374151'
+                    }}
+                  >
+                    <i className="fa fa-angle-right"></i>
+                  </button>
+                  <button
+                    onClick={() => handlePageChange(totalPages)}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      padding: '4px 8px',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '4px',
+                      backgroundColor: currentPage === totalPages ? '#f3f4f6' : '#ffffff',
+                      cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                      fontSize: '12px',
+                      color: currentPage === totalPages ? '#9ca3af' : '#374151'
+                    }}
+                  >
+                    <i className="fa fa-angle-double-right"></i>
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-900 border border-red-700 text-white px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-
-      {/* Statistics Modal */}
-      {showStats && stats && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 rounded-lg max-w-6xl w-full max-h-screen overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">Residence Statistics</h2>
-                <button onClick={() => setShowStats(false)} className="text-gray-400 hover:text-white">
-                  <i className="fa fa-times text-2xl"></i>
-                </button>
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="card p-4 bg-blue-900">
-                  <div className="text-gray-300 text-sm">Total Residences</div>
-                  <div className="text-3xl font-bold text-white mt-2">{stats.total_count || 0}</div>
-                </div>
-                <div className="card p-4 bg-yellow-900">
-                  <div className="text-gray-300 text-sm">Pending</div>
-                  <div className="text-3xl font-bold text-white mt-2">{stats.pending_count || 0}</div>
-                </div>
-                <div className="card p-4 bg-green-900">
-                  <div className="text-gray-300 text-sm">Completed</div>
-                  <div className="text-3xl font-bold text-white mt-2">{stats.completed_count || 0}</div>
-                </div>
-                <div className="card p-4 bg-red-900">
-                  <div className="text-gray-300 text-sm">Cancelled</div>
-                  <div className="text-3xl font-bold text-white mt-2">{stats.cancelled_count || 0}</div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="card p-4">
-                  <div className="text-gray-300 text-sm">Total Sales</div>
-                  <div className="text-2xl font-bold text-green-400 mt-2">
-                    AED {(stats.total_sale_value || 0).toLocaleString()}
-                  </div>
-                </div>
-                <div className="card p-4">
-                  <div className="text-gray-300 text-sm">Total Costs</div>
-                  <div className="text-2xl font-bold text-red-400 mt-2">
-                    AED {(stats.total_cost_value || 0).toLocaleString()}
-                  </div>
-                </div>
-                <div className="card p-4">
-                  <div className="text-gray-300 text-sm">Total Profit</div>
-                  <div className="text-2xl font-bold text-blue-400 mt-2">
-                    AED {(stats.total_profit || 0).toLocaleString()}
-                  </div>
-                </div>
-              </div>
-
-              {/* Charts can be added here */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {stats.by_nationality && stats.by_nationality.length > 0 && (
-                  <div className="card p-4">
-                    <h3 className="text-lg font-bold text-white mb-4">Top Nationalities</h3>
-                    <div className="space-y-2">
-                      {stats.by_nationality.slice(0, 10).map((item: any, index: number) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <span className="text-gray-300">{item.nationality || 'Unknown'}</span>
-                          <span className="font-bold text-white">{item.count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {stats.by_step && stats.by_step.length > 0 && (
-                  <div className="card p-4">
-                    <h3 className="text-lg font-bold text-white mb-4">By Step</h3>
-                    <div className="space-y-2">
-                      {stats.by_step.map((item: any, index: number) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <span className="text-gray-300">Step {item.step}</span>
-                          <span className="font-bold text-white">{item.count}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Table */}
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="table-header">
-                <th className="px-4 py-3 text-left">ID</th>
-                <th className="px-4 py-3 text-left">Passenger</th>
-                <th className="px-4 py-3 text-left">Customer</th>
-                <th className="px-4 py-3 text-left">Company</th>
-                <th className="px-4 py-3 text-left">Nationality</th>
-                <th className="px-4 py-3 text-left">Visa Type</th>
-                <th className="px-4 py-3 text-left">Sale Price</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {residences.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="px-4 py-8 text-center text-gray-400">
-                    No residences found
-                  </td>
-                </tr>
-              ) : (
-                residences.map((residence) => (
-                  <tr
-                    key={residence.residenceID}
-                    className="border-b border-gray-700 hover:bg-gray-700/50 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-gray-300">#{residence.residenceID}</td>
-                    <td className="px-4 py-3">
-                      <div className="text-white font-medium">{residence.passenger_name}</div>
-                      <div className="text-xs text-gray-400">{residence.passportNumber || '-'}</div>
-                    </td>
-                    <td className="px-4 py-3 text-gray-300">{residence.customer_name || '-'}</td>
-                    <td className="px-4 py-3 text-gray-300">{residence.company_name || 'Individual'}</td>
-                    <td className="px-4 py-3 text-gray-300">{residence.nationality_name || '-'}</td>
-                    <td className="px-4 py-3 text-gray-300">{residence.visa_type_name || '-'}</td>
-                    <td className="px-4 py-3 text-gray-300">
-                      {formatCurrency(residence.sale_price, residence.sale_currency_symbol)}
-                    </td>
-                    <td className="px-4 py-3">{getStatusBadge(residence)}</td>
-                    <td className="px-4 py-3 text-gray-300 text-sm">{formatDate(residence.datetime)}</td>
-                    <td className="px-4 py-3 text-center">
-                      <Button
-                        size="sm"
-                        onClick={() => navigate(`/residence/${residence.residenceID}`)}
-                      >
-                        <i className="fa fa-eye"></i>
-                      </Button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="px-4 py-3 border-t border-gray-700 flex items-center justify-between">
-            <div className="text-sm text-gray-400">
-              Showing {((currentPage - 1) * limit) + 1} to {Math.min(currentPage * limit, total)} of {total} results
-            </div>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-              >
-                <i className="fa fa-chevron-left"></i>
-              </Button>
-              <span className="px-4 py-2 text-white">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-              >
-                <i className="fa fa-chevron-right"></i>
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
-
