@@ -873,7 +873,9 @@ export default function ResidenceTasks() {
                     <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Date</th>
                     <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Passenger</th>
                     <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Customer</th>
-                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Company</th>
+                    <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>
+                      {currentStep === '1' ? 'Sale/Paid' : 'Company'}
+                    </th>
                     <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Passport</th>
                     <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Remarks</th>
                     <th style={{ padding: '6px 8px', fontSize: '11px', fontWeight: '600' }}>Actions</th>
@@ -923,35 +925,66 @@ export default function ResidenceTasks() {
                             </span>
                           </div>
                         )}
-                        <div className="text-muted" style={{ fontSize: '9px', marginTop: '2px' }}>
-                          Sale: {residence.sale_price.toLocaleString()} | Paid: {residence.paid_amount.toLocaleString()} ({residence.paid_amount === 0 ? 0 : Math.round((residence.paid_amount / residence.sale_price) * 100)}%)
-                        </div>
-                      </td>
-                      <td style={{ padding: '4px 6px', fontSize: '11px' }}>{residence.customer_name}</td>
-                      <td style={{ padding: '4px 6px', fontSize: '11px' }}>
-                        {residence.company_name && (
-                          <>
-                            <strong style={{ fontSize: '11px' }}>{residence.company_name}</strong>
-                            {residence.company_number && <span style={{ fontSize: '10px' }}> - {residence.company_number}</span>}
-                          </>
-                        )}
-                        {residence.mb_number && (
-                          <div className="text-muted" style={{ fontSize: '9px' }}>
-                            MB: {residence.mb_number}
-                          </div>
-                        )}
-                        {residence.mohreStatus && (
-                          <div style={{ fontSize: '9px' }}>
-                            <span className={residence.mb_number ? '' : 'text-danger'}>
-                              {residence.mb_number ? residence.mohreStatus : 'Provide MB'}
+                        {currentStep !== '1' && (
+                          <div style={{ fontSize: '10px', marginTop: '2px' }}>
+                            <strong style={{ color: '#667eea' }}>Sale: {residence.sale_price.toLocaleString()}</strong>
+                            {' | '}
+                            <strong style={{ color: '#11998e' }}>Paid: {residence.paid_amount.toLocaleString()}</strong>
+                            {' '}
+                            <span className={residence.paid_amount === residence.sale_price ? 'text-success' : 'text-danger'} style={{ fontWeight: '600' }}>
+                              ({residence.paid_amount === 0 ? 0 : Math.round((residence.paid_amount / residence.sale_price) * 100)}%)
                             </span>
                           </div>
                         )}
-                        {steps[currentStep]?.showAccess && residence.username && (
-                          <div className="text-muted" style={{ fontSize: '9px' }}>
-                            User: {residence.username}
-                            {residence.password && <> | Pass: {residence.password}</>}
+                      </td>
+                      <td style={{ padding: '4px 6px', fontSize: '11px' }}>{residence.customer_name}</td>
+                      <td style={{ padding: '4px 6px', fontSize: '11px' }}>
+                        {currentStep === '1' ? (
+                          // For Step 1: Show Sale Price and Paid Amount
+                          <div>
+                            <div style={{ marginBottom: '3px' }}>
+                              <strong style={{ fontSize: '11px', color: '#667eea' }}>Sale:</strong>
+                              <br />
+                              <strong style={{ fontSize: '12px', color: '#000' }}>{residence.sale_price.toLocaleString()}</strong>
+                            </div>
+                            <div>
+                              <strong style={{ fontSize: '11px', color: '#11998e' }}>Paid:</strong>
+                              <br />
+                              <strong style={{ fontSize: '12px', color: '#000' }}>{residence.paid_amount.toLocaleString()}</strong>
+                              {' '}
+                              <span className={residence.paid_amount === residence.sale_price ? 'text-success' : 'text-danger'} style={{ fontSize: '10px', fontWeight: '700' }}>
+                                ({residence.paid_amount === 0 ? 0 : Math.round((residence.paid_amount / residence.sale_price) * 100)}%)
+                              </span>
+                            </div>
                           </div>
+                        ) : (
+                          // For Other Steps: Show Company Info
+                          <>
+                            {residence.company_name && (
+                              <>
+                                <strong style={{ fontSize: '11px' }}>{residence.company_name}</strong>
+                                {residence.company_number && <span style={{ fontSize: '10px' }}> - {residence.company_number}</span>}
+                              </>
+                            )}
+                            {residence.mb_number && (
+                              <div className="text-muted" style={{ fontSize: '9px' }}>
+                                MB: {residence.mb_number}
+                              </div>
+                            )}
+                            {residence.mohreStatus && (
+                              <div style={{ fontSize: '9px' }}>
+                                <span className={residence.mb_number ? '' : 'text-danger'}>
+                                  {residence.mb_number ? residence.mohreStatus : 'Provide MB'}
+                                </span>
+                              </div>
+                            )}
+                            {steps[currentStep]?.showAccess && residence.username && (
+                              <div className="text-muted" style={{ fontSize: '9px' }}>
+                                User: {residence.username}
+                                {residence.password && <> | Pass: {residence.password}</>}
+                              </div>
+                            )}
+                          </>
                         )}
                       </td>
                       <td style={{ padding: '4px 6px', fontSize: '11px' }}>
