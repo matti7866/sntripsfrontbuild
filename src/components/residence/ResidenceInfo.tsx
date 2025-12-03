@@ -31,17 +31,43 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
   });
   const [saving, setSaving] = useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
+  const [loadingCustomers, setLoadingCustomers] = useState(false);
 
   useEffect(() => {
     loadCustomers();
   }, []);
 
   const loadCustomers = async () => {
+    setLoadingCustomers(true);
     try {
+      console.log('Loading customers for dropdown...');
       const response = await customerService.getCustomers({ page: 1, per_page: 1000 });
-      setCustomers(response.data || []);
-    } catch (error) {
-      console.error('Error loading customers:', error);
+      console.log('Customer response:', response);
+      console.log('Customers data:', response.data);
+      console.log('Number of customers loaded:', response.data?.length || 0);
+      
+      if (response.data && Array.isArray(response.data)) {
+        setCustomers(response.data);
+        console.log('✓ Successfully loaded', response.data.length, 'customers');
+      } else {
+        console.error('⚠️ Invalid customers data structure:', response);
+        setCustomers([]);
+      }
+    } catch (error: any) {
+      console.error('❌ Error loading customers:', error);
+      console.error('Error response:', error.response);
+      console.error('Error message:', error.message);
+      setCustomers([]);
+      
+      // Show user-friendly error
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Customer Dropdown Issue',
+        text: 'Failed to load customers. Please refresh the page or contact support.',
+        confirmButtonText: 'OK'
+      });
+    } finally {
+      setLoadingCustomers(false);
     }
   };
 
@@ -128,22 +154,36 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
         {isEditing ? (
           <div className="space-y-3">
             <div>
-              <label className="text-gray-400 text-sm block mb-1">Select Customer:</label>
+              <label className="text-gray-400 text-sm block mb-1">
+                Select Customer:
+                {loadingCustomers && (
+                  <span className="ms-2">
+                    <i className="fa fa-spinner fa-spin"></i> Loading...
+                  </span>
+                )}
+              </label>
               <SearchableSelect
                 options={[
-                  { value: '', label: '-- Select Customer --' },
-                  ...customers.map(c => ({
-                    value: String(c.customer_id),
-                    label: `${c.customer_name} - ${c.customer_phone || 'No phone'}`
+                  { value: '', label: loadingCustomers ? 'Loading customers...' : '-- Select Customer --' },
+                  ...(Array.isArray(customers) ? customers : []).map(c => ({
+                    value: String(c.customer_id || c.id || ''),
+                    label: `${c.customer_name || c.name || 'Unknown'} - ${c.customer_phone || c.phone || 'No phone'}`
                   }))
                 ]}
                 value={editData.customer_id ? String(editData.customer_id) : ''}
                 onChange={(value) => setEditData({ ...editData, customer_id: value ? Number(value) : null })}
                 placeholder="Search customer..."
+                disabled={loadingCustomers}
               />
               <small className="text-muted d-block mt-1">
                 <i className="fa fa-info-circle me-1"></i>
-                Select a different customer to reassign this residence
+                {loadingCustomers ? (
+                  'Loading customer list...'
+                ) : customers.length === 0 ? (
+                  <span className="text-warning">No customers loaded. Please refresh or contact support.</span>
+                ) : (
+                  `${customers.length} customers available. Select to reassign this residence.`
+                )}
               </small>
             </div>
           </div>
