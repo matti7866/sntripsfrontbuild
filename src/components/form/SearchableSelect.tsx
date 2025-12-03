@@ -29,11 +29,24 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('SearchableSelect - Props:', {
+      optionsCount: options?.length || 0,
+      value,
+      disabled,
+      firstOption: options?.[0],
+      lastOption: options?.[options.length - 1]
+    });
+  }, [options, value, disabled]);
+
   const selectedOption = options.find(opt => opt.value === value);
   
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  console.log('SearchableSelect - Filtered options count:', filteredOptions.length);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

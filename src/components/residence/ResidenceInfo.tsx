@@ -40,30 +40,47 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
   const loadCustomers = async () => {
     setLoadingCustomers(true);
     try {
-      console.log('Loading customers for dropdown...');
-      const response = await customerService.getCustomers({ page: 1, per_page: 1000 });
+      console.log('Loading ALL customers for dropdown...');
+      const response = await customerService.getCustomers({ page: 1, per_page: 10000 }); // Request all customers
       console.log('Customer response:', response);
-      console.log('Customers data:', response.data);
+      console.log('Raw response.data:', response.data);
+      console.log('Is array?', Array.isArray(response.data));
+      console.log('First customer:', response.data?.[0]);
       console.log('Number of customers loaded:', response.data?.length || 0);
+      console.log('Pagination info:', response.pagination);
       
-      if (response.data && Array.isArray(response.data)) {
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
         setCustomers(response.data);
         console.log('✓ Successfully loaded', response.data.length, 'customers');
+        console.log('Sample customer fields:', Object.keys(response.data[0]));
       } else {
-        console.error('⚠️ Invalid customers data structure:', response);
+        console.error('⚠️ Invalid customers data structure or empty array:', response);
+        console.error('Response.data type:', typeof response.data);
+        console.error('Response.data value:', response.data);
         setCustomers([]);
+        
+        // Show warning if no customers loaded
+        if (!response.data || response.data.length === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'No Customers Found',
+            text: 'The system returned 0 customers. This might be a database or API issue.',
+            confirmButtonText: 'OK'
+          });
+        }
       }
     } catch (error: any) {
       console.error('❌ Error loading customers:', error);
       console.error('Error response:', error.response);
       console.error('Error message:', error.message);
+      console.error('Error data:', error.response?.data);
       setCustomers([]);
       
       // Show user-friendly error
       await Swal.fire({
-        icon: 'warning',
-        title: 'Customer Dropdown Issue',
-        text: 'Failed to load customers. Please refresh the page or contact support.',
+        icon: 'error',
+        title: 'Customer Dropdown Failed',
+        text: error.response?.data?.message || error.message || 'Failed to load customers. Please refresh the page.',
         confirmButtonText: 'OK'
       });
     } finally {
@@ -162,19 +179,31 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
                   </span>
                 )}
               </label>
-              <SearchableSelect
-                options={[
+              {(() => {
+                const customerOptions = [
                   { value: '', label: loadingCustomers ? 'Loading customers...' : '-- Select Customer --' },
                   ...(Array.isArray(customers) ? customers : []).map(c => ({
                     value: String(c.customer_id || c.id || ''),
                     label: `${c.customer_name || c.name || 'Unknown'} - ${c.customer_phone || c.phone || 'No phone'}`
                   }))
-                ]}
-                value={editData.customer_id ? String(editData.customer_id) : ''}
-                onChange={(value) => setEditData({ ...editData, customer_id: value ? Number(value) : null })}
-                placeholder="Search customer..."
-                disabled={loadingCustomers}
-              />
+                ];
+                console.log('SearchableSelect options count:', customerOptions.length);
+                console.log('First 3 options:', customerOptions.slice(0, 3));
+                console.log('Current value:', editData.customer_id);
+                
+                return (
+                  <SearchableSelect
+                    options={customerOptions}
+                    value={editData.customer_id ? String(editData.customer_id) : ''}
+                    onChange={(value) => {
+                      console.log('Customer selected:', value);
+                      setEditData({ ...editData, customer_id: value ? Number(value) : null });
+                    }}
+                    placeholder="Search customer..."
+                    disabled={loadingCustomers}
+                  />
+                );
+              })()}
               <small className="text-muted d-block mt-1">
                 <i className="fa fa-info-circle me-1"></i>
                 {loadingCustomers ? (
