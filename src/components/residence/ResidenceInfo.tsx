@@ -130,7 +130,18 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
       const response = await residenceService.updateResidence(residence.residenceID, editData);
       console.log('✅ Save response:', response);
       
+      // Call onUpdate FIRST to refresh the data
+      if (onUpdate) {
+        console.log('Calling onUpdate to refresh data...');
+        await onUpdate();
+        console.log('✅ onUpdate completed');
+      } else {
+        console.warn('⚠️ onUpdate callback is not defined!');
+      }
+      
       setIsEditing(false);
+      
+      // Show success message AFTER data is refreshed
       await Swal.fire({
         icon: 'success',
         title: 'Success!',
@@ -138,10 +149,6 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
         timer: 2000,
         showConfirmButton: false,
       });
-      if (onUpdate) {
-        console.log('Calling onUpdate to refresh data...');
-        onUpdate();
-      }
     } catch (error: any) {
       console.error('❌ Save failed:', error);
       console.error('Error response:', error.response);
