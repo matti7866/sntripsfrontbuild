@@ -9,7 +9,6 @@ import ColorAdminLayout from './layouts/ColorAdminLayout';
 
 // Components
 import ProtectedRoute from './components/common/ProtectedRoute';
-import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Pages
 import LoginOTP from './pages/auth/LoginOTP';
@@ -191,7 +190,7 @@ function App() {
               <Route path="hotel/new" element={<Hotels />} />
               
               {/* Service Management */}
-              <Route path="service" element={<ErrorBoundary><Services /></ErrorBoundary>} />
+              <Route path="service" element={<Services />} />
               
               {/* Supplier Management */}
               <Route path="supplier" element={<Suppliers />} />

@@ -17,8 +17,6 @@ const getTodayDate = () => {
 };
 
 export default function Services() {
-  console.log('Services component rendering...');
-  
   const [activeTab, setActiveTab] = useState<'records' | 'other'>('records');
   const [filters, setFilters] = useState<ServiceFilters>({
     start_date: getTodayDate(),
@@ -44,12 +42,9 @@ export default function Services() {
   const queryClient = useQueryClient();
   
   // Load dropdowns
-  const { data: dropdowns, error: dropdownsError, isLoading: dropdownsLoading } = useQuery<ServiceDropdownData>({
+  const { data: dropdowns, error: dropdownsError } = useQuery<ServiceDropdownData>({
     queryKey: ['service-dropdowns'],
-    queryFn: () => {
-      console.log('Fetching service dropdowns...');
-      return serviceService.getDropdowns();
-    },
+    queryFn: () => serviceService.getDropdowns(),
     retry: 2
   });
   
@@ -220,30 +215,6 @@ export default function Services() {
     setChargeModal({ isOpen: true, service });
   };
   
-  // Show loading state while dropdowns are loading
-  if (dropdownsLoading) {
-    return (
-      <div className="services-page">
-        <div className="text-center p-4">
-          <i className="fa fa-spinner fa-spin fa-3x"></i>
-          <p className="mt-3">Loading Services...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show error state if dropdowns failed to load
-  if (dropdownsError) {
-    return (
-      <div className="services-page">
-        <div className="alert alert-danger">
-          <h4>Error Loading Services</h4>
-          <p>{(dropdownsError as any)?.message || 'Failed to load service data. Please refresh the page.'}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="services-page">
       <div className="page-header">
