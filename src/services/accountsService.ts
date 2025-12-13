@@ -255,6 +255,24 @@ class AccountsService {
     const url = `${config.baseUrl}/accountsReportController.php?action=exportExcel&fromDate=${filters.fromDate}&toDate=${filters.toDate}&accountFilter=${filters.accountFilter}&typeFilter=${filters.typeFilter}`;
     window.open(url, '_blank');
   }
+
+  async closeDayAndEmail(date: string, resetDate: string): Promise<{ success: boolean; message: string; statement?: any }> {
+    const formData = new FormData();
+    formData.append('action', 'closeDayAndEmail');
+    formData.append('date', date);
+    formData.append('resetDate', resetDate);
+    formData.append('email', 'mattiullah.nadiry@gmail.com');
+
+    const response = await apiClient.post(`${config.baseUrl}/api/accounts/close-day.php`, formData, {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    
+    logger.debug('Close Day API Response:', response.data);
+    return response.data;
+  }
 }
 
 export const accountsService = new AccountsService();

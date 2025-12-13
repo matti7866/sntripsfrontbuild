@@ -56,6 +56,8 @@ export default function AccountsReport() {
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [showTableInfoModal, setShowTableInfoModal] = useState(false);
+  const [showCloseDayModal, setShowCloseDayModal] = useState(false);
+  const [closeDayDate, setCloseDayDate] = useState(getDubaiToday());
 
   // Form data states
   const [depositData, setDepositData] = useState<Partial<DepositRequest>>({});
@@ -479,6 +481,62 @@ export default function AccountsReport() {
     }
   };
 
+  // Handle close day and email
+  const closeDayMutation = useMutation({
+    mutationFn: (date: string) => accountsService.closeDayAndEmail(date, permanentResetDate),
+    onSuccess: (data) => {
+      Swal.fire({
+        title: 'Success!',
+        html: `
+          <div style="text-align: left;">
+            <p><strong>✅ Day closed successfully!</strong></p>
+            <p>📧 Statement has been emailed to: <strong>mattiullah.nadiry@gmail.com</strong></p>
+            <p>📅 Date: <strong>${closeDayDate}</strong></p>
+            ${data.statement ? `<p>💰 Total Accounts: <strong>${data.statement.totalAccounts || 0}</strong></p>` : ''}
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+      setShowCloseDayModal(false);
+      // Reload balances to show updated data
+      loadBalancesMutation.mutate();
+    },
+    onError: (error: any) => {
+      console.error('Error closing day:', error);
+      Swal.fire('Error', error.response?.data?.message || error.message || 'Failed to close day', 'error');
+    }
+  });
+
+  const handleCloseDay = () => {
+    Swal.fire({
+      title: 'Close Day & Email Statement?',
+      html: `
+        <div style="text-align: left;">
+          <p><strong>This will:</strong></p>
+          <ul style="margin: 10px 0;">
+            <li>📸 Create a snapshot of all account balances as of <strong>${closeDayDate}</strong></li>
+            <li>📊 Generate a comprehensive statement</li>
+            <li>📧 Email the statement to: <strong>mattiullah.nadiry@gmail.com</strong></li>
+          </ul>
+          <div style="background: #fef2f2; padding: 10px; border-radius: 4px; margin-top: 10px; border-left: 4px solid #dc2626;">
+            <strong>⚠️ Important:</strong> This action cannot be undone. Make sure all transactions for ${closeDayDate} are entered.
+          </div>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, Close Day & Email',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        closeDayMutation.mutate(closeDayDate);
+      }
+    });
+  };
+
   // Pagination component helper
   const PaginationControls = ({ 
     currentPage, 
@@ -716,6 +774,14 @@ export default function AccountsReport() {
             </button>
             <button className="btn btn-warning" onClick={() => setShowTableInfoModal(true)}>
               <i className="fa fa-table"></i> View Credit/Debit Tables
+            </button>
+            <button 
+              className="btn btn-dark"
+              onClick={() => setShowCloseDayModal(true)}
+              title="Close day and email statement"
+              style={{ background: '#1f2937', borderColor: '#1f2937' }}
+            >
+              <i className="fa fa-calendar-check"></i> Close Day & Email
             </button>
             <button className="btn btn-success" onClick={() => setShowDepositModal(true)}>
               <i className="fa fa-plus-circle"></i> Deposit
@@ -1467,6 +1533,87 @@ export default function AccountsReport() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Close Day Modal */}
+      {showCloseDayModal && (
+        <div className="modal-overlay" onClick={() => setShowCloseDayModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ background: '#1f2937', color: '#fff' }}>
+              <h5><i className="fa fa-calendar-check"></i> Close Day & Email Statement</h5>
+              <button className="close-btn" onClick={() => setShowCloseDayModal(false)}>&times;</button>
+            </div>
+            <div className="modal-body">
+              <div className="alert alert-info">
+                <h6><i className="fa fa-info-circle"></i> End of Day Process</h6>
+                <p className="mb-0">This feature will:</p>
+                <ul className="mb-0">
+                  <li>📸 Create a snapshot of all account balances as of the selected date</li>
+                  <li>📊 Generate a comprehensive statement showing all accounts with their credits, debits, and final balances</li>
+                  <li>📧 Email the statement to: <strong>mattiullah.nadiry@gmail.com</strong></li>
+                  <li>💾 Store the closing record for historical reference</li>
+                </ul>
+              </div>
+
+              <div className="form-group">
+                <label>Select Date to Close: <span className="text-danger">*</span></label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={closeDayDate}
+                  onChange={(e) => setCloseDayDate(e.target.value)}
+                  max={today}
+                  min={permanentResetDate}
+                />
+                <small className="text-muted">
+                  Balances will be calculated from {permanentResetDate} to the selected date
+                </small>
+              </div>
+
+              <div className="alert alert-warning mt-3">
+                <strong>⚠️ Important:</strong>
+                <ul className="mb-0">
+                  <li>Make sure all transactions for <strong>{closeDayDate}</strong> are entered before closing</li>
+                  <li>This creates a permanent record of account balances</li>
+                  <li>You will receive an email with the complete statement</li>
+                </ul>
+              </div>
+
+              <div className="form-group mt-3">
+                <label><i className="fa fa-envelope"></i> Email To:</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  value="mattiullah.nadiry@gmail.com"
+                  disabled
+                  style={{ background: '#f3f4f6', fontWeight: '500' }}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={() => setShowCloseDayModal(false)}
+                disabled={closeDayMutation.isPending}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-success" 
+                onClick={handleCloseDay}
+                disabled={closeDayMutation.isPending}
+              >
+                {closeDayMutation.isPending ? (
+                  <><i className="fa fa-spinner fa-spin me-2"></i>Processing...</>
+                ) : (
+                  <><i className="fa fa-check-circle me-2"></i>Close Day & Send Email</>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
