@@ -217,34 +217,6 @@ const AttachmentsModal: React.FC<AttachmentsModalProps> = ({
     return `${config.baseUrl}/${filePath}`;
   };
 
-  const handleDownload = async (fileUrl: string, fileName: string) => {
-    try {
-      // Fetch the file
-      const response = await fetch(fileUrl);
-      const blob = await response.blob();
-      
-      // Create a temporary URL for the blob
-      const url = window.URL.createObjectURL(blob);
-      
-      // Create a temporary anchor element and trigger download
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = fileName;
-      
-      // Append to body, click, and remove
-      document.body.appendChild(a);
-      a.click();
-      
-      // Clean up
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Error downloading file:', error);
-      Swal.fire('Error', 'Failed to download file', 'error');
-    }
-  };
-
 		if (!isOpen) return null;
 
 		return (
@@ -435,13 +407,14 @@ const AttachmentsModal: React.FC<AttachmentsModalProps> = ({
                           >
                             <i className="fa fa-eye me-1"></i>View
                           </button>
-                          <button
+                          <a
+                            href={fileUrl}
+                            download
                             className="btn btn-sm btn-outline-success flex-fill"
-                            onClick={() => handleDownload(fileUrl, attachment.file_name)}
                             title="Download"
                           >
                             <i className="fa fa-download me-1"></i>Download
-                          </button>
+                          </a>
                           <button
                             className="btn btn-sm btn-outline-danger"
                             onClick={() => handleDelete(attachment.attachment_id, attachment.file_name)}
