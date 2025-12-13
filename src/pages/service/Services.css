@@ -601,6 +601,32 @@ h5 {
   margin-right: 8px;
 }
 
+/* Alert styles */
+.alert {
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin: 20px;
+}
+
+.alert-danger {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.alert h4 {
+  margin: 0 0 10px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #991b1b;
+}
+
+.alert p {
+  margin: 0;
+  font-size: 14px;
+  color: #7f1d1d;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .form-row {
