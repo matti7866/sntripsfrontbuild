@@ -42,9 +42,12 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
   const selectedOption = options.find(opt => opt.value === value);
   
-  const filteredOptions = options.filter(option =>
-    option.label.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredOptions = options.filter(option => {
+    // Handle null/undefined labels safely
+    const label = option.label ?? '';
+    const search = searchTerm ?? '';
+    return label.toString().toLowerCase().includes(search.toLowerCase());
+  });
 
   console.log('SearchableSelect - Filtered options count:', filteredOptions.length);
 
@@ -141,7 +144,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
           />
         ) : (
           <div className="searchable-select-value">
-            {selectedOption ? selectedOption.label : placeholder}
+            {selectedOption ? (selectedOption.label || '(No label)') : placeholder}
           </div>
         )}
         <div className="searchable-select-arrow">
@@ -170,7 +173,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
                   {option.value === value && (
                     <i className="fa fa-check me-2 text-success"></i>
                   )}
-                  {option.label}
+                  {option.label || '(No label)'}
                 </div>
               ))}
             </div>
