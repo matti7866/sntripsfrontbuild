@@ -3,6 +3,8 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import { accountsService } from '../../services/accountsService';
 import { getDubaiToday, formatDate } from '../../utils/timezone';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import type {
   Account,
   Currency,
@@ -478,6 +480,133 @@ export default function AccountsReport() {
       Swal.fire('Error', error.response?.data?.message || error.message || 'Failed to load statement', 'error');
     } finally {
       setStatementLoading(false);
+    }
+  };
+
+  // Handle download statement as PDF
+  const handleDownloadStatementPDF = () => {
+    if (!statementData || !statementAccountId) return;
+    
+    try {
+      const doc = new jsPDF();
+      
+      // Add header
+      doc.setFontSize(18);
+      doc.setTextColor(31, 41, 55); // Dark gray
+      doc.text('Account Statement', 14, 20);
+      
+      // Add account details
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Account: ${statementAccountName}`, 14, 30);
+      doc.text(`Period: ${formatDate(permanentResetDate)} to ${formatDate(statementToDate)}`, 14, 37);
+      doc.text(`Generated: ${formatDate(getDubaiToday())} ${new Date().toLocaleTimeString()}`, 14, 44);
+      
+      // Add summary boxes
+      doc.setFillColor(240, 253, 244); // Light green
+      doc.rect(14, 50, 90, 20, 'F');
+      doc.setFontSize(10);
+      doc.setTextColor(5, 150, 105);
+      doc.text('Total Credits', 16, 57);
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${formatNumber(statementData.totalCredits || 0)} ${statementData.currency || 'AED'}`, 16, 66);
+      
+      doc.setFillColor(254, 242, 242); // Light red
+      doc.rect(106, 50, 90, 20, 'F');
+      doc.setFontSize(10);
+      doc.setTextColor(239, 68, 68);
+      doc.text('Total Debits', 108, 57);
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${formatNumber(statementData.totalDebits || 0)} ${statementData.currency || 'AED'}`, 108, 66);
+      
+      const balance = statementData.balance || 0;
+      doc.setFillColor(balance >= 0 ? 239 : 254, balance >= 0 ? 246 : 242, balance >= 0 ? 255 : 242);
+      doc.rect(14, 72, 90, 20, 'F');
+      doc.setFontSize(10);
+      doc.setTextColor(balance >= 0 ? 37 : 220, balance >= 0 ? 99 : 38, balance >= 0 ? 235 : 38);
+      doc.text('Balance', 16, 79);
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${formatNumber(balance)} ${statementData.currency || 'AED'}`, 16, 88);
+      
+      doc.setFillColor(243, 244, 246); // Light gray
+      doc.rect(106, 72, 90, 20, 'F');
+      doc.setFontSize(10);
+      doc.setTextColor(107, 114, 128);
+      doc.text('Total Transactions', 108, 79);
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`${statementData.transactions?.length || 0}`, 108, 88);
+      
+      // Add transactions table
+      if (statementData.transactions && statementData.transactions.length > 0) {
+        const tableData = statementData.transactions.map((tx: any) => [
+          formatDate(tx.date),
+          tx.transaction_type,
+          tx.description || '-',
+          tx.credit && tx.credit > 0 ? formatNumber(tx.credit) : '-',
+          tx.debit && tx.debit > 0 ? formatNumber(tx.debit) : '-',
+          formatNumber(tx.running_balance || 0)
+        ]);
+        
+        autoTable(doc, {
+          startY: 95,
+          head: [['Date', 'Type', 'Description', 'Credit', 'Debit', 'Balance']],
+          body: tableData,
+          theme: 'striped',
+          headStyles: { 
+            fillColor: [45, 53, 60],
+            textColor: [255, 255, 255],
+            fontStyle: 'bold',
+            fontSize: 9
+          },
+          bodyStyles: { 
+            fontSize: 8,
+            textColor: [0, 0, 0]
+          },
+          columnStyles: {
+            0: { cellWidth: 25 },
+            1: { cellWidth: 35 },
+            2: { cellWidth: 50 },
+            3: { cellWidth: 25, halign: 'right', textColor: [16, 185, 129] },
+            4: { cellWidth: 25, halign: 'right', textColor: [239, 68, 68] },
+            5: { cellWidth: 25, halign: 'right', fontStyle: 'bold' }
+          },
+          margin: { left: 14, right: 14 }
+        });
+      }
+      
+      // Add footer
+      const pageCount = (doc as any).internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(107, 114, 128);
+        doc.text(
+          `SN Travels Portal - Page ${i} of ${pageCount}`,
+          doc.internal.pageSize.getWidth() / 2,
+          doc.internal.pageSize.getHeight() - 10,
+          { align: 'center' }
+        );
+      }
+      
+      // Download the PDF
+      const filename = `statement_${statementAccountName.replace(/[^a-zA-Z0-9]/g, '_')}_${statementToDate}.pdf`;
+      doc.save(filename);
+      
+      Swal.fire({
+        title: 'Success!',
+        text: 'Statement downloaded successfully',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Swal.fire('Error', 'Failed to generate PDF', 'error');
     }
   };
 
@@ -1190,6 +1319,14 @@ export default function AccountsReport() {
             </div>
             <div className="modal-footer">
               <button className="btn btn-secondary" onClick={() => setShowStatementModal(false)}>Close</button>
+              {statementData && (
+                <button 
+                  className="btn btn-success" 
+                  onClick={() => handleDownloadStatementPDF()}
+                >
+                  <i className="fa fa-file-pdf me-2"></i>Download PDF
+                </button>
+              )}
             </div>
           </div>
         </div>
