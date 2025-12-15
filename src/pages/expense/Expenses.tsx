@@ -4,6 +4,7 @@ import Swal from 'sweetalert2';
 import expenseService, { expenseTypeService, expenseDashboardService } from '../../services/expenseService';
 import supplierService from '../../services/supplierService';
 import SearchableSelect from '../../components/form/SearchableSelect';
+import { getDubaiToday } from '../../utils/timezone';
 import type { CreateExpenseRequest, ExpenseType, Expense, ExpenseFilters } from '../../types/expense';
 import type { SupplierDropdownData } from '../../types/supplier';
 import './Expenses.css';
@@ -30,8 +31,8 @@ export default function Expenses() {
   const [showUpdateExpenseModal, setShowUpdateExpenseModal] = useState(false);
   const [searchFilters, setSearchFilters] = useState<ExpenseFilters>({
     search_term: 'DateWise',
-    from_date: new Date().toISOString().split('T')[0],
-    to_date: new Date().toISOString().split('T')[0],
+    from_date: getDubaiToday(),
+    to_date: getDubaiToday(),
     employee_id: undefined
   });
   const [dateSearchEnabled, setDateSearchEnabled] = useState(false);
