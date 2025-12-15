@@ -279,7 +279,7 @@ export default function Services() {
                     <SearchableSelect
                       options={[
                         { value: '', label: '-- Select Service --' },
-                        ...(dropdowns?.services?.map(s => ({
+                        ...(dropdowns?.services?.filter(s => s.serviceName).map(s => ({
                           value: s.serviceID,
                           label: s.serviceName
                         })) || [])
@@ -296,7 +296,7 @@ export default function Services() {
                     <SearchableSelect
                       options={[
                         { value: '', label: '-- Customer --' },
-                        ...(dropdowns?.customers?.map(c => ({
+                        ...(dropdowns?.customers?.filter(c => c.customer_name).map(c => ({
                           value: c.customer_id,
                           label: c.customer_name
                         })) || [])
@@ -476,7 +476,7 @@ export default function Services() {
                     <SearchableSelect
                       options={[
                         { value: '', label: '-- Select Service --' },
-                        ...(dropdowns?.services?.map(s => ({
+                        ...(dropdowns?.services?.filter(s => s.serviceName).map(s => ({
                           value: s.serviceID,
                           label: s.serviceName
                         })) || [])
@@ -493,7 +493,7 @@ export default function Services() {
                     <SearchableSelect
                       options={[
                         { value: '', label: '-- Customer --' },
-                        ...(dropdowns?.customers?.map(c => ({
+                        ...(dropdowns?.customers?.filter(c => c.customer_name).map(c => ({
                           value: c.customer_id,
                           label: c.customer_name
                         })) || [])
@@ -786,7 +786,7 @@ function ServiceModal({
                 <SearchableSelect
                   options={[
                     { value: '-1', label: '+ Add Service' },
-                    ...(dropdowns?.services?.map(s => ({
+                    ...(dropdowns?.services?.filter(s => s.serviceName).map(s => ({
                       value: s.serviceID,
                       label: s.serviceName
                     })) || [])
@@ -804,7 +804,7 @@ function ServiceModal({
                 <SearchableSelect
                   options={[
                     { value: '', label: 'Select Customer' },
-                    ...(dropdowns?.customers?.map(c => ({
+                    ...(dropdowns?.customers?.filter(c => c.customer_name).map(c => ({
                       value: c.customer_id,
                       label: c.customer_name
                     })) || [])
@@ -867,7 +867,7 @@ function ServiceModal({
                 />
                 <SearchableSelect
                   options={
-                    dropdowns?.currencies?.map(c => ({
+                    dropdowns?.currencies?.filter(c => c.currencyName).map(c => ({
                       value: c.currencyID,
                       label: c.currencyName
                     })) || []
@@ -1055,7 +1055,7 @@ function ChargeAssignmentModal({
                 <SearchableSelect
                   options={[
                     { value: '', label: '-- Select Supplier --' },
-                    ...(dropdowns?.suppliers?.map(s => ({
+                    ...(dropdowns?.suppliers?.filter(s => s.supp_name).map(s => ({
                       value: s.supp_id,
                       label: s.supp_name
                     })) || [])
@@ -1078,7 +1078,7 @@ function ChargeAssignmentModal({
                 <SearchableSelect
                   options={[
                     { value: '', label: '-- Select Account --' },
-                    ...(dropdowns?.accounts?.map(a => ({
+                    ...(dropdowns?.accounts?.filter(a => a.account_Name).map(a => ({
                       value: a.account_ID,
                       label: a.account_Name
                     })) || [])
@@ -1111,7 +1111,7 @@ function ChargeAssignmentModal({
                 />
                 <SearchableSelect
                   options={
-                    dropdowns?.currencies?.map(c => ({
+                    dropdowns?.currencies?.filter(c => c.currencyName).map(c => ({
                       value: c.currencyID,
                       label: c.currencyName
                     })) || []

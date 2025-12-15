@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
 import type { Ticket } from '../../types/ticket';
+import { getAirlineLogo } from '../../utils/airlineLogo';
 import './TicketCopyTemplate.css';
 
 interface TicketCopyTemplateProps {
@@ -39,6 +40,7 @@ const TicketCopyTemplate = forwardRef<HTMLDivElement, TicketCopyTemplateProps>((
 
   return (
     <div ref={ref} className="ticket-copy-template">
+      <div className="ticket-content-wrapper">
       {/* Main Ticket Card */}
       <div className="ticket-card">
         {/* Header Section */}
@@ -120,7 +122,32 @@ const TicketCopyTemplate = forwardRef<HTMLDivElement, TicketCopyTemplateProps>((
                 <div className="segment-path-dots">
                   <div className="segment-dot-start"></div>
                   <div className="segment-plane-icon">
-                    <i className="fas fa-plane"></i>
+                    {getAirlineLogo(ticket.flight_number) ? (
+                      <img 
+                        src={getAirlineLogo(ticket.flight_number)!} 
+                        alt="Airline Logo" 
+                        className="airline-logo"
+                        onError={(e) => {
+                          // Fallback to plane icon if logo fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            const existingIcon = parent.querySelector('.fa-plane');
+                            if (!existingIcon) {
+                              const icon = document.createElement('i');
+                              icon.className = 'fas fa-plane';
+                              icon.style.fontSize = '12px';
+                              icon.style.color = '#dc2626';
+                              icon.style.transform = 'rotate(90deg)';
+                              parent.appendChild(icon);
+                            }
+                          }
+                        }}
+                      />
+                    ) : (
+                      <i className="fas fa-plane"></i>
+                    )}
                   </div>
                   <div className="segment-dot-end"></div>
                 </div>
@@ -174,7 +201,32 @@ const TicketCopyTemplate = forwardRef<HTMLDivElement, TicketCopyTemplateProps>((
                   <div className="segment-path-dots">
                     <div className="segment-dot-start"></div>
                     <div className="segment-plane-icon">
-                      <i className="fas fa-plane"></i>
+                      {getAirlineLogo(ticket.return_flight_number) ? (
+                        <img 
+                          src={getAirlineLogo(ticket.return_flight_number)!} 
+                          alt="Airline Logo" 
+                          className="airline-logo"
+                          onError={(e) => {
+                            // Fallback to plane icon if logo fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              const existingIcon = parent.querySelector('.fa-plane');
+                              if (!existingIcon) {
+                                const icon = document.createElement('i');
+                                icon.className = 'fas fa-plane';
+                                icon.style.fontSize = '12px';
+                                icon.style.color = '#dc2626';
+                                icon.style.transform = 'rotate(90deg)';
+                                parent.appendChild(icon);
+                              }
+                            }
+                          }}
+                        />
+                      ) : (
+                        <i className="fas fa-plane"></i>
+                      )}
                     </div>
                     <div className="segment-dot-end"></div>
                   </div>
@@ -258,7 +310,7 @@ const TicketCopyTemplate = forwardRef<HTMLDivElement, TicketCopyTemplateProps>((
         </div>
       </div>
 
-      {/* Footer Section */}
+      {/* Footer Section - At End */}
       <div className="ticket-footer-modern">
         <div className="footer-info">
           <div className="footer-item">
@@ -283,102 +335,7 @@ const TicketCopyTemplate = forwardRef<HTMLDivElement, TicketCopyTemplateProps>((
           <p className="small-print-modern">This is a computer-generated ticket and does not require a signature. | Issued by: {ticket.staff_name || 'SN Travels Staff'}</p>
         </div>
       </div>
-
-      {/* Flight Details Grid - After Footer */}
-      {ticket.flight_type === 'OW' ? (
-        /* One Way - Show only Departure and Arrival */
-        <div className="details-grid details-grid-one-way">
-          <div className="detail-item">
-            <div className="detail-label">
-              <i className="fas fa-clock"></i>
-              <span>Departure</span>
-            </div>
-            <div className="detail-value">{formatTime(ticket.departure_time)}</div>
-          </div>
-          <div className="detail-item">
-            <div className="detail-label">
-              <i className="fas fa-clock"></i>
-              <span>Arrival</span>
-            </div>
-            <div className="detail-value">{formatTime(ticket.arrival_time)}</div>
-          </div>
-        </div>
-      ) : (
-        /* Round Trip - Show complete information for both segments */
-        <div className="details-grid details-grid-round-trip">
-          {/* Outbound Segment Details */}
-          <div className="detail-section-header">
-            <i className="fas fa-plane-departure"></i>
-            <span>OUTBOUND</span>
-          </div>
-          <div className="detail-item">
-            <div className="detail-label">
-              <i className="fas fa-calendar"></i>
-              <span>Date</span>
-            </div>
-            <div className="detail-value">{formatDate(ticket.date_of_travel)}</div>
-          </div>
-          <div className="detail-item">
-            <div className="detail-label">
-              <i className="fas fa-clock"></i>
-              <span>Departure</span>
-            </div>
-            <div className="detail-value">{formatTime(ticket.departure_time)}</div>
-          </div>
-          <div className="detail-item">
-            <div className="detail-label">
-              <i className="fas fa-clock"></i>
-              <span>Arrival</span>
-            </div>
-            <div className="detail-value">{formatTime(ticket.arrival_time)}</div>
-          </div>
-          <div className="detail-item">
-            <div className="detail-label">
-              <i className="fas fa-plane"></i>
-              <span>Route</span>
-            </div>
-            <div className="detail-value">{ticket.from_code} → {ticket.to_code}</div>
-          </div>
-          
-          {/* Return Segment Details */}
-          {ticket.return_date && (
-            <>
-              <div className="detail-section-header">
-                <i className="fas fa-plane-arrival"></i>
-                <span>RETURN</span>
-              </div>
-              <div className="detail-item">
-                <div className="detail-label">
-                  <i className="fas fa-calendar"></i>
-                  <span>Date</span>
-                </div>
-                <div className="detail-value">{formatDate(ticket.return_date)}</div>
-              </div>
-              <div className="detail-item">
-                <div className="detail-label">
-                  <i className="fas fa-clock"></i>
-                  <span>Departure</span>
-                </div>
-                <div className="detail-value">{formatTime(ticket.return_departure_time)}</div>
-              </div>
-              <div className="detail-item">
-                <div className="detail-label">
-                  <i className="fas fa-clock"></i>
-                  <span>Arrival</span>
-                </div>
-                <div className="detail-value">{formatTime(ticket.return_arrival_time)}</div>
-              </div>
-              <div className="detail-item">
-                <div className="detail-label">
-                  <i className="fas fa-plane"></i>
-                  <span>Route</span>
-                </div>
-                <div className="detail-value">{ticket.to_code} → {ticket.from_code}</div>
-              </div>
-            </>
-          )}
-        </div>
-      )}
+      </div>
     </div>
   );
 });

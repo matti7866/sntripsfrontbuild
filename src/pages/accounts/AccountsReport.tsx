@@ -485,18 +485,57 @@ export default function AccountsReport() {
   const closeDayMutation = useMutation({
     mutationFn: (date: string) => accountsService.closeDayAndEmail(date, permanentResetDate),
     onSuccess: (data) => {
+      const emailSent = data.statement?.emailSent ?? false;
+      const statementUrl = data.statement?.statementUrl ?? '';
+      
       Swal.fire({
-        title: 'Success!',
+        title: emailSent ? 'Success! ✅' : 'Day Closed ✅',
         html: `
           <div style="text-align: left;">
-            <p><strong>✅ Day closed successfully!</strong></p>
-            <p>📧 Statement has been emailed to: <strong>mattiullah.nadiry@gmail.com</strong></p>
-            <p>📅 Date: <strong>${closeDayDate}</strong></p>
-            ${data.statement ? `<p>💰 Total Accounts: <strong>${data.statement.totalAccounts || 0}</strong></p>` : ''}
+            <div style="background: #f0fdf4; padding: 12px; border-radius: 6px; border-left: 4px solid #10b981; margin-bottom: 15px;">
+              <p style="margin: 0;"><strong>✅ Day closed successfully!</strong></p>
+              <p style="margin: 5px 0 0 0; font-size: 13px; color: #059669;">All balances have been recorded and saved.</p>
+            </div>
+            
+            ${emailSent 
+              ? `<div style="background: #eff6ff; padding: 12px; border-radius: 6px; border-left: 4px solid #3b82f6; margin-bottom: 15px;">
+                   <p style="margin: 0;"><strong>📧 Email Sent!</strong></p>
+                   <p style="margin: 5px 0 0 0; font-size: 13px; color: #1d4ed8;">Statement emailed to: <strong>mattiullah.nadiry@gmail.com</strong></p>
+                 </div>`
+              : `<div style="background: #fef3c7; padding: 12px; border-radius: 6px; border-left: 4px solid #f59e0b; margin-bottom: 15px;">
+                   <p style="margin: 0;"><strong>⚠️ Email Not Sent</strong></p>
+                   <p style="margin: 5px 0 0 0; font-size: 13px; color: #92400e;">${data.statement?.emailError || 'Mail server not configured on this server.'}</p>
+                 </div>`
+            }
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+              <div style="background: #f9fafb; padding: 10px; border-radius: 4px; text-align: center;">
+                <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Date</div>
+                <div style="font-size: 14px; font-weight: 600; color: #111827;">${closeDayDate}</div>
+              </div>
+              <div style="background: #f9fafb; padding: 10px; border-radius: 4px; text-align: center;">
+                <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Total Accounts</div>
+                <div style="font-size: 14px; font-weight: 600; color: #111827;">${data.statement?.totalAccounts || 0}</div>
+              </div>
+            </div>
+            
+            ${statementUrl 
+              ? `<div style="background: #f0f9ff; padding: 15px; border-radius: 6px; border: 2px dashed #3b82f6; text-align: center;">
+                   <p style="margin: 0 0 12px 0; font-weight: 600; color: #1e40af;">📥 Download Statement</p>
+                   <a href="${statementUrl}" target="_blank" class="swal2-confirm swal2-styled" style="background: #3b82f6; padding: 10px 24px; text-decoration: none; display: inline-block; border-radius: 4px;">
+                     <i class="fa fa-download"></i> Download HTML Statement
+                   </a>
+                 </div>` 
+              : ''
+            }
           </div>
         `,
         icon: 'success',
-        confirmButtonText: 'OK'
+        confirmButtonText: 'Close',
+        width: '600px',
+        customClass: {
+          confirmButton: 'btn btn-primary'
+        }
       });
       setShowCloseDayModal(false);
       // Reload balances to show updated data

@@ -257,21 +257,33 @@ class AccountsService {
   }
 
   async closeDayAndEmail(date: string, resetDate: string): Promise<{ success: boolean; message: string; statement?: any }> {
-    const formData = new FormData();
-    formData.append('action', 'closeDayAndEmail');
-    formData.append('date', date);
-    formData.append('resetDate', resetDate);
-    formData.append('email', 'mattiullah.nadiry@gmail.com');
+    try {
+      const formData = new FormData();
+      formData.append('date', date);
+      formData.append('resetDate', resetDate);
+      formData.append('email', 'mattiullah.nadiry@gmail.com');
 
-    const response = await apiClient.post(`${config.baseUrl}/api/accounts/close-day.php`, formData, {
-      withCredentials: true,
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    
-    logger.debug('Close Day API Response:', response.data);
-    return response.data;
+      logger.debug('Sending close day request:', { date, resetDate });
+
+      const response = await apiClient.post(`${config.baseUrl}/api/accounts/close-day.php`, formData, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      logger.debug('Close Day API Response:', response.data);
+      
+      if (response.data && response.data.success) {
+        return response.data;
+      } else {
+        throw new Error(response.data?.message || 'Failed to close day');
+      }
+    } catch (error: any) {
+      logger.error('Close Day Error:', error);
+      logger.error('Error Response:', error.response?.data);
+      throw error;
+    }
   }
 }
 
