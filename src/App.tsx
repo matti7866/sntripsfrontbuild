@@ -34,6 +34,7 @@ import VisaList from './pages/visa/VisaList';
 import CreateVisa from './pages/visa/CreateVisa';
 import EmiratesIdTasks from './pages/visa/EmiratesIdTasks';
 import FreezoneTasks from './pages/visa/FreezoneTasks';
+import VisaExpiry from './pages/visa/VisaExpiry';
 import Establishments from './pages/establishments/Establishments';
 import EstablishmentEmployees from './pages/establishments/EstablishmentEmployees';
 import ManageEstablishments from './pages/establishments/ManageEstablishments';
@@ -130,6 +131,7 @@ function App() {
               <Route path="visa/new" element={<CreateVisa />} />
               <Route path="visa-tasks/emirates-id" element={<EmiratesIdTasks />} />
               <Route path="visa-tasks/freezone" element={<FreezoneTasks />} />
+              <Route path="visa/expiry" element={<VisaExpiry />} />
               <Route path="visa/prices" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Visa Prices</h1><p className="mt-4 text-gray-600">Visa prices module coming soon...</p></div>} />
               <Route path="visa/dependents" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Dependents Visa</h1><p className="mt-4 text-gray-600">Dependents visa module coming soon...</p></div>} />
               

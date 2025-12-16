@@ -1317,6 +1317,33 @@ const residenceService = {
     console.log('Response message:', response.data?.message);
     
     return response.data;
+  },
+
+  /**
+   * Get visa expiry data (upcoming or expired)
+   */
+  async getVisaExpiry(params: { status: string; company_id?: string; search?: string }) {
+    const response = await axios.get('/residence/visa-expiry.php', { params });
+    
+    // Response structure: { success: true, message: '...', data: [...] }
+    if (response.data.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    } else if (Array.isArray(response.data)) {
+      return response.data;
+    } else {
+      return [];
+    }
+  },
+
+  /**
+   * Update visa expiry date
+   */
+  async updateExpiryDate(residenceID: number, expiryDate: string) {
+    const response = await axios.post('/residence/update-expiry-date.php', {
+      residenceID,
+      expiry_date: expiryDate
+    });
+    return response.data;
   }
 };
 

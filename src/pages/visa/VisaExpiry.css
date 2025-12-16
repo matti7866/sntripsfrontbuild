@@ -1,0 +1,61 @@
+.visa-expiry-page {
+  padding: 1rem;
+  background-color: #f3f4f6;
+  min-height: 100vh;
+}
+
+.visa-expiry-page .card {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure dropdowns appear above tabs and other content */
+.visa-expiry-page .card:first-child {
+  z-index: 100;
+  overflow: visible !important;
+}
+
+.visa-expiry-page .card:first-child .card-body {
+  overflow: visible !important;
+}
+
+.visa-expiry-page .card:nth-child(2) {
+  z-index: 50;
+}
+
+.visa-expiry-page .table {
+  margin-bottom: 0;
+}
+
+.visa-expiry-page .table thead {
+  background-color: #f9fafb;
+}
+
+.visa-expiry-page .table thead th {
+  border-bottom: 2px solid #e5e7eb;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.visa-expiry-page .table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.visa-expiry-page .btn-xs {
+  font-size: 11px;
+  padding: 2px 6px;
+  line-height: 1.2;
+}
+
+.visa-expiry-page .pagination-container button:hover:not(:disabled) {
+  background-color: #e5e7eb;
+}
+
+.visa-expiry-page .pagination-container button:disabled {
+  opacity: 0.5;
+}
+
