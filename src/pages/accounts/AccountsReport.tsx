@@ -705,6 +705,71 @@ export default function AccountsReport() {
     });
   };
 
+  // Handle download all statements
+  const handleDownloadAllStatements = async () => {
+    try {
+      Swal.fire({
+        title: 'Generating Statements...',
+        html: 'Please wait while we generate all account statements',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      const response = await accountsService.downloadAllStatements(
+        fromDate,
+        toDate,
+        permanentResetDate
+      );
+
+      if (response.success && response.data) {
+        Swal.fire({
+          title: 'Success! 📄',
+          html: `
+            <div style="text-align: left;">
+              <div style="background: #f0fdf4; padding: 12px; border-radius: 6px; border-left: 4px solid #10b981; margin-bottom: 15px;">
+                <p style="margin: 0;"><strong>✅ All statements generated successfully!</strong></p>
+                <p style="margin: 5px 0 0 0; font-size: 13px; color: #059669;">Combined statement includes all ${response.data.totalAccounts} accounts.</p>
+              </div>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div style="background: #f9fafb; padding: 10px; border-radius: 4px; text-align: center;">
+                  <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Total Accounts</div>
+                  <div style="font-size: 14px; font-weight: 600; color: #111827;">${response.data.totalAccounts}</div>
+                </div>
+                <div style="background: #f9fafb; padding: 10px; border-radius: 4px; text-align: center;">
+                  <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Period</div>
+                  <div style="font-size: 12px; font-weight: 600; color: #111827;">${formatDate(response.data.fromDate)} to ${formatDate(response.data.toDate)}</div>
+                </div>
+              </div>
+              
+              <div style="background: #f0f9ff; padding: 15px; border-radius: 6px; border: 2px dashed #3b82f6; text-align: center;">
+                <p style="margin: 0 0 12px 0; font-weight: 600; color: #1e40af;">📥 Download Statement</p>
+                <a href="${response.data.url}" target="_blank" class="swal2-confirm swal2-styled" style="background: #3b82f6; padding: 10px 24px; text-decoration: none; display: inline-block; border-radius: 4px;">
+                  <i class="fa fa-download"></i> Download HTML (All Accounts)
+                </a>
+              </div>
+            </div>
+          `,
+          icon: 'success',
+          confirmButtonText: 'Close',
+          width: '600px',
+          customClass: {
+            confirmButton: 'btn btn-primary'
+          }
+        });
+      }
+    } catch (error: any) {
+      console.error('Error downloading all statements:', error);
+      Swal.fire(
+        'Error',
+        error.response?.data?.message || error.message || 'Failed to generate statements',
+        'error'
+      );
+    }
+  };
+
   // Pagination component helper
   const PaginationControls = ({ 
     currentPage, 
@@ -939,6 +1004,14 @@ export default function AccountsReport() {
             </button>
             <button className="btn btn-success" onClick={handleExportExcel}>
               <i className="fa fa-file-excel-o"></i> Export to Excel
+            </button>
+            <button 
+              className="btn btn-primary"
+              onClick={handleDownloadAllStatements}
+              title="Download all account statements in one file"
+              style={{ background: '#8b5cf6', borderColor: '#8b5cf6' }}
+            >
+              <i className="fa fa-download"></i> Download All Statements
             </button>
             <button className="btn btn-warning" onClick={() => setShowTableInfoModal(true)}>
               <i className="fa fa-table"></i> View Credit/Debit Tables

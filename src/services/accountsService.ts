@@ -285,6 +285,33 @@ class AccountsService {
       throw error;
     }
   }
+
+  async downloadAllStatements(fromDate: string, toDate: string, resetDate: string): Promise<{ success: boolean; message: string; data?: any }> {
+    try {
+      logger.debug('Downloading all statements:', { fromDate, toDate, resetDate });
+
+      const response = await apiClient.get(`${config.baseUrl}/api/accounts/download-all-statements.php`, {
+        params: {
+          fromDate,
+          toDate,
+          resetDate
+        },
+        withCredentials: true,
+      });
+      
+      logger.debug('Download All Statements API Response:', response.data);
+      
+      if (response.data && response.data.success) {
+        return response.data;
+      } else {
+        throw new Error(response.data?.message || 'Failed to generate statements');
+      }
+    } catch (error: any) {
+      logger.error('Download All Statements Error:', error);
+      logger.error('Error Response:', error.response?.data);
+      throw error;
+    }
+  }
 }
 
 export const accountsService = new AccountsService();
