@@ -71,6 +71,7 @@ export default function ResidenceTasks() {
   
   const currentStep = searchParams.get('step') || '1';
   const companyId = searchParams.get('company_id') || '';
+  const customerId = searchParams.get('customer_id') || '';
   const searchQuery = searchParams.get('search') || '';
   
   const [residences, setResidences] = useState<ResidenceTask[]>([]);
@@ -78,6 +79,7 @@ export default function ResidenceTasks() {
   const [companies, setCompanies] = useState<Array<{ company_id: number; company_name: string; company_number: string; totalEmployees: number; starting_quota: number }>>([]);
   const [stepCounts, setStepCounts] = useState<Record<string, number>>({});
   const [selectedCompany, setSelectedCompany] = useState<string>(companyId);
+  const [selectedCustomer, setSelectedCustomer] = useState<string>(customerId);
   
   // Lookups for dropdowns
   const [lookups, setLookups] = useState<{
@@ -129,14 +131,17 @@ export default function ResidenceTasks() {
   useEffect(() => {
     loadTasks();
     setCurrentPage(1); // Reset to first page when filters change
-  }, [currentStep, companyId, searchQuery]);
+  }, [currentStep, companyId, customerId, searchQuery]);
 
-  // Sync selectedCompany with URL parameter
+  // Sync selectedCompany and selectedCustomer with URL parameters
   useEffect(() => {
     if (companyId !== selectedCompany) {
       setSelectedCompany(companyId);
     }
-  }, [companyId]);
+    if (customerId !== selectedCustomer) {
+      setSelectedCustomer(customerId);
+    }
+  }, [companyId, customerId]);
   
   // Calculate pagination
   const totalPages = Math.ceil(residences.length / itemsPerPage);
@@ -190,6 +195,7 @@ export default function ResidenceTasks() {
       const data = await residenceService.getTasks({ 
         step: currentStep, 
         company_id: companyId || undefined, 
+        customer_id: customerId || undefined,
         search: searchQuery || undefined 
       });
       
@@ -217,11 +223,13 @@ export default function ResidenceTasks() {
   const handleStepChange = (step: string) => {
     const params = new URLSearchParams(searchParams);
     params.set('step', step);
-    // Preserve existing search and company_id if they exist
+    // Preserve existing search, company_id, and customer_id if they exist
     if (searchQuery) params.set('search', searchQuery);
     else params.delete('search');
     if (selectedCompany && selectedCompany !== '0') params.set('company_id', selectedCompany);
     else params.delete('company_id');
+    if (selectedCustomer && selectedCustomer !== '0') params.set('customer_id', selectedCustomer);
+    else params.delete('customer_id');
     setSearchParams(params, { replace: false });
   };
 
@@ -233,6 +241,7 @@ export default function ResidenceTasks() {
     params.set('search', search);
     params.set('step', currentStep);
     if (selectedCompany) params.set('company_id', selectedCompany);
+    if (selectedCustomer) params.set('customer_id', selectedCustomer);
     setSearchParams(params);
   };
 
@@ -241,10 +250,25 @@ export default function ResidenceTasks() {
     const params = new URLSearchParams(searchParams);
     params.set('step', currentStep);
     if (searchQuery) params.set('search', searchQuery);
+    if (selectedCustomer && selectedCustomer !== '0') params.set('customer_id', selectedCustomer);
     if (companyId && companyId !== '0') {
       params.set('company_id', companyId);
     } else {
       params.delete('company_id');
+    }
+    setSearchParams(params);
+  };
+
+  const handleCustomerChange = (customerId: string) => {
+    setSelectedCustomer(customerId);
+    const params = new URLSearchParams(searchParams);
+    params.set('step', currentStep);
+    if (searchQuery) params.set('search', searchQuery);
+    if (selectedCompany && selectedCompany !== '0') params.set('company_id', selectedCompany);
+    if (customerId && customerId !== '0') {
+      params.set('customer_id', customerId);
+    } else {
+      params.delete('customer_id');
     }
     setSearchParams(params);
   };
@@ -819,21 +843,67 @@ export default function ResidenceTasks() {
           </div>
         </div>
 
-        {/* Compact Search */}
-        <form onSubmit={handleSearch} className="mb-2">
-          <div className="input-group input-group-sm">
-            <input
-              type="text"
-              className="form-control form-control-sm"
-              name="search"
-              defaultValue={searchQuery}
-              placeholder="Search..."
-            />
-            <button type="submit" className="btn btn-sm btn-primary">
-              <i className="fa fa-search"></i>
-            </button>
+        {/* Search and Filters Row */}
+        <div className="row g-2 mb-2">
+          {/* Search Bar */}
+          <div className="col-md-4">
+            <form onSubmit={handleSearch}>
+              <div className="input-group input-group-sm">
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  name="search"
+                  defaultValue={searchQuery}
+                  placeholder="Search by name or passport..."
+                />
+                <button type="submit" className="btn btn-sm btn-primary">
+                  <i className="fa fa-search"></i>
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+
+          {/* Establishment Filter */}
+          <div className="col-md-4">
+            <SearchableSelect
+              options={[
+                { value: '0', label: 'All Establishments' },
+                ...companies
+                  .filter(company => company && company.company_id)
+                  .map((company) => {
+                    const quota = Number(company.starting_quota) || 0;
+                    const employees = Number(company.totalEmployees) || 0;
+                    const available = quota - employees;
+                    return {
+                      value: String(company.company_id || ''),
+                      label: `${company.company_name || 'Unknown'} (${available})`
+                    };
+                  })
+              ]}
+              value={selectedCompany || '0'}
+              onChange={(value) => handleCompanyChange(String(value))}
+              placeholder="Select Establishment"
+            />
+          </div>
+
+          {/* Customer Filter */}
+          <div className="col-md-4">
+            <SearchableSelect
+              options={[
+                { value: '0', label: 'All Customers' },
+                ...lookups.customers
+                  .filter(customer => customer && customer.customer_id)
+                  .map((customer) => ({
+                    value: String(customer.customer_id || ''),
+                    label: customer.customer_name || 'Unknown'
+                  }))
+              ]}
+              value={selectedCustomer || '0'}
+              onChange={(value) => handleCustomerChange(String(value))}
+              placeholder="Select Customer"
+            />
+          </div>
+        </div>
       </div>
 
       {/* Enhanced Step Navigation Tabs */}
@@ -865,32 +935,6 @@ export default function ResidenceTasks() {
               </button>
             );
           })}
-        </div>
-      </div>
-
-      {/* Compact Establishment Filter */}
-      <div className="mb-2 establishment-filter-wrapper">
-        <div className="card p-2 establishment-filter-card">
-          <label className="form-label mb-1" style={{ color: '#374151', fontWeight: 500, fontSize: '12px' }}>Establishment</label>
-          <SearchableSelect
-            options={[
-              { value: '0', label: 'All' },
-              ...companies
-                .filter(company => company && company.company_id)
-                .map((company) => {
-                  const quota = Number(company.starting_quota) || 0;
-                  const employees = Number(company.totalEmployees) || 0;
-                  const available = quota - employees;
-                  return {
-                    value: String(company.company_id || ''),
-                    label: `${company.company_name || 'Unknown'} (${available})`
-                  };
-                })
-            ]}
-            value={selectedCompany || '0'}
-            onChange={(value) => handleCompanyChange(String(value))}
-            placeholder="Select Establishment"
-          />
         </div>
       </div>
 
