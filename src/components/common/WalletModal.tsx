@@ -91,8 +91,9 @@ export default function WalletModal({
 
     setLoading(true);
     try {
+      let response;
       if (mode === 'add') {
-        await walletService.addFunds({
+        response = await walletService.addFunds({
           customerID,
           amount: amountValue,
           currencyID: 1,
@@ -100,16 +101,52 @@ export default function WalletModal({
           remarks: remarks || undefined,
           transactionType
         });
-        Swal.fire('Success', `Funds ${transactionType === 'deposit' ? 'deposited' : 'refunded'} successfully`, 'success');
+        
+        console.log('Add funds response:', response);
+        const transactionId = response.transaction_id;
+        
+        // Show success with receipt button
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          html: `
+            <p>Funds ${transactionType === 'deposit' ? 'deposited' : 'refunded'} successfully</p>
+            ${transactionId ? `<div class="mt-3">
+              <a href="/wallet/receipt/${transactionId}" target="_blank" class="btn btn-primary">
+                <i class="fa fa-receipt me-2"></i>View Receipt
+              </a>
+            </div>` : ''}
+          `,
+          showConfirmButton: true,
+          confirmButtonText: 'Close'
+        });
       } else {
-        await walletService.withdraw({
+        response = await walletService.withdraw({
           customerID,
           amount: amountValue,
           currencyID: 1,
           accountID: accountIDValue,
           remarks: remarks || undefined
         });
-        Swal.fire('Success', 'Funds withdrawn successfully', 'success');
+        
+        console.log('Withdraw response:', response);
+        const transactionId = response.transaction_id;
+        
+        // Show success with receipt button
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          html: `
+            <p>Funds withdrawn successfully</p>
+            ${transactionId ? `<div class="mt-3">
+              <a href="/wallet/receipt/${transactionId}" target="_blank" class="btn btn-primary">
+                <i class="fa fa-receipt me-2"></i>View Receipt
+              </a>
+            </div>` : ''}
+          `,
+          showConfirmButton: true,
+          confirmButtonText: 'Close'
+        });
       }
 
       onSuccess?.();

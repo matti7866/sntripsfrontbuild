@@ -191,6 +191,19 @@ export default function WalletTransactionsModal({
                         </span>
                         <span className="currency">{transaction.currency_symbol || 'AED'}</span>
                       </div>
+                      {(transaction.transaction_type === 'deposit' || transaction.transaction_type === 'withdrawal') && (
+                        <div className="transaction-actions mt-2">
+                          <a
+                            href={`/wallet/receipt/${transaction.transaction_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-sm btn-outline-primary"
+                          >
+                            <i className="fa fa-receipt me-1"></i>
+                            Receipt
+                          </a>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

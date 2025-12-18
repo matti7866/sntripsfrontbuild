@@ -70,17 +70,35 @@ const walletService = {
   /**
    * Add funds to customer wallet (deposit or refund)
    */
-  async addFunds(data: AddFundsRequest) {
+  async addFunds(data: AddFundsRequest): Promise<{ transaction_id: number; [key: string]: any }> {
     const response = await axios.post('/wallet/add-funds.php', data);
-    return response.data.data || response.data;
+    console.log('addFunds full response:', response.data);
+    // Try multiple possible response structures
+    if (response.data.data) {
+      console.log('Using response.data.data:', response.data.data);
+      return response.data.data;
+    } else if (response.data.transaction_id) {
+      console.log('Using response.data directly:', response.data);
+      return response.data;
+    }
+    return response.data;
   },
 
   /**
    * Withdraw funds from customer wallet
    */
-  async withdraw(data: WithdrawRequest) {
+  async withdraw(data: WithdrawRequest): Promise<{ transaction_id: number; [key: string]: any }> {
     const response = await axios.post('/wallet/withdraw.php', data);
-    return response.data.data || response.data;
+    console.log('withdraw full response:', response.data);
+    // Try multiple possible response structures
+    if (response.data.data) {
+      console.log('Using response.data.data:', response.data.data);
+      return response.data.data;
+    } else if (response.data.transaction_id) {
+      console.log('Using response.data directly:', response.data);
+      return response.data;
+    }
+    return response.data;
   },
 
   /**

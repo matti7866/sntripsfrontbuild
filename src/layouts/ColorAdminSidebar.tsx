@@ -105,7 +105,8 @@ const menuItems: MenuItem[] = [
     icon: 'fa fa-dollar',
     title: 'Expenses',
     children: [
-      { path: '/expenses', title: 'Expense Management' }
+      { path: '/expenses', title: 'Expense Management' },
+      { path: '/recurring-expenses', title: 'Recurring Expenses' }
     ]
   },
   {

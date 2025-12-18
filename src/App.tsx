@@ -47,6 +47,7 @@ import Suppliers from './pages/supplier/Suppliers';
 import SupplierLedger from './pages/supplier/SupplierLedger';
 import SupplierPendingLedger from './pages/supplier/SupplierPendingLedger';
 import Expenses from './pages/expense/Expenses';
+import RecurringExpenses from './pages/recurring-expense/RecurringExpenses';
 import PrintLetter from './pages/residence/PrintLetter';
 import CustomerPayments from './pages/payment/CustomerPayments';
 import SupplierPayments from './pages/payment/SupplierPayments';
@@ -72,6 +73,7 @@ import Settings from './pages/settings/Settings';
 import AssetList from './pages/assets/AssetList';
 import CreateAsset from './pages/assets/CreateAsset';
 import SendSms from './pages/sms/SendSms';
+import WalletReceipt from './pages/payment/WalletReceipt';
 
 function App() {
   return (
@@ -101,6 +103,7 @@ function App() {
               <Route path="customers/payments" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Customer Payments</h1><p className="mt-4 text-gray-600">Customer payments module coming soon...</p></div>} />
               <Route path="customers" element={<Customers />} />
               <Route path="customers/wallet" element={<CustomerWallet />} />
+              <Route path="wallet/receipt/:id" element={<WalletReceipt />} />
               
               {/* Ledgers */}
               <Route path="ledger/customer" element={<CustomerLedger />} />
@@ -147,6 +150,7 @@ function App() {
               
               {/* Expenses */}
               <Route path="expenses" element={<Expenses />} />
+              <Route path="recurring-expenses" element={<RecurringExpenses />} />
               
               {/* Bookings */}
               <Route path="bookings/hotels" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Hotels</h1><p className="mt-4 text-gray-600">Hotels module coming soon...</p></div>} />
