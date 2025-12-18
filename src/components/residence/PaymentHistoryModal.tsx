@@ -93,7 +93,16 @@ export default function PaymentHistoryModal({ isOpen, onClose, residence, onLoad
                           {payment.payment_type ? payment.payment_type.replace('_', ' ').toUpperCase() : 'RESIDENCE'}
                         </span>
                       </td>
-                      <td>{payment.account_name}</td>
+                      <td>
+                        {payment.account_name === 'Customer Wallet Payments' || payment.account_id === 38 ? (
+                          <span className="badge bg-success">
+                            <i className="fa fa-wallet me-1"></i>
+                            Wallet
+                          </span>
+                        ) : (
+                          payment.account_name
+                        )}
+                      </td>
                       <td>{payment.staff_name}</td>
                       <td style={{ fontSize: '0.875rem', color: '#6b7280' }}>{payment.remarks || '-'}</td>
                     </tr>

@@ -1,0 +1,159 @@
+.wallet-transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.transaction-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #dee2e6;
+  transition: all 0.2s ease;
+}
+
+.transaction-item:hover {
+  background: #e9ecef;
+  transform: translateX(4px);
+}
+
+.transaction-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.transaction-icon i {
+  font-size: 18px;
+}
+
+.transaction-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.transaction-type {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.transaction-meta {
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.transaction-remarks {
+  font-size: 13px;
+  color: #6c757d;
+  padding: 6px 12px;
+  background: white;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+
+.transaction-balance-change {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.balance-label {
+  font-weight: 500;
+}
+
+.transaction-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.transaction-amount .amount {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.transaction-amount .currency {
+  font-size: 12px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* Transaction type colors */
+.transaction-item[data-type="deposit"],
+.transaction-item[data-type="refund"] {
+  border-left-color: #28a745;
+}
+
+.transaction-item[data-type="payment"],
+.transaction-item[data-type="withdrawal"] {
+  border-left-color: #dc3545;
+}
+
+/* Dark mode - Always apply for this app */
+.transaction-item {
+  background: #2d353c !important;
+  border-left-color: #495057;
+  color: #ffffff;
+}
+
+.transaction-item:hover {
+  background: #343a40 !important;
+}
+
+.transaction-icon {
+  background: #343a40 !important;
+}
+
+.transaction-remarks {
+  background: #343a40 !important;
+  color: #e5e7eb !important;
+}
+
+.transaction-type strong {
+  color: #ffffff !important;
+}
+
+.transaction-meta {
+  color: #9ca3af !important;
+}
+
+.transaction-balance-change {
+  color: #9ca3af !important;
+}
+
+.transaction-balance-change .fw-bold {
+  color: #ffffff !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .transaction-item {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .transaction-amount {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .transaction-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+

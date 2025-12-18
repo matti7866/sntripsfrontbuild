@@ -18,6 +18,7 @@ import DashboardAnalytics from './pages/dashboard/DashboardAnalytics';
 import Customers from './pages/customers/Customers';
 import CustomerLedger from './pages/customers/CustomerLedger';
 import CustomerLedgerView from './pages/customers/CustomerLedgerView';
+import CustomerWallet from './pages/customers/CustomerWallet';
 import ResidenceList from './pages/residence/ResidenceList';
 import ResidenceReport from './pages/residence/ResidenceReport';
 import ResidencePendingReport from './pages/residence/ResidencePendingReport';
@@ -99,6 +100,7 @@ function App() {
               {/* Customers */}
               <Route path="customers/payments" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Customer Payments</h1><p className="mt-4 text-gray-600">Customer payments module coming soon...</p></div>} />
               <Route path="customers" element={<Customers />} />
+              <Route path="customers/wallet" element={<CustomerWallet />} />
               
               {/* Ledgers */}
               <Route path="ledger/customer" element={<CustomerLedger />} />

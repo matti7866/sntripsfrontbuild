@@ -496,9 +496,29 @@ export default function ResidenceReport() {
   };
 
   const handleCancellationFee = async (residence: Residence) => {
+    // First, load customer wallet balance
+    let walletBalance = 0;
+    try {
+      const walletService = await import('../../services/walletService');
+      const customerID = residence.customer_id || (residence as any).customerID;
+      if (customerID) {
+        const balance = await walletService.default.getBalance(customerID);
+        walletBalance = balance.wallet_balance || 0;
+      }
+    } catch (error) {
+      console.log('No wallet found or error loading wallet');
+    }
+
     const { value: formValues } = await Swal.fire({
       title: 'Pay Cancellation Fee',
       html: `
+        <div class="mb-3">
+          <label class="form-label">Payment Method</label>
+          <select id="swal-payment-method" class="swal2-select" required>
+            <option value="account">Pay from Account</option>
+            <option value="wallet">Pay from Wallet (Balance: ${walletBalance.toFixed(2)} AED)</option>
+          </select>
+        </div>
         <input id="swal-amount" class="swal2-input" placeholder="Amount (AED)" type="number" step="0.01" required>
         <select id="swal-account" class="swal2-select" required>
           <option value="">Select Account</option>
@@ -506,18 +526,50 @@ export default function ResidenceReport() {
         </select>
         <textarea id="swal-remarks" class="swal2-textarea" placeholder="Remarks (optional)"></textarea>
       `,
+      didOpen: () => {
+        const paymentMethodSelect = document.getElementById('swal-payment-method') as HTMLSelectElement;
+        const accountSelect = document.getElementById('swal-account') as HTMLSelectElement;
+        
+        const toggleAccountVisibility = () => {
+          if (paymentMethodSelect.value === 'wallet') {
+            accountSelect.style.display = 'none';
+          } else {
+            accountSelect.style.display = 'block';
+          }
+        };
+        
+        toggleAccountVisibility();
+        paymentMethodSelect.addEventListener('change', toggleAccountVisibility);
+      },
       focusConfirm: false,
       showCancelButton: true,
       confirmButtonText: 'Process Payment',
       preConfirm: () => {
         const amount = (document.getElementById('swal-amount') as HTMLInputElement)?.value;
+        const paymentMethod = (document.getElementById('swal-payment-method') as HTMLSelectElement)?.value;
         const account = (document.getElementById('swal-account') as HTMLSelectElement)?.value;
         const remarks = (document.getElementById('swal-remarks') as HTMLTextAreaElement)?.value || '';
-        if (!amount || !account) {
-          Swal.showValidationMessage('Please fill all required fields');
+        
+        if (!amount) {
+          Swal.showValidationMessage('Please enter amount');
           return false;
         }
-        return { amount: parseFloat(amount), accountID: parseInt(account), remarks };
+        
+        const amountValue = parseFloat(amount);
+        
+        if (paymentMethod === 'wallet') {
+          if (amountValue > walletBalance) {
+            Swal.showValidationMessage(`Insufficient wallet balance. Available: ${walletBalance.toFixed(2)} AED`);
+            return false;
+          }
+          return { amount: amountValue, paymentMethod: 'wallet', accountID: 38, remarks }; // 38 = Wallet Payments account
+        } else {
+          if (!account) {
+            Swal.showValidationMessage('Please select an account');
+            return false;
+          }
+          return { amount: amountValue, paymentMethod: 'account', accountID: parseInt(account), remarks };
+        }
       }
     });
 

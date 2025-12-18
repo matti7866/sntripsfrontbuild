@@ -130,6 +130,7 @@ const menuItems: MenuItem[] = [
     title: 'Customers',
     children: [
       { path: '/customers', title: 'Customer Report' },
+      { path: '/customers/wallet', title: 'Customer Wallet' },
       { path: '/agents', title: 'Manage Agents' }
     ]
   },
