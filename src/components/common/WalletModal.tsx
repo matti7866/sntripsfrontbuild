@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import walletService from '../../services/walletService';
 import axios from '../../services/api';
 import Swal from 'sweetalert2';
+import { WalletReceiptModal } from '../modals';
 
 interface Account {
   account_ID: number;
@@ -34,6 +35,8 @@ export default function WalletModal({
   const [remarks, setRemarks] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -105,21 +108,20 @@ export default function WalletModal({
         console.log('Add funds response:', response);
         const transactionId = response.transaction_id;
         
-        // Show success with receipt button
+        // Show success message
         Swal.fire({
           icon: 'success',
           title: 'Success!',
-          html: `
-            <p>Funds ${transactionType === 'deposit' ? 'deposited' : 'refunded'} successfully</p>
-            ${transactionId ? `<div class="mt-3">
-              <a href="/wallet/receipt/${transactionId}" target="_blank" class="btn btn-primary">
-                <i class="fa fa-receipt me-2"></i>View Receipt
-              </a>
-            </div>` : ''}
-          `,
+          text: `Funds ${transactionType === 'deposit' ? 'deposited' : 'refunded'} successfully`,
           showConfirmButton: true,
           confirmButtonText: 'Close'
         });
+        
+        // Open receipt modal if transaction ID exists
+        if (transactionId) {
+          setSelectedTransactionId(transactionId);
+          setReceiptModalOpen(true);
+        }
       } else {
         response = await walletService.withdraw({
           customerID,
@@ -132,21 +134,20 @@ export default function WalletModal({
         console.log('Withdraw response:', response);
         const transactionId = response.transaction_id;
         
-        // Show success with receipt button
+        // Show success message
         Swal.fire({
           icon: 'success',
           title: 'Success!',
-          html: `
-            <p>Funds withdrawn successfully</p>
-            ${transactionId ? `<div class="mt-3">
-              <a href="/wallet/receipt/${transactionId}" target="_blank" class="btn btn-primary">
-                <i class="fa fa-receipt me-2"></i>View Receipt
-              </a>
-            </div>` : ''}
-          `,
+          text: 'Funds withdrawn successfully',
           showConfirmButton: true,
           confirmButtonText: 'Close'
         });
+        
+        // Open receipt modal if transaction ID exists
+        if (transactionId) {
+          setSelectedTransactionId(transactionId);
+          setReceiptModalOpen(true);
+        }
       }
 
       onSuccess?.();
@@ -293,6 +294,16 @@ export default function WalletModal({
           </div>
         </div>
       </div>
+      
+      {/* Receipt Modal */}
+      <WalletReceiptModal
+        isOpen={receiptModalOpen}
+        onClose={() => {
+          setReceiptModalOpen(false);
+          setSelectedTransactionId(null);
+        }}
+        transactionId={selectedTransactionId}
+      />
     </>
   );
 }
