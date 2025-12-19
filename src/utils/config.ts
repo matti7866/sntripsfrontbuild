@@ -1,7 +1,10 @@
 // Application Configuration
+// Auto-detect development environment
+const isDevelopment = import.meta.env.DEV || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
 export const config = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'https://app.sntrips.com/api',
-  baseUrl: import.meta.env.VITE_BASE_URL || 'https://app.sntrips.com',
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || (isDevelopment ? 'http://localhost/snt/api' : 'https://app.sntrips.com/api'),
+  baseUrl: import.meta.env.VITE_BASE_URL || (isDevelopment ? 'http://localhost/snt' : 'https://app.sntrips.com'),
   appName: import.meta.env.VITE_APP_NAME || 'Selab Nadiry',
   appVersion: import.meta.env.VITE_APP_VERSION || '2.0.0',
   tokenKey: 'snt_auth_token',
@@ -14,6 +17,15 @@ export const config = {
   // AviationStack (for flight schedules - free tier)
   aviationstackApiKey: import.meta.env.VITE_AVIATIONSTACK_API_KEY || '5f42068dae82e0d9061615522f0209f5',
 };
+
+// Log config in development
+if (isDevelopment) {
+  console.log('🔧 Development Config:', {
+    apiBaseUrl: config.apiBaseUrl,
+    baseUrl: config.baseUrl,
+    isDevelopment
+  });
+}
 
 export default config;
 

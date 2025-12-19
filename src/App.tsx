@@ -61,6 +61,9 @@ import RoleManagement from './pages/role/RoleManagement';
 import PermissionManagement from './pages/permission/PermissionManagement';
 import AccountsReport from './pages/accounts/AccountsReport';
 import AccountManagement from './pages/accounts/AccountManagement';
+import Deposits from './pages/accounts/Deposits';
+import Withdrawals from './pages/accounts/Withdrawals';
+import Transfers from './pages/accounts/Transfers';
 import TasheelTransactions from './pages/tasheel/TasheelTransactions';
 import Cheques from './pages/cheque/Cheques';
 import Salary from './pages/salary/Salary';
@@ -160,6 +163,9 @@ function App() {
               {/* Accounts */}
               <Route path="accounts" element={<AccountManagement />} />
               <Route path="accounts/report" element={<AccountsReport />} />
+              <Route path="accounts/deposits" element={<Deposits />} />
+              <Route path="accounts/withdrawals" element={<Withdrawals />} />
+              <Route path="accounts/transfers" element={<Transfers />} />
               <Route path="accounts/statement" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Account Statement</h1><p className="mt-4 text-gray-600">Account statement module coming soon...</p></div>} />
               <Route path="accounts/profit-loss" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Profit & Loss</h1><p className="mt-4 text-gray-600">Profit & Loss module coming soon...</p></div>} />
               
