@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { customerLedgerService } from '../../services/customerLedgerService';
+import walletService from '../../services/walletService';
 import type { CustomerLedgerTransaction, CustomerInfo } from '../../types/customerLedger';
 import './CustomerLedgerView.css';
 
@@ -32,22 +33,95 @@ export default function CustomerLedgerView() {
     queryFn: () => customerLedgerService.getLedger(customerId, currencyId),
     enabled: !!customerId && !!currencyId
   });
+
+  // Fetch wallet payments
+  const { data: walletTransactions = [] } = useQuery({
+    queryKey: ['customer-wallet-payments', customerId, currencyId],
+    queryFn: async () => {
+      if (!customerId || !currencyId) return [];
+      try {
+        const response = await walletService.getTransactions(customerId, 1, 1000);
+        // Filter for payment transactions (withdrawals from wallet) in the matching currency
+        return response.data.filter(
+          (transaction: any) => 
+            transaction.transaction_type === 'payment' &&
+            transaction.currency_id === currencyId
+        );
+      } catch (error) {
+        console.error('Error loading wallet payments:', error);
+        return [];
+      }
+    },
+    enabled: !!customerId && !!currencyId
+  });
   
-  // Calculate running balance for each row
-  const [transactionsWithBalance, setTransactionsWithBalance] = useState<Array<CustomerLedgerTransaction & { runningBalance: number }>>([]);
+  // Combine transactions with wallet payments
+  const [allTransactions, setAllTransactions] = useState<Array<CustomerLedgerTransaction & { runningBalance: number; isWalletPayment?: boolean }>>([]);
   
   useEffect(() => {
+    // Convert wallet payments to ledger transaction format
+    const walletLedgerTransactions: CustomerLedgerTransaction[] = walletTransactions.map((walletTx: any) => {
+      const referenceType = walletTx.reference_type === 'residence' || walletTx.reference_type === 'family_residence' 
+        ? `Residence #${walletTx.reference_id}` 
+        : walletTx.reference_type === 'visa' 
+        ? `Visa #${walletTx.reference_id}`
+        : walletTx.reference_type === 'ticket'
+        ? `Ticket #${walletTx.reference_id}`
+        : 'Payment';
+      
+      return {
+        TRANSACTION_Type: `Payment (from Wallet)`,
+        Passenger_Name: referenceType,
+        date: new Date(walletTx.datetime).toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        }),
+        Identification: walletTx.reference_id?.toString() || '',
+        Orgin: '',
+        Destination: '',
+        Debit: 0,
+        Credit: parseFloat(walletTx.amount.toString())
+      };
+    });
+
+    // Combine regular transactions with wallet payments
+    // Mark wallet transactions before combining
+    const walletTransactionsMarked = walletLedgerTransactions.map(tx => ({ ...tx, isWalletPayment: true }));
+    const regularTransactionsMarked = transactions.map(tx => ({ ...tx, isWalletPayment: false }));
+    const combined = [...regularTransactionsMarked, ...walletTransactionsMarked];
+    
+    // Sort by date (oldest first, most recent last) - this is correct for ledger running balance
+    combined.sort((a, b) => {
+      // Try to parse dates - handle different formats
+      const parseDate = (dateStr: string) => {
+        if (!dateStr) return 0;
+        // Handle formats like "15 Jan 2024" or ISO dates
+        const parsed = new Date(dateStr);
+        return isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+      };
+      
+      const dateA = parseDate(a.date);
+      const dateB = parseDate(b.date);
+      
+      // If dates are equal or invalid, maintain original order
+      if (dateA === dateB) return 0;
+      return dateA - dateB; // Oldest first (most recent last) - correct for ledger
+    });
+
+    // Calculate running balance
     let runningBalance = 0;
-    const transactionsWithBal = transactions.map((transaction) => {
+    const transactionsWithBal = combined.map((transaction) => {
       runningBalance += parseFloat(String(transaction.Debit)) || 0;
       runningBalance -= parseFloat(String(transaction.Credit)) || 0;
       return { ...transaction, runningBalance };
     });
-    setTransactionsWithBalance(transactionsWithBal);
-  }, [transactions]);
+    
+    setAllTransactions(transactionsWithBal);
+  }, [transactions, walletTransactions]);
   
-  // Calculate totals
-  const totals = transactions.reduce((acc, transaction) => {
+  // Calculate totals including wallet payments
+  const totals = allTransactions.reduce((acc, transaction) => {
     acc.totalCharges += parseFloat(String(transaction.Debit)) || 0;
     acc.totalPaid += parseFloat(String(transaction.Credit)) || 0;
     
@@ -338,19 +412,24 @@ export default function CustomerLedgerView() {
               </tr>
             </thead>
             <tbody>
-              {transactionsWithBalance.length === 0 ? (
+              {allTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="text-center">No transactions found</td>
                 </tr>
               ) : (
-                transactionsWithBalance.map((transaction, index) => {
-                  const isPayment = transaction.TRANSACTION_Type === 'Payment';
+                allTransactions.map((transaction, index) => {
+                  const isPayment = transaction.TRANSACTION_Type === 'Payment' || transaction.TRANSACTION_Type?.includes('Payment');
+                  const isWalletPayment = transaction.isWalletPayment || transaction.TRANSACTION_Type?.includes('Wallet');
                   return (
-                    <tr key={index} className={isPayment ? 'payment-row' : ''}>
+                    <tr key={index} className={isPayment ? 'payment-row' : ''} style={isWalletPayment ? { backgroundColor: '#e3f2fd' } : {}}>
                       <td className="text-center">{index + 1}</td>
-                      <td className="text-capitalize">{transaction.TRANSACTION_Type}</td>
+                      <td className="text-capitalize">
+                        {transaction.TRANSACTION_Type}
+                        {isWalletPayment && <span className="badge bg-info ms-1" style={{ fontSize: '8px' }}>Wallet</span>}
+                      </td>
                       <td className="text-capitalize">
                         {transaction.Passenger_Name || ''}
+                        {isWalletPayment && <small className="text-muted d-block" style={{ fontSize: '9px' }}>Paid from Wallet</small>}
                       </td>
                       <td className="text-center">{transaction.date || ''}</td>
                       <td>{transaction.Identification || ''}</td>

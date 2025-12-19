@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import residenceService from '../../services/residenceService';
+import walletService from '../../services/walletService';
 import Swal from 'sweetalert2';
 import type { Residence } from '../../types/residence';
 import ResidenceCard from '../../components/residence/ResidenceCard';
@@ -54,11 +55,19 @@ export default function ResidenceReport() {
   const [fineRefreshTrigger, setFineRefreshTrigger] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [dependentsModalOpen, setDependentsModalOpen] = useState(false);
+  const [walletPaymentsMap, setWalletPaymentsMap] = useState<Map<number, number>>(new Map());
 
   useEffect(() => {
     loadDropdowns();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Load wallet payments for all residences
+  useEffect(() => {
+    if (records.length > 0) {
+      loadWalletPaymentsForResidences();
+    }
+  }, [records]);
 
   useEffect(() => {
     // Debounce search - wait 500ms after user stops typing
@@ -98,6 +107,81 @@ export default function ResidenceReport() {
     } catch (error) {
       console.error('Error loading dropdowns:', error);
       Swal.fire('Error', 'Failed to load dropdown data', 'error');
+    }
+  };
+
+  const loadWalletPaymentsForResidences = async () => {
+    try {
+      // Get unique customer IDs from records
+      const customerIDs = new Set<number>();
+      const residenceCurrencyMap = new Map<number, number>(); // residenceID -> currencyID
+      
+      records.forEach((residence: Residence) => {
+        const customerID = residence.customer_id || (residence as any).customerID;
+        const residenceID = residence.residenceID || (residence as any).familyResidenceID;
+        const currencyID = residence.saleCurID || (residence as any).currencyID || 1;
+        
+        if (customerID) {
+          customerIDs.add(customerID);
+        }
+        if (residenceID) {
+          residenceCurrencyMap.set(residenceID, currencyID);
+        }
+      });
+
+      // Fetch wallet payments for each customer
+      const walletPayments = new Map<number, Map<number, number>>(); // customerID -> residenceID -> amount
+      
+      for (const customerID of customerIDs) {
+        try {
+          const walletTransactions = await walletService.getTransactions(customerID, 1, 1000);
+          
+          // Filter for residence payments
+          const residencePayments = walletTransactions.data.filter(
+            (transaction: any) => 
+              transaction.transaction_type === 'payment' &&
+              (transaction.reference_type === 'residence' || transaction.reference_type === 'family_residence')
+          );
+          
+          // Group by residence ID
+          residencePayments.forEach((transaction: any) => {
+            if (transaction.reference_id) {
+              const residenceID = transaction.reference_id;
+              const transactionCurrencyID = transaction.currency_id || 1;
+              
+              // Only include if currency matches
+              const residenceCurrencyID = residenceCurrencyMap.get(residenceID);
+              if (residenceCurrencyID && transactionCurrencyID === residenceCurrencyID) {
+                if (!walletPayments.has(customerID)) {
+                  walletPayments.set(customerID, new Map());
+                }
+                const customerPayments = walletPayments.get(customerID)!;
+                const currentAmount = customerPayments.get(residenceID) || 0;
+                customerPayments.set(residenceID, currentAmount + parseFloat(transaction.amount.toString()));
+              }
+            }
+          });
+        } catch (error) {
+          console.error(`Error loading wallet payments for customer ${customerID}:`, error);
+        }
+      }
+
+      // Create a map of residenceID -> wallet payment amount
+      const residenceWalletMap = new Map<number, number>();
+      records.forEach((residence: Residence) => {
+        const customerID = residence.customer_id || (residence as any).customerID;
+        const residenceID = residence.residenceID || (residence as any).familyResidenceID;
+        if (customerID && residenceID && walletPayments.has(customerID)) {
+          const customerPayments = walletPayments.get(customerID)!;
+          const walletAmount = customerPayments.get(residenceID) || 0;
+          residenceWalletMap.set(residenceID, walletAmount);
+        }
+      });
+
+      setWalletPaymentsMap(residenceWalletMap);
+      console.log('Wallet payments loaded:', Object.fromEntries(residenceWalletMap));
+    } catch (error) {
+      console.error('Error loading wallet payments:', error);
     }
   };
 
@@ -286,7 +370,11 @@ export default function ResidenceReport() {
     const tawjeehPayments = parseFloat((residence as any).tawjeeh_payments as any) || 0;
     const iloePayments = parseFloat((residence as any).iloe_payments as any) || 0;
     
-    const totalPaid = residencePayment + finePayment + tawjeehPayments + iloePayments;
+    // Get wallet payments for this residence
+    const residenceID = residence.residenceID || (residence as any).familyResidenceID;
+    const walletPayments = walletPaymentsMap.get(residenceID) || 0;
+    
+    const totalPaid = residencePayment + finePayment + tawjeehPayments + iloePayments + walletPayments;
     
     // Outstanding balance
     const totalRemaining = totalAmount - totalPaid;

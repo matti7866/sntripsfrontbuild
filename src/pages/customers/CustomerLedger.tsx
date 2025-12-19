@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import { customerLedgerService } from '../../services/customerLedgerService';
+import walletService from '../../services/walletService';
 import apiClient from '../../services/api';
 import SearchableSelect from '../../components/form/SearchableSelect';
 import type { PendingCustomer, CustomerOption, CurrencyOption, AddPaymentRequest } from '../../types/customerLedger';
@@ -39,12 +40,62 @@ export default function CustomerLedger() {
   });
   
   // Load pending customers
-  const { data: pendingCustomers = [], refetch: refetchPending } = useQuery<PendingCustomer[]>({
+  const { data: pendingCustomersRaw = [], refetch: refetchPending } = useQuery<PendingCustomer[]>({
     queryKey: ['customer-ledger-pending', selectedCustomer, selectedCurrency],
     queryFn: () => customerLedgerService.getPendingCustomers(selectedCustomer, selectedCurrency!),
     enabled: !!selectedCurrency,
     staleTime: 10000,
     refetchOnWindowFocus: false
+  });
+
+  // Load wallet payments for all pending customers
+  const { data: walletPaymentsMap = new Map<number, number>() } = useQuery({
+    queryKey: ['customer-wallet-payments-map', pendingCustomersRaw, selectedCurrency],
+    queryFn: async () => {
+      if (!selectedCurrency || pendingCustomersRaw.length === 0) return new Map<number, number>();
+      
+      const walletMap = new Map<number, number>();
+      
+      // Fetch wallet payments for each customer
+      for (const customer of pendingCustomersRaw) {
+        try {
+          const walletTransactions = await walletService.getTransactions(customer.main_customer, 1, 1000);
+          // Filter for payment transactions in the matching currency
+          const payments = walletTransactions.data.filter(
+            (transaction: any) => 
+              transaction.transaction_type === 'payment' &&
+              transaction.currency_id === selectedCurrency
+          );
+          
+          // Sum up wallet payments
+          const totalWalletPayments = payments.reduce((sum: number, transaction: any) => {
+            return sum + parseFloat(transaction.amount.toString());
+          }, 0);
+          
+          if (totalWalletPayments > 0) {
+            walletMap.set(customer.main_customer, totalWalletPayments);
+          }
+        } catch (error) {
+          console.error(`Error loading wallet payments for customer ${customer.main_customer}:`, error);
+        }
+      }
+      
+      return walletMap;
+    },
+    enabled: !!selectedCurrency && pendingCustomersRaw.length > 0,
+    staleTime: 10000,
+    refetchOnWindowFocus: false
+  });
+
+  // Adjust pending customers with wallet payments
+  const pendingCustomers = pendingCustomersRaw.map(customer => {
+    const walletPayments = walletPaymentsMap.get(customer.main_customer) || 0;
+    return {
+      ...customer,
+      total: Math.max(0, customer.total - walletPayments), // Subtract wallet payments from pending amount
+      originalTotal: customer.total,
+      walletPayments
+    };
   });
   
   // Load accounts for payment modal

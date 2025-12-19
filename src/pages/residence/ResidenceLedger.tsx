@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import axios from '../../services/api';
+import walletService from '../../services/walletService';
 import Swal from 'sweetalert2';
 // Using native Date for date formatting - moment not required
 import './ResidenceLedger.css';
@@ -54,6 +55,8 @@ export default function ResidenceLedger() {
   const [totalCharges, setTotalCharges] = useState(0);
   const [totalPaid, setTotalPaid] = useState(0);
   const [outstandingBalance, setOutstandingBalance] = useState(0);
+  const [walletPaymentsTotal, setWalletPaymentsTotal] = useState(0);
+  const [backendTotals, setBackendTotals] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(1000); // Show all records by default for complete financial view
   const [totalPages, setTotalPages] = useState(1);
@@ -65,11 +68,24 @@ export default function ResidenceLedger() {
       loadCustomerInfo();
       loadCurrencyInfo();
       loadLedger();
+      loadWalletPayments();
     } else {
       console.warn('Missing required parameters - ID:', id, 'CurrencyID:', currencyID);
       Swal.fire('Error', 'Missing required parameters. Please provide customer ID and currency ID.', 'error');
     }
   }, [id, currencyID, currentPage, recordsPerPage]);
+
+  // Recalculate totals when wallet payments are loaded
+  useEffect(() => {
+    if (records.length > 0 && walletPaymentsTotal >= 0 && backendTotals !== null) {
+      // Recalculate totals with wallet payments
+      calculateTotals(records, backendTotals);
+    } else if (records.length > 0 && walletPaymentsTotal >= 0) {
+      // If no backend totals, calculate from records
+      calculateTotals(records, null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walletPaymentsTotal]);
 
   const loadCustomerInfo = async () => {
     if (!id) return;
@@ -148,6 +164,85 @@ export default function ResidenceLedger() {
     } catch (error: any) {
       console.error('Error loading currency info:', error);
       console.error('Error response:', error.response);
+    }
+  };
+
+  const loadWalletPayments = async () => {
+    if (!id || !currencyID) return;
+    
+    try {
+      // Fetch all wallet transactions for this customer
+      const walletTransactions = await walletService.getTransactions(parseInt(id), 1, 1000);
+      
+      // Filter for residence payments (reference_type = 'residence' or 'family_residence')
+      const residenceWalletPayments = walletTransactions.data.filter(
+        (transaction: any) => 
+          transaction.transaction_type === 'payment' &&
+          (transaction.reference_type === 'residence' || transaction.reference_type === 'family_residence') &&
+          transaction.currency_id === parseInt(currencyID)
+      );
+      
+      // Calculate total wallet payments
+      const total = residenceWalletPayments.reduce((sum: number, transaction: any) => {
+        return sum + parseFloat(transaction.amount.toString());
+      }, 0);
+      
+      console.log('Wallet payments for residence:', {
+        count: residenceWalletPayments.length,
+        total: total,
+        transactions: residenceWalletPayments
+      });
+      
+      setWalletPaymentsTotal(total);
+      
+      // Recalculate totals with wallet payments
+      if (records.length > 0 && backendTotals !== null) {
+        calculateTotals(records, backendTotals);
+      }
+    } catch (error) {
+      console.error('Error loading wallet payments:', error);
+      // Don't show error to user, just set to 0
+      setWalletPaymentsTotal(0);
+    }
+  };
+
+  const calculateTotals = (data: LedgerRecord[], backendTotals: any) => {
+    if (backendTotals) {
+      console.log('✓ Using backend totals:', backendTotals);
+      const backendTotalPaid = backendTotals.totalPaid || 0;
+      // Add wallet payments to total paid
+      const totalPaidWithWallet = backendTotalPaid + walletPaymentsTotal;
+      setTotalCharges(backendTotals.totalCharges || 0);
+      setTotalPaid(totalPaidWithWallet);
+      setOutstandingBalance((backendTotals.totalCharges || 0) - totalPaidWithWallet);
+    } else {
+      console.warn('⚠️ Backend totals not found, calculating from visible page data only!');
+      console.warn('This will be incorrect for multi-page results!');
+      // Fallback: calculate from current page data
+      let charges = 0;
+      let paid = 0;
+      
+      data.forEach((record: LedgerRecord) => {
+        charges += parseFloat(record.sale_price?.toString() || '0') +
+                   parseFloat(record.fine?.toString() || '0') +
+                   parseFloat(record.cancellation_charges?.toString() || '0') +
+                   parseFloat(record.tawjeeh_charges?.toString() || '0') +
+                   parseFloat(record.iloe_charges?.toString() || '0') +
+                   parseFloat(record.custom_charges?.toString() || '0');
+        
+        paid += parseFloat(record.residencePayment?.toString() || '0') +
+                parseFloat(record.finePayment?.toString() || '0') +
+                parseFloat(record.tawjeeh_payments?.toString() || '0') +
+                parseFloat(record.iloe_payments?.toString() || '0');
+      });
+      
+      // Add wallet payments to total paid
+      const totalPaidWithWallet = paid + walletPaymentsTotal;
+      
+      console.warn('Calculated from page:', { charges, paid, walletPayments: walletPaymentsTotal, totalPaidWithWallet, outstanding: charges - totalPaidWithWallet });
+      setTotalCharges(charges);
+      setTotalPaid(totalPaidWithWallet);
+      setOutstandingBalance(charges - totalPaidWithWallet);
     }
   };
 
@@ -280,39 +375,10 @@ export default function ResidenceLedger() {
         }
         
         setRecords(data);
+        setBackendTotals(totals);
         
-        // Use totals from backend if available, otherwise calculate from current page
-        if (totals) {
-          console.log('✓ Using backend totals:', totals);
-          setTotalCharges(totals.totalCharges || 0);
-          setTotalPaid(totals.totalPaid || 0);
-          setOutstandingBalance(totals.outstandingBalance || 0);
-        } else {
-          console.warn('⚠️ Backend totals not found, calculating from visible page data only!');
-          console.warn('This will be incorrect for multi-page results!');
-          // Fallback: calculate from current page data
-          let charges = 0;
-          let paid = 0;
-          
-          data.forEach((record: LedgerRecord) => {
-            charges += parseFloat(record.sale_price?.toString() || '0') +
-                       parseFloat(record.fine?.toString() || '0') +
-                       parseFloat(record.cancellation_charges?.toString() || '0') +
-                       parseFloat(record.tawjeeh_charges?.toString() || '0') +
-                       parseFloat(record.iloe_charges?.toString() || '0') +
-                       parseFloat(record.custom_charges?.toString() || '0');
-            
-            paid += parseFloat(record.residencePayment?.toString() || '0') +
-                    parseFloat(record.finePayment?.toString() || '0') +
-                    parseFloat(record.tawjeeh_payments?.toString() || '0') +
-                    parseFloat(record.iloe_payments?.toString() || '0');
-          });
-          
-          console.warn('Calculated from page:', { charges, paid, outstanding: charges - paid });
-          setTotalCharges(charges);
-          setTotalPaid(paid);
-          setOutstandingBalance(charges - paid);
-        }
+        // Calculate totals (will be updated when wallet payments load)
+        calculateTotals(data, totals);
         
         // Update pagination state
         if (pagination) {
@@ -1132,6 +1198,17 @@ export default function ResidenceLedger() {
                         Total Charges: <span id="total">{formatNumber(totalCharges)} {currencyName}</span>
                       </p>
                       <hr />
+                      <p className="print-total-row">
+                        Total Paid (Account): <span id="total_paid_account">{formatNumber(totalPaid - walletPaymentsTotal)} {currencyName}</span>
+                      </p>
+                      {walletPaymentsTotal > 0 && (
+                        <>
+                          <p className="print-total-row">
+                            Total Paid (Wallet): <span id="total_paid_wallet">{formatNumber(walletPaymentsTotal)} {currencyName}</span>
+                          </p>
+                          <hr />
+                        </>
+                      )}
                       <p className="print-total-row">
                         Total Paid: <span id="total_paid">{formatNumber(totalPaid)} {currencyName}</span>
                       </p>
