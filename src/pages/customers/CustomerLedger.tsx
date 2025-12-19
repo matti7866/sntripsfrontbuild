@@ -87,16 +87,18 @@ export default function CustomerLedger() {
     refetchOnWindowFocus: false
   });
 
-  // Adjust pending customers with wallet payments
-  const pendingCustomers = pendingCustomersRaw.map(customer => {
-    const walletPayments = walletPaymentsMap.get(customer.main_customer) || 0;
-    return {
-      ...customer,
-      total: Math.max(0, customer.total - walletPayments), // Subtract wallet payments from pending amount
-      originalTotal: customer.total,
-      walletPayments
-    };
-  });
+  // Adjust pending customers with wallet payments and filter out 0 balances
+  const pendingCustomers = pendingCustomersRaw
+    .map(customer => {
+      const walletPayments = walletPaymentsMap.get(customer.main_customer) || 0;
+      return {
+        ...customer,
+        total: Math.max(0, customer.total - walletPayments), // Subtract wallet payments from pending amount
+        originalTotal: customer.total,
+        walletPayments
+      };
+    })
+    .filter(customer => Math.abs(customer.total) > 0.01); // Filter out customers with 0 or near-zero balance
   
   // Load accounts for payment modal
   const { data: accounts = [] } = useQuery<any[]>({
