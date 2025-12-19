@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import walletService, { type WalletTransaction } from '../../services/walletService';
+import { WalletReceiptModal } from '../modals';
 import './WalletTransactionsModal.css';
 
 interface WalletTransactionsModalProps {
@@ -20,6 +21,8 @@ export default function WalletTransactionsModal({
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [selectedTransactionId, setSelectedTransactionId] = useState<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -193,15 +196,16 @@ export default function WalletTransactionsModal({
                       </div>
                       {(transaction.transaction_type === 'deposit' || transaction.transaction_type === 'withdrawal') && (
                         <div className="transaction-actions mt-2">
-                          <a
-                            href={`/wallet/receipt/${transaction.transaction_id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            onClick={() => {
+                              setSelectedTransactionId(transaction.transaction_id);
+                              setReceiptModalOpen(true);
+                            }}
                             className="btn btn-sm btn-outline-primary"
                           >
                             <i className="fa fa-receipt me-1"></i>
                             Receipt
-                          </a>
+                          </button>
                         </div>
                       )}
                     </div>
@@ -268,6 +272,16 @@ export default function WalletTransactionsModal({
           </div>
         </div>
       </div>
+      
+      {/* Receipt Modal */}
+      <WalletReceiptModal
+        isOpen={receiptModalOpen}
+        onClose={() => {
+          setReceiptModalOpen(false);
+          setSelectedTransactionId(null);
+        }}
+        transactionId={selectedTransactionId}
+      />
     </>
   );
 }

@@ -5,6 +5,7 @@ import Swal from 'sweetalert2';
 import { customerPaymentService } from '../../services/paymentService';
 import apiClient from '../../services/api';
 import SearchableSelect from '../../components/form/SearchableSelect';
+import { PaymentReceiptModal } from '../../components/modals';
 import type { CustomerPayment, CustomerPaymentFilters, CreateCustomerPaymentRequest } from '../../types/payment';
 import './CustomerPayments.css';
 
@@ -36,6 +37,8 @@ export default function CustomerPayments() {
   });
   const [currencyDisabled, setCurrencyDisabled] = useState(false);
   const [generatingReceipt, setGeneratingReceipt] = useState<number | null>(null);
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [selectedReceiptId, setSelectedReceiptId] = useState<number | string | null>(null);
   
   const queryClient = useQueryClient();
   
@@ -205,7 +208,7 @@ export default function CustomerPayments() {
   const handleGenerateReceipt = async (payment: CustomerPayment) => {
     setGeneratingReceipt(payment.pay_id);
     try {
-      // Generate receipt for this payment
+      // Try to generate/get receipt
       const response = await apiClient.post('/customers/receipt/generate.php', {
         action: 'generatePaymentReceipt',
         paymentID: payment.pay_id,
@@ -223,25 +226,78 @@ export default function CustomerPayments() {
           throw new Error('No invoice ID returned from server');
         }
         
-        // Open receipt in new window/tab
-        window.open(`/receipt?id=${receiptID}`, '_blank');
+        // Check if this is a new receipt or existing one based on response message
+        const responseMessage = response.data.message || '';
+        const isNewReceipt = !responseMessage.toLowerCase().includes('already') && 
+                             !responseMessage.toLowerCase().includes('existing');
         
-        Swal.fire({
-          icon: 'success',
-          title: 'Success!',
-          text: 'Receipt generated successfully',
-          timer: 1500,
-          showConfirmButton: false
-        });
+        // Open receipt in modal
+        setSelectedReceiptId(receiptID);
+        setReceiptModalOpen(true);
+        
+        // Only show success message if it's a newly generated receipt
+        if (isNewReceipt) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Receipt generated successfully',
+            timer: 1500,
+            showConfirmButton: false
+          });
+        }
       } else {
-        throw new Error(response.data.message || 'Failed to generate receipt');
+        // If generation failed but receipt might exist, try to get it
+        const errorMessage = response.data.message || '';
+        if (errorMessage.toLowerCase().includes('already exists') || 
+            errorMessage.toLowerCase().includes('already generated')) {
+          // Try to get existing receipt
+          try {
+            const getResponse = await apiClient.post('/customers/receipt/get-receipt.php', {
+              action: 'getReceiptByPaymentID',
+              paymentID: payment.pay_id
+            });
+            
+            if (getResponse.data.success && getResponse.data.invoiceID) {
+              setSelectedReceiptId(getResponse.data.invoiceID);
+              setReceiptModalOpen(true);
+              return; // Exit early, don't show error
+            }
+          } catch (getError) {
+            console.error('Failed to get existing receipt:', getError);
+          }
+        }
+        
+        throw new Error(errorMessage || 'Failed to generate receipt');
       }
     } catch (error: any) {
       console.error('Receipt generation error:', error);
+      
+      // If error indicates receipt already exists, try to get it
+      const errorMessage = error.response?.data?.message || error.message || '';
+      if (errorMessage.toLowerCase().includes('already exists') || 
+          errorMessage.toLowerCase().includes('already generated') ||
+          errorMessage.toLowerCase().includes('duplicate')) {
+        // Try to get the existing receipt
+        try {
+          const getResponse = await apiClient.post('/customers/receipt/get-receipt.php', {
+            action: 'getReceiptByPaymentID',
+            paymentID: payment.pay_id
+          });
+          
+          if (getResponse.data.success && getResponse.data.invoiceID) {
+            setSelectedReceiptId(getResponse.data.invoiceID);
+            setReceiptModalOpen(true);
+            return; // Exit early, don't show error
+          }
+        } catch (getError) {
+          console.error('Failed to get existing receipt:', getError);
+        }
+      }
+      
       Swal.fire({
         icon: 'error',
         title: 'Error!',
-        text: error.response?.data?.message || error.message || 'Failed to generate receipt'
+        text: error.response?.data?.message || error.message || 'Failed to load receipt'
       });
     } finally {
       setGeneratingReceipt(null);
@@ -664,6 +720,16 @@ export default function CustomerPayments() {
           </div>
         </div>
       )}
+      
+      {/* Receipt Modal */}
+      <PaymentReceiptModal
+        isOpen={receiptModalOpen}
+        onClose={() => {
+          setReceiptModalOpen(false);
+          setSelectedReceiptId(null);
+        }}
+        receiptId={selectedReceiptId}
+      />
     </div>
   );
 }
