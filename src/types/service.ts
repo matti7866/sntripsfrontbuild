@@ -42,6 +42,7 @@ export interface ServiceDropdownData {
   suppliers: { supp_id: number; supp_name: string }[];
   currencies: { currencyID: number; currencyName: string }[];
   accounts: { account_ID: number; account_Name: string }[];
+  creditCards: { account_ID: number; account_Name: string; display_name?: string; card_holder_name?: string; bank_name?: string; accountNum?: string }[];
 }
 
 export interface ServiceDocument {

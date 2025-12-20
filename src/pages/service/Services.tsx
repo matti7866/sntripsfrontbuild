@@ -53,7 +53,14 @@ export default function Services() {
       console.error('Error loading dropdowns:', dropdownsError);
       Swal.fire('Error', 'Failed to load dropdown data. Please refresh the page.', 'error');
     }
-  }, [dropdownsError]);
+    if (dropdowns) {
+      console.log('Service Dropdowns Loaded:', {
+        accounts: dropdowns.accounts?.length || 0,
+        creditCards: dropdowns.creditCards?.length || 0,
+        suppliers: dropdowns.suppliers?.length || 0
+      });
+    }
+  }, [dropdownsError, dropdowns]);
   
   // Load services - enable query when filters are set or after search
   const { data: services = [], isLoading: servicesLoading, refetch: refetchServices } = useQuery<Service[]>({
@@ -905,7 +912,7 @@ function ChargeAssignmentModal({
   onClose: () => void;
   onSubmit: (data: { supplier_id?: number | null; account_id?: number | null; net_price: number; net_currency_id: number }) => void;
 }) {
-  const [paymentType, setPaymentType] = useState<'supplier' | 'account'>('supplier');
+  const [paymentType, setPaymentType] = useState<'supplier' | 'account' | 'creditCard'>('supplier');
   const [formData, setFormData] = useState<{
     supplier_id?: number | null;
     account_id?: number | null;
@@ -930,7 +937,16 @@ function ChargeAssignmentModal({
         account_id: null
       }));
     } else if (service.accoundID) {
-      setPaymentType('account');
+      // Check if account is a credit card
+      const account = dropdowns?.accounts?.find(a => a.account_ID === service.accoundID);
+      const creditCard = dropdowns?.creditCards?.find(c => c.account_ID === service.accoundID);
+      
+      if (creditCard) {
+        setPaymentType('creditCard');
+      } else {
+        setPaymentType('account');
+      }
+      
       setFormData(prev => ({
         ...prev,
         supplier_id: null,
@@ -954,8 +970,8 @@ function ChargeAssignmentModal({
     if (paymentType === 'supplier' && (!formData.supplier_id || formData.supplier_id === -1)) {
       newErrors.supplier_id = 'Supplier is required';
     }
-    if (paymentType === 'account' && (!formData.account_id || formData.account_id === -1)) {
-      newErrors.account_id = 'Account is required';
+    if ((paymentType === 'account' || paymentType === 'creditCard') && (!formData.account_id || formData.account_id === -1)) {
+      newErrors.account_id = paymentType === 'creditCard' ? 'Credit Card is required' : 'Account is required';
     }
     if (!formData.net_price || formData.net_price <= 0) {
       newErrors.net_price = 'Net price must be greater than 0';
@@ -971,7 +987,7 @@ function ChargeAssignmentModal({
     
     const submitData = {
       supplier_id: paymentType === 'supplier' ? formData.supplier_id : null,
-      account_id: paymentType === 'account' ? formData.account_id : null,
+      account_id: (paymentType === 'account' || paymentType === 'creditCard') ? formData.account_id : null,
       net_price: formData.net_price,
       net_currency_id: formData.net_currency_id!
     };
@@ -1046,6 +1062,24 @@ function ChargeAssignmentModal({
                     Direct Account Payment
                   </label>
                 </div>
+                <div className="form-check form-check-inline">
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    name="paymentType"
+                    id="paymentCreditCard"
+                    value="creditCard"
+                    checked={paymentType === 'creditCard'}
+                    onChange={(e) => {
+                      setPaymentType('creditCard');
+                      setFormData({ ...formData, supplier_id: null });
+                      setErrors({ ...errors, supplier_id: '', account_id: '' });
+                    }}
+                  />
+                  <label className="form-check-label" htmlFor="paymentCreditCard">
+                    💳 Credit Card
+                  </label>
+                </div>
               </div>
             </div>
             
@@ -1091,6 +1125,35 @@ function ChargeAssignmentModal({
                   placeholder="Select Account"
                   required
                 />
+                {errors.account_id && <div className="invalid-feedback" style={{ display: 'block' }}>{errors.account_id}</div>}
+              </div>
+            )}
+            
+            {paymentType === 'creditCard' && (
+              <div className="form-group mb-3">
+                <label><i className="fa fa-credit-card me-2"></i>💳 Credit Card <span className="text-danger">*</span></label>
+                {!dropdowns?.creditCards || dropdowns.creditCards.length === 0 ? (
+                  <div className="alert alert-warning" style={{ padding: '10px', marginTop: '5px' }}>
+                    No credit cards available. <a href="/accounts/credit-cards" target="_blank">Add a credit card first</a>
+                  </div>
+                ) : (
+                  <SearchableSelect
+                    options={[
+                      { value: '', label: '-- Select Credit Card --' },
+                      ...(dropdowns.creditCards.map(c => ({
+                        value: c.account_ID,
+                        label: c.display_name || c.account_Name
+                      })))
+                    ]}
+                    value={formData.account_id || ''}
+                    onChange={(value) => {
+                      setFormData({ ...formData, account_id: value ? Number(value) : null });
+                      setErrors({ ...errors, account_id: '' });
+                    }}
+                    placeholder="Select Credit Card"
+                    required
+                  />
+                )}
                 {errors.account_id && <div className="invalid-feedback" style={{ display: 'block' }}>{errors.account_id}</div>}
               </div>
             )}
