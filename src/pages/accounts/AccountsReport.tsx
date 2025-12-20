@@ -425,6 +425,14 @@ export default function AccountsReport() {
     return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
+  // Calculate transaction counts by type
+  const transactionCounts = transactions.reduce((acc, txn) => {
+    const category = txn.type_category || 'other';
+    acc[category] = (acc[category] || 0) + 1;
+    acc.total = (acc.total || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
   // Pagination calculations with search filter
   const filteredTransactions = transactions.filter(transaction => {
     if (!searchTerm) return true;
@@ -957,10 +965,10 @@ export default function AccountsReport() {
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
               >
-                <option value="">All Types</option>
-                <option value="credit">Credits (Money In)</option>
-                <option value="debit">Debits (Money Out)</option>
-                <option value="transfer">Transfers</option>
+                <option value="">All Types ({transactionCounts.total || 0})</option>
+                <option value="credit">Credits (Money In) ({transactionCounts.credit || 0})</option>
+                <option value="debit">Debits (Money Out) ({transactionCounts.debit || 0})</option>
+                <option value="transfer">Transfers ({transactionCounts.transfer || 0})</option>
                 <option value="salary">Salaries</option>
                 <option value="cheque">Cheques</option>
                 <option value="refund">Refunds</option>
@@ -982,6 +990,97 @@ export default function AccountsReport() {
                 </optgroup>
               </select>
             </div>
+          </div>
+
+          {/* Quick Date Range Buttons */}
+          <div className="quick-date-ranges" style={{ marginTop: '15px', marginBottom: '15px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => {
+                setFromDate(today);
+                setToDate(today);
+              }}
+            >
+              Today
+            </button>
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toISOString().split('T')[0];
+                setFromDate(yesterdayStr);
+                setToDate(yesterdayStr);
+              }}
+            >
+              Yesterday
+            </button>
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => {
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                setFromDate(weekAgo.toISOString().split('T')[0]);
+                setToDate(today);
+              }}
+            >
+              Last 7 Days
+            </button>
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => {
+                const monthStart = new Date();
+                monthStart.setDate(1);
+                setFromDate(monthStart.toISOString().split('T')[0]);
+                setToDate(today);
+              }}
+            >
+              This Month
+            </button>
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => {
+                const lastMonthEnd = new Date();
+                lastMonthEnd.setDate(0);
+                const lastMonthStart = new Date(lastMonthEnd);
+                lastMonthStart.setDate(1);
+                setFromDate(lastMonthStart.toISOString().split('T')[0]);
+                setToDate(lastMonthEnd.toISOString().split('T')[0]);
+              }}
+            >
+              Last Month
+            </button>
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => {
+                const days30Ago = new Date();
+                days30Ago.setDate(days30Ago.getDate() - 30);
+                setFromDate(days30Ago.toISOString().split('T')[0]);
+                setToDate(today);
+              }}
+            >
+              Last 30 Days
+            </button>
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => {
+                const days90Ago = new Date();
+                days90Ago.setDate(days90Ago.getDate() - 90);
+                setFromDate(days90Ago.toISOString().split('T')[0]);
+                setToDate(today);
+              }}
+            >
+              Last 90 Days
+            </button>
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => {
+                setFromDate(permanentResetDate);
+                setToDate(today);
+              }}
+            >
+              All Time (Since Reset)
+            </button>
           </div>
 
           {/* Action Buttons */}
