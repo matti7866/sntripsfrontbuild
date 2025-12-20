@@ -354,6 +354,23 @@ const freezoneService = {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
     return response.data.data || response.data;
+  },
+
+  /**
+   * Move freezone residence to a different step
+   */
+  async moveFreezoneToStep(residenceID: number, targetStep: string): Promise<any> {
+    const formData = new URLSearchParams();
+    formData.append('action', 'moveFreezoneToStep');
+    formData.append('residenceId', residenceID.toString());
+    formData.append('targetStep', targetStep);
+    
+    const response = await axios.post('/freezone/tasks-controller.php', formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    return response.data;
   }
 };
 

@@ -264,6 +264,110 @@ export default function FreezoneTasks() {
     }
   };
 
+  const handleMoveToStep = async (id: number, currentStep: string) => {
+    const residence = residences.find(r => r.residenceID === id);
+    if (!residence) {
+      Swal.fire('Error', 'Residence not found', 'error');
+      return;
+    }
+
+    // Define all freezone steps
+    const allSteps = [
+      { value: '1', label: '1 - E-Visa', hasData: !!(residence.evisaStatus && residence.evisaStatus !== 'pending') },
+      { value: '1a', label: '1a - E-Visa (Submitted)', hasData: !!(residence.evisaStatus === 'submitted') },
+      { value: '2', label: '2 - Change Status', hasData: false }, // Check if data exists
+      { value: '3', label: '3 - Medical', hasData: false },
+      { value: '4', label: '4 - Emirates ID', hasData: false },
+      { value: '5', label: '5 - Visa Stamping', hasData: false },
+      { value: '6', label: '6 - Completed', hasData: false }
+    ];
+
+    // Filter out current step and steps with data
+    const availableSteps = allSteps.filter(step => step.value !== currentStep && !step.hasData);
+
+    if (availableSteps.length === 0) {
+      Swal.fire('Info', 'No steps available to move to. All other steps have submitted data.', 'info');
+      return;
+    }
+
+    const optionsHtml = availableSteps.map(step => 
+      `<option value="${step.value}">${step.label}</option>`
+    ).join('');
+
+    const { value: targetStep } = await Swal.fire({
+      title: 'Move Freezone Residence to Step',
+      html: `
+        <div class="text-start">
+          <label class="form-label mb-2">Select Target Step:</label>
+          <select id="targetStep" class="form-select">
+            ${optionsHtml}
+          </select>
+          <small class="text-muted mt-2 d-block">
+            <div class="alert alert-info mt-3" style="font-size: 13px;">
+              <strong>⚠️ Important:</strong><br>
+              • Move to empty steps only<br>
+              • Steps with saved data are locked
+            </div>
+          </small>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Move',
+      confirmButtonColor: '#dc3545',
+      cancelButtonText: 'Cancel',
+      preConfirm: () => {
+        const select = document.getElementById('targetStep') as HTMLSelectElement;
+        if (!select.value) {
+          Swal.showValidationMessage('Please select a target step');
+          return false;
+        }
+        return select.value;
+      }
+    });
+
+    if (targetStep) {
+      try {
+        const moveResponse = await freezoneService.moveFreezoneToStep(id, targetStep);
+        
+        if (moveResponse.success) {
+          await Swal.fire({
+            title: 'Moved Successfully!',
+            html: `
+              <p>Freezone residence has been moved to <strong>Step ${targetStep}</strong>.</p>
+              <p>Would you like to:</p>
+            `,
+            icon: 'success',
+            showCancelButton: true,
+            showDenyButton: true,
+            confirmButtonText: 'Go to New Step',
+            denyButtonText: 'Stay Here',
+            cancelButtonText: 'Close',
+            confirmButtonColor: '#10b981',
+            denyButtonColor: '#6b7280',
+            cancelButtonColor: '#ef4444'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Navigate to the new step
+              searchParams.set('step', targetStep);
+              setSearchParams(searchParams);
+            } else if (result.isDenied) {
+              // Just reload current step
+              loadTasks();
+            } else {
+              // Close and reload
+              loadTasks();
+            }
+          });
+        } else {
+          Swal.fire('Error', moveResponse.message || 'Failed to move residence', 'error');
+        }
+      } catch (error: any) {
+        console.error('Move error:', error);
+        Swal.fire('Error', error.response?.data?.message || 'Failed to move residence', 'error');
+      }
+    }
+  };
+
   // Pagination
   const totalPages = Math.ceil(residences.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -452,6 +556,13 @@ export default function FreezoneTasks() {
                             onClick={() => handleAttachments(residence.id)}
                           >
                             <i className="fa fa-paperclip"></i>
+                          </button>
+                          <button 
+                            className="btn btn-sm btn-warning" 
+                            onClick={() => handleMoveToStep(residence.residenceID, currentStep)}
+                            title="Move to Different Step"
+                          >
+                            <i className="fa fa-arrows-alt"></i> Move
                           </button>
                         </div>
                       </td>
