@@ -68,6 +68,7 @@ import LoginV3 from './../pages/user/login-v3.js';
 import RegisterV3 from './../pages/user/register-v3.js';
 import HelperCSS from './../pages/helper/helper-css.js';
 import SendSms from './../pages/sms/SendSms.tsx';
+import CreditCards from './../pages/accounts/CreditCards.tsx';
 
 const routes = [
   {
@@ -410,6 +411,11 @@ const routes = [
     path: '/sms/send',
     title: 'Send SMS',
     component: () => <SendSms />,
+  },
+  {
+    path: '/accounts/credit-cards',
+    title: 'Credit Cards',
+    component: () => <CreditCards />,
   }
 ];
 

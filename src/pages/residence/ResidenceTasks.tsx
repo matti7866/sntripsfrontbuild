@@ -85,6 +85,7 @@ export default function ResidenceTasks() {
   const [lookups, setLookups] = useState<{
     currencies: Array<{ currencyID: number; currencyName: string }>;
     accounts: Array<{ account_ID: number; account_Name: string }>;
+    creditCards: Array<{ account_ID: number; account_Name: string; card_holder_name?: string; card_type?: string; bank_name?: string; accountNum?: string; display_name?: string }>;
     suppliers: Array<{ supp_id: number; supp_name: string }>;
     customers: Array<{ customer_id: number; customer_name: string }>;
     positions: Array<{ position_id: number; posiiton_name: string }>;
@@ -92,6 +93,7 @@ export default function ResidenceTasks() {
   }>({
     currencies: [],
     accounts: [],
+    creditCards: [],
     suppliers: [],
     customers: [],
     positions: [],
@@ -165,6 +167,7 @@ export default function ResidenceTasks() {
       setLookups({
         currencies: Array.isArray(data.currencies) ? data.currencies : [],
         accounts: Array.isArray(data.accounts) ? data.accounts : [],
+        creditCards: Array.isArray(data.creditCards) ? data.creditCards : [],
         suppliers: Array.isArray(data.suppliers) ? data.suppliers : [],
         customers: Array.isArray(data.customers) ? data.customers : [],
         positions: Array.isArray(data.positions) ? data.positions : [],
@@ -1302,6 +1305,7 @@ export default function ResidenceTasks() {
             companies={companies}
             currencies={lookups.currencies}
             accounts={lookups.accounts}
+            creditCards={lookups.creditCards}
             suppliers={lookups.suppliers}
           />
           
@@ -1312,6 +1316,7 @@ export default function ResidenceTasks() {
             onSuccess={loadTasks}
             currencies={lookups.currencies}
             accounts={lookups.accounts}
+            creditCards={lookups.creditCards}
             suppliers={lookups.suppliers}
           />
           
@@ -1322,6 +1327,7 @@ export default function ResidenceTasks() {
             onSuccess={loadTasks}
             currencies={lookups.currencies}
             accounts={lookups.accounts}
+            creditCards={lookups.creditCards}
             suppliers={lookups.suppliers}
           />
 
@@ -1332,6 +1338,7 @@ export default function ResidenceTasks() {
             onSuccess={loadTasks}
             currencies={lookups.currencies}
             accounts={lookups.accounts}
+            creditCards={lookups.creditCards}
             suppliers={lookups.suppliers}
           />
 
@@ -1342,6 +1349,7 @@ export default function ResidenceTasks() {
             onSuccess={loadTasks}
             currencies={lookups.currencies}
             accounts={lookups.accounts}
+            creditCards={lookups.creditCards}
             suppliers={lookups.suppliers}
           />
 
@@ -1352,6 +1360,7 @@ export default function ResidenceTasks() {
             onSuccess={loadTasks}
             currencies={lookups.currencies}
             accounts={lookups.accounts}
+            creditCards={lookups.creditCards}
             suppliers={lookups.suppliers}
           />
 
@@ -1362,6 +1371,7 @@ export default function ResidenceTasks() {
             onSuccess={loadTasks}
             currencies={lookups.currencies}
             accounts={lookups.accounts}
+            creditCards={lookups.creditCards}
             suppliers={lookups.suppliers}
           />
 
@@ -1372,6 +1382,7 @@ export default function ResidenceTasks() {
             onSuccess={loadTasks}
             currencies={lookups.currencies}
             accounts={lookups.accounts}
+            creditCards={lookups.creditCards}
             suppliers={lookups.suppliers}
           />
 
@@ -1382,6 +1393,7 @@ export default function ResidenceTasks() {
             onSuccess={loadTasks}
             currencies={lookups.currencies}
             accounts={lookups.accounts}
+            creditCards={lookups.creditCards}
             suppliers={lookups.suppliers}
           />
           

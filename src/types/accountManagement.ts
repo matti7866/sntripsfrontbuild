@@ -2,8 +2,8 @@ export interface AccountManagement {
   account_ID: number;
   account_Name: string;
   accountNum: string | null;
-  accountType: 1 | 2 | 3; // 1=Personal, 2=Business, 3=Cash
-  accountTypeName?: string; // 'Personal', 'Business', 'Cash'
+  accountType: 1 | 2 | 3 | 4; // 1=Personal, 2=Business, 3=Cash, 4=Credit Card
+  accountTypeName?: string; // 'Personal', 'Business', 'Cash', 'Credit Card'
   curID: number;
   currencyName?: string;
 }

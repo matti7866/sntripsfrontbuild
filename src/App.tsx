@@ -61,6 +61,7 @@ import RoleManagement from './pages/role/RoleManagement';
 import PermissionManagement from './pages/permission/PermissionManagement';
 import AccountsReport from './pages/accounts/AccountsReport';
 import AccountManagement from './pages/accounts/AccountManagement';
+import CreditCards from './pages/accounts/CreditCards';
 import Deposits from './pages/accounts/Deposits';
 import Withdrawals from './pages/accounts/Withdrawals';
 import Transfers from './pages/accounts/Transfers';
@@ -162,6 +163,7 @@ function App() {
               
               {/* Accounts */}
               <Route path="accounts" element={<AccountManagement />} />
+              <Route path="accounts/credit-cards" element={<CreditCards />} />
               <Route path="accounts/report" element={<AccountsReport />} />
               <Route path="accounts/deposits" element={<Deposits />} />
               <Route path="accounts/withdrawals" element={<Withdrawals />} />

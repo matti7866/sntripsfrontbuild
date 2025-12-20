@@ -10,12 +10,13 @@ interface BaseStepModalProps {
   onSuccess: () => void;
   currencies: Array<{ currencyID: number; currencyName: string }>;
   accounts: Array<{ account_ID: number; account_Name: string }>;
+  creditCards: Array<{ account_ID: number; account_Name: string; card_holder_name?: string; card_type?: string; bank_name?: string; accountNum?: string; display_name?: string }>;
   suppliers: Array<{ supp_id: number; supp_name: string }>;
   isFamily?: boolean; // Add isFamily prop
 }
 
 // Insurance Modal
-export function InsuranceModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, suppliers }: BaseStepModalProps) {
+export function InsuranceModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, creditCards, suppliers }: BaseStepModalProps) {
   const [formData, setFormData] = useState({
     insuranceCost: '145',
     insuranceCurrency: '',
@@ -55,6 +56,9 @@ export function InsuranceModal({ isOpen, onClose, residenceId, onSuccess, curren
     if (formData.insuranceChargeOn === '2' && !formData.insuranceChargeSupplier) {
       newErrors.insuranceChargeSupplier = 'Charge Supplier is required';
     }
+    if (formData.insuranceChargeOn === '3' && !formData.insuranceChargeAccount) {
+      newErrors.insuranceChargeAccount = 'Credit Card is required';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -69,7 +73,7 @@ export function InsuranceModal({ isOpen, onClose, residenceId, onSuccess, curren
         insuranceCost: formData.insuranceCost,
         insuranceCur: formData.insuranceCurrency,
         insuranceChargOpt: formData.insuranceChargeOn,
-        insuranceChargedEntity: formData.insuranceChargeOn === '1' ? formData.insuranceChargeAccount : formData.insuranceChargeSupplier,
+        insuranceChargedEntity: (formData.insuranceChargeOn === '1' || formData.insuranceChargeOn === '3') ? formData.insuranceChargeAccount : formData.insuranceChargeSupplier,
         files: selectedFile ? { insuranceFile: selectedFile } : {}
       });
 
@@ -126,16 +130,17 @@ export function InsuranceModal({ isOpen, onClose, residenceId, onSuccess, curren
                   name="insuranceChargeOn"
                   className={`form-select ${errors.insuranceChargeOn ? 'is-invalid' : ''}`}
                   value={formData.insuranceChargeOn}
-                  onChange={(e) => { setFormData(prev => ({ ...prev, insuranceChargeOn: e.target.value })); setErrors(prev => ({ ...prev, insuranceChargeOn: '' })); }}
+                  onChange={(e) => { setFormData(prev => ({ ...prev, insuranceChargeOn: e.target.value, insuranceChargeAccount: '', insuranceChargeSupplier: '' })); setErrors(prev => ({ ...prev, insuranceChargeOn: '', insuranceChargeAccount: '', insuranceChargeSupplier: '' })); }}
                 >
                   <option value="1">Account</option>
                   <option value="2">Supplier</option>
+                  <option value="3">Credit Card</option>
                 </select>
                 {errors.insuranceChargeOn && <div className="invalid-feedback">{errors.insuranceChargeOn}</div>}
               </div>
               {formData.insuranceChargeOn === '1' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Account <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Account <span className="text-danger">*</span></label>
                   <select
                     name="insuranceChargeAccount"
                     className={`form-select ${errors.insuranceChargeAccount ? 'is-invalid' : ''}`}
@@ -150,7 +155,7 @@ export function InsuranceModal({ isOpen, onClose, residenceId, onSuccess, curren
               )}
               {formData.insuranceChargeOn === '2' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Supplier <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Supplier <span className="text-danger">*</span></label>
                   <select
                     name="insuranceChargeSupplier"
                     className={`form-select ${errors.insuranceChargeSupplier ? 'is-invalid' : ''}`}
@@ -161,6 +166,21 @@ export function InsuranceModal({ isOpen, onClose, residenceId, onSuccess, curren
                     {suppliers.map((s) => <option key={s.supp_id} value={s.supp_id}>{s.supp_name}</option>)}
                   </select>
                   {errors.insuranceChargeSupplier && <div className="invalid-feedback">{errors.insuranceChargeSupplier}</div>}
+                </div>
+              )}
+              {formData.insuranceChargeOn === '3' && (
+                <div className="col-md-12 mb-3">
+                  <label className="form-label">💳 Select Credit Card <span className="text-danger">*</span></label>
+                  <select
+                    name="insuranceChargeAccount"
+                    className={`form-select ${errors.insuranceChargeAccount ? 'is-invalid' : ''}`}
+                    value={formData.insuranceChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, insuranceChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, insuranceChargeAccount: '' })); }}
+                  >
+                    <option value="">Select Credit Card</option>
+                    {creditCards.map((c) => <option key={c.account_ID} value={c.account_ID}>{c.display_name || `💳 ${c.account_Name}`}</option>)}
+                  </select>
+                  {errors.insuranceChargeAccount && <div className="invalid-feedback">{errors.insuranceChargeAccount}</div>}
                 </div>
               )}
               <div className="col-md-12 mb-3">
@@ -182,7 +202,7 @@ export function InsuranceModal({ isOpen, onClose, residenceId, onSuccess, curren
 }
 
 // Labour Card Modal
-export function LabourCardModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, suppliers }: BaseStepModalProps & { labourCardNumber?: string }) {
+export function LabourCardModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, creditCards, suppliers }: BaseStepModalProps & { labourCardNumber?: string }) {
   const [formData, setFormData] = useState({
     labourCardNumber: '',
     labourCardCost: '1210',
@@ -222,6 +242,9 @@ export function LabourCardModal({ isOpen, onClose, residenceId, onSuccess, curre
     if (formData.labourCardChargeOn === '2' && !formData.labourCardChargeSupplier) {
       newErrors.labourCardChargeSupplier = 'Charge Supplier is required';
     }
+    if (formData.labourCardChargeOn === '3' && !formData.labourCardChargeAccount) {
+      newErrors.labourCardChargeAccount = 'Credit Card is required';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -237,7 +260,7 @@ export function LabourCardModal({ isOpen, onClose, residenceId, onSuccess, curre
         labour_card_fee: formData.labourCardCost,
         laborCardCur: formData.labourCardCurrency,
         lrbChargOpt: formData.labourCardChargeOn,
-        lbrChargedEntity: formData.labourCardChargeOn === '1' ? formData.labourCardChargeAccount : formData.labourCardChargeSupplier,
+        lbrChargedEntity: (formData.labourCardChargeOn === '1' || formData.labourCardChargeOn === '3') ? formData.labourCardChargeAccount : formData.labourCardChargeSupplier,
         files: selectedFile ? { laborCardFile: selectedFile } : {}
       });
 
@@ -304,16 +327,17 @@ export function LabourCardModal({ isOpen, onClose, residenceId, onSuccess, curre
                   name="labourCardChargeOn"
                   className={`form-select ${errors.labourCardChargeOn ? 'is-invalid' : ''}`}
                   value={formData.labourCardChargeOn}
-                  onChange={(e) => { setFormData(prev => ({ ...prev, labourCardChargeOn: e.target.value })); setErrors(prev => ({ ...prev, labourCardChargeOn: '' })); }}
+                  onChange={(e) => { setFormData(prev => ({ ...prev, labourCardChargeOn: e.target.value, labourCardChargeAccount: '', labourCardChargeSupplier: '' })); setErrors(prev => ({ ...prev, labourCardChargeOn: '' })); }}
                 >
                   <option value="1">Account</option>
                   <option value="2">Supplier</option>
+                  <option value="3">Credit Card</option>
                 </select>
                 {errors.labourCardChargeOn && <div className="invalid-feedback">{errors.labourCardChargeOn}</div>}
               </div>
               {formData.labourCardChargeOn === '1' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Account <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Account <span className="text-danger">*</span></label>
                   <select
                     name="labourCardChargeAccount"
                     className={`form-select ${errors.labourCardChargeAccount ? 'is-invalid' : ''}`}
@@ -328,7 +352,7 @@ export function LabourCardModal({ isOpen, onClose, residenceId, onSuccess, curre
               )}
               {formData.labourCardChargeOn === '2' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Supplier <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Supplier <span className="text-danger">*</span></label>
                   <select
                     name="labourCardChargeSupplier"
                     className={`form-select ${errors.labourCardChargeSupplier ? 'is-invalid' : ''}`}
@@ -339,6 +363,21 @@ export function LabourCardModal({ isOpen, onClose, residenceId, onSuccess, curre
                     {suppliers.map((s) => <option key={s.supp_id} value={s.supp_id}>{s.supp_name}</option>)}
                   </select>
                   {errors.labourCardChargeSupplier && <div className="invalid-feedback">{errors.labourCardChargeSupplier}</div>}
+                </div>
+              )}
+              {formData.labourCardChargeOn === '3' && (
+                <div className="col-md-12 mb-3">
+                  <label className="form-label">💳 Select Credit Card <span className="text-danger">*</span></label>
+                  <select
+                    name="labourCardChargeAccount"
+                    className={`form-select ${errors.labourCardChargeAccount ? 'is-invalid' : ''}`}
+                    value={formData.labourCardChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, labourCardChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, labourCardChargeAccount: '' })); }}
+                  >
+                    <option value="">Select Credit Card</option>
+                    {creditCards.map((c) => <option key={c.account_ID} value={c.account_ID}>{c.display_name || `💳 ${c.account_Name}`}</option>)}
+                  </select>
+                  {errors.labourCardChargeAccount && <div className="invalid-feedback">{errors.labourCardChargeAccount}</div>}
                 </div>
               )}
               <div className="col-md-12 mb-3">
@@ -360,7 +399,7 @@ export function LabourCardModal({ isOpen, onClose, residenceId, onSuccess, curre
 }
 
 // E-Visa Modal (Step 4 for residence, Step 1 for family)
-export function EVisaModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, suppliers, isFamily = false }: BaseStepModalProps) {
+export function EVisaModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, creditCards, suppliers, isFamily = false }: BaseStepModalProps) {
   const [formData, setFormData] = useState({
     eVisaCost: '500',
     eVisaCurrency: '',
@@ -399,6 +438,9 @@ export function EVisaModal({ isOpen, onClose, residenceId, onSuccess, currencies
     if (formData.eVisaChargeOn === '2' && !formData.eVisaChargeSupplier) {
       newErrors.eVisaChargeSupplier = 'Charge Supplier is required';
     }
+    if (formData.eVisaChargeOn === '3' && !formData.eVisaChargeAccount) {
+      newErrors.eVisaChargeAccount = 'Credit Card is required';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -420,8 +462,8 @@ export function EVisaModal({ isOpen, onClose, residenceId, onSuccess, currencies
           markComplete: true,
           eVisaCost: formData.eVisaCost,
           eVisaCur: formData.eVisaCurrency,
-          eVisaChargOpt: formData.eVisaChargeOn,
-          eVisaChargedEntity: formData.eVisaChargeOn === '1' ? formData.eVisaChargeAccount : formData.eVisaChargeSupplier,
+        eVisaChargOpt: formData.eVisaChargeOn,
+        eVisaChargedEntity: (formData.eVisaChargeOn === '1' || formData.eVisaChargeOn === '3') ? formData.eVisaChargeAccount : formData.eVisaChargeSupplier,
           files: selectedFile ? { eVisaFile: selectedFile } : {}
         });
       }
@@ -478,15 +520,16 @@ export function EVisaModal({ isOpen, onClose, residenceId, onSuccess, currencies
                   name="eVisaChargeOn"
                   className="form-select"
                   value={formData.eVisaChargeOn}
-                  onChange={(e) => setFormData(prev => ({ ...prev, eVisaChargeOn: e.target.value }))}
+                  onChange={(e) => { setFormData(prev => ({ ...prev, eVisaChargeOn: e.target.value, eVisaChargeAccount: '', eVisaChargeSupplier: '' })); setErrors(prev => ({ ...prev, eVisaChargeOn: '', eVisaChargeAccount: '', eVisaChargeSupplier: '' })); }}
                 >
                   <option value="1">Account</option>
                   <option value="2">Supplier</option>
+                  <option value="3">Credit Card</option>
                 </select>
               </div>
               {formData.eVisaChargeOn === '1' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Account <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Account <span className="text-danger">*</span></label>
                   <select
                     name="eVisaChargeAccount"
                     className={`form-select ${errors.eVisaChargeAccount ? 'is-invalid' : ''}`}
@@ -501,7 +544,7 @@ export function EVisaModal({ isOpen, onClose, residenceId, onSuccess, currencies
               )}
               {formData.eVisaChargeOn === '2' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Supplier <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Supplier <span className="text-danger">*</span></label>
                   <select
                     name="eVisaChargeSupplier"
                     className={`form-select ${errors.eVisaChargeSupplier ? 'is-invalid' : ''}`}
@@ -512,6 +555,21 @@ export function EVisaModal({ isOpen, onClose, residenceId, onSuccess, currencies
                     {suppliers.map((s) => <option key={s.supp_id} value={s.supp_id}>{s.supp_name}</option>)}
                   </select>
                   {errors.eVisaChargeSupplier && <div className="invalid-feedback">{errors.eVisaChargeSupplier}</div>}
+                </div>
+              )}
+              {formData.eVisaChargeOn === '3' && (
+                <div className="col-md-12 mb-3">
+                  <label className="form-label">💳 Select Credit Card <span className="text-danger">*</span></label>
+                  <select
+                    name="eVisaChargeAccount"
+                    className={`form-select ${errors.eVisaChargeAccount ? 'is-invalid' : ''}`}
+                    value={formData.eVisaChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, eVisaChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, eVisaChargeAccount: '' })); }}
+                  >
+                    <option value="">Select Credit Card</option>
+                    {creditCards.map((c) => <option key={c.account_ID} value={c.account_ID}>{c.display_name || `💳 ${c.account_Name}`}</option>)}
+                  </select>
+                  {errors.eVisaChargeAccount && <div className="invalid-feedback">{errors.eVisaChargeAccount}</div>}
                 </div>
               )}
               <div className="col-md-12 mb-3">
@@ -533,7 +591,7 @@ export function EVisaModal({ isOpen, onClose, residenceId, onSuccess, currencies
 }
 
 // Change Status Modal (Step 5 for residence, Step 2 for family)
-export function ChangeStatusModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, suppliers, isFamily = false }: BaseStepModalProps) {
+export function ChangeStatusModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, creditCards, suppliers, isFamily = false }: BaseStepModalProps) {
   const [formData, setFormData] = useState({
     changeStatusCost: '300',
     changeStatusCurrency: '',
@@ -572,6 +630,9 @@ export function ChangeStatusModal({ isOpen, onClose, residenceId, onSuccess, cur
     if (formData.changeStatusChargeOn === '2' && !formData.changeStatusChargeSupplier) {
       newErrors.changeStatusChargeSupplier = 'Charge Supplier is required';
     }
+    if (formData.changeStatusChargeOn === '3' && !formData.changeStatusChargeAccount) {
+      newErrors.changeStatusChargeAccount = 'Credit Card is required';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -593,7 +654,7 @@ export function ChangeStatusModal({ isOpen, onClose, residenceId, onSuccess, cur
           changeStatusCost: formData.changeStatusCost,
           changeStatusCur: formData.changeStatusCurrency,
           changeStatusChargOpt: formData.changeStatusChargeOn,
-          changeStatusChargedEntity: formData.changeStatusChargeOn === '1' ? formData.changeStatusChargeAccount : formData.changeStatusChargeSupplier,
+          changeStatusChargedEntity: (formData.changeStatusChargeOn === '1' || formData.changeStatusChargeOn === '3') ? formData.changeStatusChargeAccount : formData.changeStatusChargeSupplier,
           files: selectedFile ? { changeStatusFile: selectedFile } : {}
         });
       }
@@ -650,21 +711,18 @@ export function ChangeStatusModal({ isOpen, onClose, residenceId, onSuccess, cur
                   name="changeStatusChargeOn"
                   className="form-select"
                   value={formData.changeStatusChargeOn}
-                  onChange={(e) => setFormData(prev => ({ ...prev, changeStatusChargeOn: e.target.value }))}
+                  onChange={(e) => { setFormData(prev => ({ ...prev, changeStatusChargeOn: e.target.value, changeStatusChargeAccount: '', changeStatusChargeSupplier: '' })); setErrors(prev => ({ ...prev, changeStatusChargeOn: '', changeStatusChargeAccount: '', changeStatusChargeSupplier: '' })); }}
                 >
                   <option value="1">Account</option>
                   <option value="2">Supplier</option>
+                  <option value="3">Credit Card</option>
                 </select>
               </div>
               {formData.changeStatusChargeOn === '1' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Account <span className="text-danger">*</span></label>
-                  <select
-                    name="changeStatusChargeAccount"
-                    className={`form-select ${errors.changeStatusChargeAccount ? 'is-invalid' : ''}`}
-                    value={formData.changeStatusChargeAccount}
-                    onChange={(e) => { setFormData(prev => ({ ...prev, changeStatusChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, changeStatusChargeAccount: '' })); }}
-                  >
+                  <label className="form-label">Select Account <span className="text-danger">*</span></label>
+                  <select name="changeStatusChargeAccount" className={`form-select ${errors.changeStatusChargeAccount ? 'is-invalid' : ''}`} value={formData.changeStatusChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, changeStatusChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, changeStatusChargeAccount: '' })); }}>
                     <option value="">Select Account</option>
                     {accounts.map((a) => <option key={a.account_ID} value={a.account_ID}>{a.account_Name}</option>)}
                   </select>
@@ -673,7 +731,7 @@ export function ChangeStatusModal({ isOpen, onClose, residenceId, onSuccess, cur
               )}
               {formData.changeStatusChargeOn === '2' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Supplier <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Supplier <span className="text-danger">*</span></label>
                   <select
                     name="changeStatusChargeSupplier"
                     className={`form-select ${errors.changeStatusChargeSupplier ? 'is-invalid' : ''}`}
@@ -684,6 +742,21 @@ export function ChangeStatusModal({ isOpen, onClose, residenceId, onSuccess, cur
                     {suppliers.map((s) => <option key={s.supp_id} value={s.supp_id}>{s.supp_name}</option>)}
                   </select>
                   {errors.changeStatusChargeSupplier && <div className="invalid-feedback">{errors.changeStatusChargeSupplier}</div>}
+                </div>
+              )}
+              {formData.changeStatusChargeOn === '3' && (
+                <div className="col-md-12 mb-3">
+                  <label className="form-label">💳 Select Credit Card <span className="text-danger">*</span></label>
+                  <select
+                    name="changeStatusChargeAccount"
+                    className={`form-select ${errors.changeStatusChargeAccount ? 'is-invalid' : ''}`}
+                    value={formData.changeStatusChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, changeStatusChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, changeStatusChargeAccount: '' })); }}
+                  >
+                    <option value="">Select Credit Card</option>
+                    {creditCards.map((c) => <option key={c.account_ID} value={c.account_ID}>{c.display_name || `💳 ${c.account_Name}`}</option>)}
+                  </select>
+                  {errors.changeStatusChargeAccount && <div className="invalid-feedback">{errors.changeStatusChargeAccount}</div>}
                 </div>
               )}
               <div className="col-md-12 mb-3">
@@ -705,7 +778,7 @@ export function ChangeStatusModal({ isOpen, onClose, residenceId, onSuccess, cur
 }
 
 // Medical Modal (Step 6 for residence, Step 3 for family)
-export function MedicalModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, suppliers, isFamily = false }: BaseStepModalProps) {
+export function MedicalModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, creditCards, suppliers, isFamily = false }: BaseStepModalProps) {
   const [formData, setFormData] = useState({
     medicalCost: '200',
     medicalCurrency: '',
@@ -744,6 +817,9 @@ export function MedicalModal({ isOpen, onClose, residenceId, onSuccess, currenci
     if (formData.medicalChargeOn === '2' && !formData.medicalChargeSupplier) {
       newErrors.medicalChargeSupplier = 'Charge Supplier is required';
     }
+    if (formData.medicalChargeOn === '3' && !formData.medicalChargeAccount) {
+      newErrors.medicalChargeAccount = 'Credit Card is required';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -765,7 +841,7 @@ export function MedicalModal({ isOpen, onClose, residenceId, onSuccess, currenci
           medical_cost: formData.medicalCost,                    // Fixed: was medicalCost
           medicalCostCur: formData.medicalCurrency,              // Fixed: was medicalCur
           medicalTChargOpt: formData.medicalChargeOn,            // Fixed: was medicalChargOpt
-          medicalTChargedEntity: formData.medicalChargeOn === '1' ? formData.medicalChargeAccount : formData.medicalChargeSupplier, // Fixed: was medicalChargedEntity
+          medicalTChargedEntity: (formData.medicalChargeOn === '1' || formData.medicalChargeOn === '3') ? formData.medicalChargeAccount : formData.medicalChargeSupplier, // Fixed: was medicalChargedEntity
           files: selectedFile ? { medicalFile: selectedFile } : {}
         });
       }
@@ -822,21 +898,18 @@ export function MedicalModal({ isOpen, onClose, residenceId, onSuccess, currenci
                   name="medicalChargeOn"
                   className="form-select"
                   value={formData.medicalChargeOn}
-                  onChange={(e) => setFormData(prev => ({ ...prev, medicalChargeOn: e.target.value }))}
+                  onChange={(e) => { setFormData(prev => ({ ...prev, medicalChargeOn: e.target.value, medicalChargeAccount: '', medicalChargeSupplier: '' })); setErrors(prev => ({ ...prev, medicalChargeOn: '', medicalChargeAccount: '', medicalChargeSupplier: '' })); }}
                 >
                   <option value="1">Account</option>
                   <option value="2">Supplier</option>
+                  <option value="3">Credit Card</option>
                 </select>
               </div>
               {formData.medicalChargeOn === '1' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Account <span className="text-danger">*</span></label>
-                  <select
-                    name="medicalChargeAccount"
-                    className={`form-select ${errors.medicalChargeAccount ? 'is-invalid' : ''}`}
-                    value={formData.medicalChargeAccount}
-                    onChange={(e) => { setFormData(prev => ({ ...prev, medicalChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, medicalChargeAccount: '' })); }}
-                  >
+                  <label className="form-label">Select Account <span className="text-danger">*</span></label>
+                  <select name="medicalChargeAccount" className={`form-select ${errors.medicalChargeAccount ? 'is-invalid' : ''}`} value={formData.medicalChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, medicalChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, medicalChargeAccount: '' })); }}>
                     <option value="">Select Account</option>
                     {accounts.map((a) => <option key={a.account_ID} value={a.account_ID}>{a.account_Name}</option>)}
                   </select>
@@ -845,7 +918,7 @@ export function MedicalModal({ isOpen, onClose, residenceId, onSuccess, currenci
               )}
               {formData.medicalChargeOn === '2' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Supplier <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Supplier <span className="text-danger">*</span></label>
                   <select
                     name="medicalChargeSupplier"
                     className={`form-select ${errors.medicalChargeSupplier ? 'is-invalid' : ''}`}
@@ -856,6 +929,21 @@ export function MedicalModal({ isOpen, onClose, residenceId, onSuccess, currenci
                     {suppliers.map((s) => <option key={s.supp_id} value={s.supp_id}>{s.supp_name}</option>)}
                   </select>
                   {errors.medicalChargeSupplier && <div className="invalid-feedback">{errors.medicalChargeSupplier}</div>}
+                </div>
+              )}
+              {formData.medicalChargeOn === '3' && (
+                <div className="col-md-12 mb-3">
+                  <label className="form-label">💳 Select Credit Card <span className="text-danger">*</span></label>
+                  <select
+                    name="medicalChargeAccount"
+                    className={`form-select ${errors.medicalChargeAccount ? 'is-invalid' : ''}`}
+                    value={formData.medicalChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, medicalChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, medicalChargeAccount: '' })); }}
+                  >
+                    <option value="">Select Credit Card</option>
+                    {creditCards.map((c) => <option key={c.account_ID} value={c.account_ID}>{c.display_name || `💳 ${c.account_Name}`}</option>)}
+                  </select>
+                  {errors.medicalChargeAccount && <div className="invalid-feedback">{errors.medicalChargeAccount}</div>}
                 </div>
               )}
               <div className="col-md-12 mb-3">
@@ -877,7 +965,7 @@ export function MedicalModal({ isOpen, onClose, residenceId, onSuccess, currenci
 }
 
 // Emirates ID Modal (Step 7)
-export function EmiratesIDModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, suppliers, isFamily = false }: BaseStepModalProps) {
+export function EmiratesIDModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, creditCards, suppliers, isFamily = false }: BaseStepModalProps) {
   const [formData, setFormData] = useState({
     emiratesIDCost: '250',
     emiratesIDCurrency: '',
@@ -919,6 +1007,9 @@ export function EmiratesIDModal({ isOpen, onClose, residenceId, onSuccess, curre
     if (formData.emiratesIDChargeOn === '2' && !formData.emiratesIDChargeSupplier) {
       newErrors.emiratesIDChargeSupplier = 'Charge Supplier is required';
     }
+    if (formData.emiratesIDChargeOn === '3' && !formData.emiratesIDChargeAccount) {
+      newErrors.emiratesIDChargeAccount = 'Credit Card is required';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -941,7 +1032,7 @@ export function EmiratesIDModal({ isOpen, onClose, residenceId, onSuccess, curre
           emiratesIDCost: formData.emiratesIDCost,
           emiratesIDCur: formData.emiratesIDCurrency,
           emiratesIDChargOpt: formData.emiratesIDChargeOn,
-          emiratesIDChargedEntity: formData.emiratesIDChargeOn === '1' ? formData.emiratesIDChargeAccount : formData.emiratesIDChargeSupplier,
+          emiratesIDChargedEntity: (formData.emiratesIDChargeOn === '1' || formData.emiratesIDChargeOn === '3') ? formData.emiratesIDChargeAccount : formData.emiratesIDChargeSupplier,
           files: selectedFile ? { emiratesIDFile: selectedFile } : {}
         });
       }
@@ -1010,21 +1101,18 @@ export function EmiratesIDModal({ isOpen, onClose, residenceId, onSuccess, curre
                   name="emiratesIDChargeOn"
                   className="form-select"
                   value={formData.emiratesIDChargeOn}
-                  onChange={(e) => setFormData(prev => ({ ...prev, emiratesIDChargeOn: e.target.value }))}
+                  onChange={(e) => { setFormData(prev => ({ ...prev, emiratesIDChargeOn: e.target.value, emiratesIDChargeAccount: '', emiratesIDChargeSupplier: '' })); setErrors(prev => ({ ...prev, emiratesIDChargeOn: '', emiratesIDChargeAccount: '', emiratesIDChargeSupplier: '' })); }}
                 >
                   <option value="1">Account</option>
                   <option value="2">Supplier</option>
+                  <option value="3">Credit Card</option>
                 </select>
               </div>
               {formData.emiratesIDChargeOn === '1' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Account <span className="text-danger">*</span></label>
-                  <select
-                    name="emiratesIDChargeAccount"
-                    className={`form-select ${errors.emiratesIDChargeAccount ? 'is-invalid' : ''}`}
-                    value={formData.emiratesIDChargeAccount}
-                    onChange={(e) => { setFormData(prev => ({ ...prev, emiratesIDChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, emiratesIDChargeAccount: '' })); }}
-                  >
+                  <label className="form-label">Select Account <span className="text-danger">*</span></label>
+                  <select name="emiratesIDChargeAccount" className={`form-select ${errors.emiratesIDChargeAccount ? 'is-invalid' : ''}`} value={formData.emiratesIDChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, emiratesIDChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, emiratesIDChargeAccount: '' })); }}>
                     <option value="">Select Account</option>
                     {accounts.map((a) => <option key={a.account_ID} value={a.account_ID}>{a.account_Name}</option>)}
                   </select>
@@ -1033,7 +1121,7 @@ export function EmiratesIDModal({ isOpen, onClose, residenceId, onSuccess, curre
               )}
               {formData.emiratesIDChargeOn === '2' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Supplier <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Supplier <span className="text-danger">*</span></label>
                   <select
                     name="emiratesIDChargeSupplier"
                     className={`form-select ${errors.emiratesIDChargeSupplier ? 'is-invalid' : ''}`}
@@ -1044,6 +1132,21 @@ export function EmiratesIDModal({ isOpen, onClose, residenceId, onSuccess, curre
                     {suppliers.map((s) => <option key={s.supp_id} value={s.supp_id}>{s.supp_name}</option>)}
                   </select>
                   {errors.emiratesIDChargeSupplier && <div className="invalid-feedback">{errors.emiratesIDChargeSupplier}</div>}
+                </div>
+              )}
+              {formData.emiratesIDChargeOn === '3' && (
+                <div className="col-md-12 mb-3">
+                  <label className="form-label">💳 Select Credit Card <span className="text-danger">*</span></label>
+                  <select
+                    name="emiratesIDChargeAccount"
+                    className={`form-select ${errors.emiratesIDChargeAccount ? 'is-invalid' : ''}`}
+                    value={formData.emiratesIDChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, emiratesIDChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, emiratesIDChargeAccount: '' })); }}
+                  >
+                    <option value="">Select Credit Card</option>
+                    {creditCards.map((c) => <option key={c.account_ID} value={c.account_ID}>{c.display_name || `💳 ${c.account_Name}`}</option>)}
+                  </select>
+                  {errors.emiratesIDChargeAccount && <div className="invalid-feedback">{errors.emiratesIDChargeAccount}</div>}
                 </div>
               )}
               <div className="col-md-12 mb-3">
@@ -1065,7 +1168,7 @@ export function EmiratesIDModal({ isOpen, onClose, residenceId, onSuccess, curre
 }
 
 // Visa Stamping Modal (Step 8 for residence, Step 5 for family)
-export function VisaStampingModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, suppliers, isFamily = false }: BaseStepModalProps) {
+export function VisaStampingModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, creditCards, suppliers, isFamily = false }: BaseStepModalProps) {
   const [formData, setFormData] = useState({
     visaStampingCost: '150',
     visaStampingCurrency: '',
@@ -1106,6 +1209,9 @@ export function VisaStampingModal({ isOpen, onClose, residenceId, onSuccess, cur
     if (formData.visaStampingChargeOn === '2' && !formData.visaStampingChargeSupplier) {
       newErrors.visaStampingChargeSupplier = 'Charge Supplier is required';
     }
+    if (formData.visaStampingChargeOn === '3' && !formData.visaStampingChargeAccount) {
+      newErrors.visaStampingChargeAccount = 'Credit Card is required';
+    }
     if (isFamily && !formData.visaStampingExpiry) {
       newErrors.visaStampingExpiry = 'Visa Expiry is required';
     }
@@ -1131,7 +1237,7 @@ export function VisaStampingModal({ isOpen, onClose, residenceId, onSuccess, cur
           visaStampingCost: formData.visaStampingCost,
           visaStampingCur: formData.visaStampingCurrency,
           visaStampingChargOpt: formData.visaStampingChargeOn,
-          visaStampingChargedEntity: formData.visaStampingChargeOn === '1' ? formData.visaStampingChargeAccount : formData.visaStampingChargeSupplier,
+          visaStampingChargedEntity: (formData.visaStampingChargeOn === '1' || formData.visaStampingChargeOn === '3') ? formData.visaStampingChargeAccount : formData.visaStampingChargeSupplier,
           files: selectedFile ? { visaStampingFile: selectedFile } : {}
         });
       }
@@ -1188,21 +1294,18 @@ export function VisaStampingModal({ isOpen, onClose, residenceId, onSuccess, cur
                   name="visaStampingChargeOn"
                   className="form-select"
                   value={formData.visaStampingChargeOn}
-                  onChange={(e) => setFormData(prev => ({ ...prev, visaStampingChargeOn: e.target.value }))}
+                  onChange={(e) => { setFormData(prev => ({ ...prev, visaStampingChargeOn: e.target.value, visaStampingChargeAccount: '', visaStampingChargeSupplier: '' })); setErrors(prev => ({ ...prev, visaStampingChargeOn: '', visaStampingChargeAccount: '', visaStampingChargeSupplier: '' })); }}
                 >
                   <option value="1">Account</option>
                   <option value="2">Supplier</option>
+                  <option value="3">Credit Card</option>
                 </select>
               </div>
               {formData.visaStampingChargeOn === '1' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Account <span className="text-danger">*</span></label>
-                  <select
-                    name="visaStampingChargeAccount"
-                    className={`form-select ${errors.visaStampingChargeAccount ? 'is-invalid' : ''}`}
-                    value={formData.visaStampingChargeAccount}
-                    onChange={(e) => { setFormData(prev => ({ ...prev, visaStampingChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, visaStampingChargeAccount: '' })); }}
-                  >
+                  <label className="form-label">Select Account <span className="text-danger">*</span></label>
+                  <select name="visaStampingChargeAccount" className={`form-select ${errors.visaStampingChargeAccount ? 'is-invalid' : ''}`} value={formData.visaStampingChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, visaStampingChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, visaStampingChargeAccount: '' })); }}>
                     <option value="">Select Account</option>
                     {accounts.map((a) => <option key={a.account_ID} value={a.account_ID}>{a.account_Name}</option>)}
                   </select>
@@ -1211,7 +1314,7 @@ export function VisaStampingModal({ isOpen, onClose, residenceId, onSuccess, cur
               )}
               {formData.visaStampingChargeOn === '2' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Supplier <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Supplier <span className="text-danger">*</span></label>
                   <select
                     name="visaStampingChargeSupplier"
                     className={`form-select ${errors.visaStampingChargeSupplier ? 'is-invalid' : ''}`}
@@ -1222,6 +1325,21 @@ export function VisaStampingModal({ isOpen, onClose, residenceId, onSuccess, cur
                     {suppliers.map((s) => <option key={s.supp_id} value={s.supp_id}>{s.supp_name}</option>)}
                   </select>
                   {errors.visaStampingChargeSupplier && <div className="invalid-feedback">{errors.visaStampingChargeSupplier}</div>}
+                </div>
+              )}
+              {formData.visaStampingChargeOn === '3' && (
+                <div className="col-md-12 mb-3">
+                  <label className="form-label">💳 Select Credit Card <span className="text-danger">*</span></label>
+                  <select
+                    name="visaStampingChargeAccount"
+                    className={`form-select ${errors.visaStampingChargeAccount ? 'is-invalid' : ''}`}
+                    value={formData.visaStampingChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, visaStampingChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, visaStampingChargeAccount: '' })); }}
+                  >
+                    <option value="">Select Credit Card</option>
+                    {creditCards.map((c) => <option key={c.account_ID} value={c.account_ID}>{c.display_name || `💳 ${c.account_Name}`}</option>)}
+                  </select>
+                  {errors.visaStampingChargeAccount && <div className="invalid-feedback">{errors.visaStampingChargeAccount}</div>}
                 </div>
               )}
               {isFamily && (
@@ -1256,7 +1374,7 @@ export function VisaStampingModal({ isOpen, onClose, residenceId, onSuccess, cur
 }
 
 // Contract Submission Modal (Step 9)
-export function ContractSubmissionModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, suppliers }: BaseStepModalProps) {
+export function ContractSubmissionModal({ isOpen, onClose, residenceId, onSuccess, currencies, accounts, creditCards, suppliers }: BaseStepModalProps) {
   const [formData, setFormData] = useState({
     contractSubmissionCost: '100',
     contractSubmissionCurrency: '',
@@ -1295,6 +1413,9 @@ export function ContractSubmissionModal({ isOpen, onClose, residenceId, onSucces
     if (formData.contractSubmissionChargeOn === '2' && !formData.contractSubmissionChargeSupplier) {
       newErrors.contractSubmissionChargeSupplier = 'Charge Supplier is required';
     }
+    if (formData.contractSubmissionChargeOn === '3' && !formData.contractSubmissionChargeAccount) {
+      newErrors.contractSubmissionChargeAccount = 'Credit Card is required';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -1309,7 +1430,7 @@ export function ContractSubmissionModal({ isOpen, onClose, residenceId, onSucces
         contractSubmissionCost: formData.contractSubmissionCost,
         contractSubmissionCur: formData.contractSubmissionCurrency,
         contractSubmissionChargOpt: formData.contractSubmissionChargeOn,
-        contractSubmissionChargedEntity: formData.contractSubmissionChargeOn === '1' ? formData.contractSubmissionChargeAccount : formData.contractSubmissionChargeSupplier,
+        contractSubmissionChargedEntity: (formData.contractSubmissionChargeOn === '1' || formData.contractSubmissionChargeOn === '3') ? formData.contractSubmissionChargeAccount : formData.contractSubmissionChargeSupplier,
         files: selectedFile ? { contractSubmissionFile: selectedFile } : {}
       });
 
@@ -1365,21 +1486,18 @@ export function ContractSubmissionModal({ isOpen, onClose, residenceId, onSucces
                   name="contractSubmissionChargeOn"
                   className="form-select"
                   value={formData.contractSubmissionChargeOn}
-                  onChange={(e) => setFormData(prev => ({ ...prev, contractSubmissionChargeOn: e.target.value }))}
+                  onChange={(e) => { setFormData(prev => ({ ...prev, contractSubmissionChargeOn: e.target.value, contractSubmissionChargeAccount: '', contractSubmissionChargeSupplier: '' })); setErrors(prev => ({ ...prev, contractSubmissionChargeOn: '', contractSubmissionChargeAccount: '', contractSubmissionChargeSupplier: '' })); }}
                 >
                   <option value="1">Account</option>
                   <option value="2">Supplier</option>
+                  <option value="3">Credit Card</option>
                 </select>
               </div>
               {formData.contractSubmissionChargeOn === '1' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Account <span className="text-danger">*</span></label>
-                  <select
-                    name="contractSubmissionChargeAccount"
-                    className={`form-select ${errors.contractSubmissionChargeAccount ? 'is-invalid' : ''}`}
-                    value={formData.contractSubmissionChargeAccount}
-                    onChange={(e) => { setFormData(prev => ({ ...prev, contractSubmissionChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, contractSubmissionChargeAccount: '' })); }}
-                  >
+                  <label className="form-label">Select Account <span className="text-danger">*</span></label>
+                  <select name="contractSubmissionChargeAccount" className={`form-select ${errors.contractSubmissionChargeAccount ? 'is-invalid' : ''}`} value={formData.contractSubmissionChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, contractSubmissionChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, contractSubmissionChargeAccount: '' })); }}>
                     <option value="">Select Account</option>
                     {accounts.map((a) => <option key={a.account_ID} value={a.account_ID}>{a.account_Name}</option>)}
                   </select>
@@ -1388,7 +1506,7 @@ export function ContractSubmissionModal({ isOpen, onClose, residenceId, onSucces
               )}
               {formData.contractSubmissionChargeOn === '2' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Supplier <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Supplier <span className="text-danger">*</span></label>
                   <select
                     name="contractSubmissionChargeSupplier"
                     className={`form-select ${errors.contractSubmissionChargeSupplier ? 'is-invalid' : ''}`}
@@ -1399,6 +1517,21 @@ export function ContractSubmissionModal({ isOpen, onClose, residenceId, onSucces
                     {suppliers.map((s) => <option key={s.supp_id} value={s.supp_id}>{s.supp_name}</option>)}
                   </select>
                   {errors.contractSubmissionChargeSupplier && <div className="invalid-feedback">{errors.contractSubmissionChargeSupplier}</div>}
+                </div>
+              )}
+              {formData.contractSubmissionChargeOn === '3' && (
+                <div className="col-md-12 mb-3">
+                  <label className="form-label">💳 Select Credit Card <span className="text-danger">*</span></label>
+                  <select
+                    name="contractSubmissionChargeAccount"
+                    className={`form-select ${errors.contractSubmissionChargeAccount ? 'is-invalid' : ''}`}
+                    value={formData.contractSubmissionChargeAccount}
+                    onChange={(e) => { setFormData(prev => ({ ...prev, contractSubmissionChargeAccount: e.target.value })); setErrors(prev => ({ ...prev, contractSubmissionChargeAccount: '' })); }}
+                  >
+                    <option value="">Select Credit Card</option>
+                    {creditCards.map((c) => <option key={c.account_ID} value={c.account_ID}>{c.display_name || `💳 ${c.account_Name}`}</option>)}
+                  </select>
+                  {errors.contractSubmissionChargeAccount && <div className="invalid-feedback">{errors.contractSubmissionChargeAccount}</div>}
                 </div>
               )}
               <div className="col-md-12 mb-3">

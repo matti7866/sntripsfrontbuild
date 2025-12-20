@@ -168,6 +168,7 @@ const menuItems: MenuItem[] = [
     title: 'Manage Accounts',
     children: [
       { path: '/accounts', title: 'Accounts' },
+      { path: '/accounts/credit-cards', title: 'Credit Cards' },
       { path: '/accounts/deposits', title: 'Deposits' },
       { path: '/accounts/withdrawals', title: 'Withdrawals' },
       { path: '/accounts/transfers', title: 'Transfers' },

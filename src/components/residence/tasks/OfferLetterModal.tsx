@@ -19,6 +19,7 @@ interface OfferLetterModalProps {
   companies: Array<{ company_id: number; company_name: string; starting_quota: number; totalEmployees: number }>;
   currencies: Array<{ currencyID: number; currencyName: string }>;
   accounts: Array<{ account_ID: number; account_Name: string }>;
+  creditCards: Array<{ account_ID: number; account_Name: string; card_holder_name?: string; bank_name?: string; accountNum?: string; display_name?: string }>;
   suppliers: Array<{ supp_id: number; supp_name: string }>;
 }
 
@@ -30,6 +31,7 @@ export default function OfferLetterModal({
   companies,
   currencies,
   accounts,
+  creditCards,
   suppliers
 }: OfferLetterModalProps) {
   const [formData, setFormData] = useState({
@@ -196,6 +198,9 @@ export default function OfferLetterModal({
     if (formData.offerLetterChargeOn === '2' && !formData.offerLetterChargeSupplier) {
       newErrors.offerLetterChargeSupplier = 'Charge Supplier is required';
     }
+    if (formData.offerLetterChargeOn === '3' && !formData.offerLetterChargeAccount) {
+      newErrors.offerLetterChargeAccount = 'Credit Card is required';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -212,7 +217,7 @@ export default function OfferLetterModal({
         offerLetterCost: formData.offerLetterCost,
         offerLetterCostCur: formData.offerLetterCurrency,
         offerLChargOpt: formData.offerLetterChargeOn,
-        offerLChargedEntity: formData.offerLetterChargeOn === '1' ? formData.offerLetterChargeAccount : formData.offerLetterChargeSupplier,
+        offerLChargedEntity: (formData.offerLetterChargeOn === '1' || formData.offerLetterChargeOn === '3') ? formData.offerLetterChargeAccount : formData.offerLetterChargeSupplier,
         files: selectedFile ? { offerLetterFile: selectedFile } : {}
       });
 
@@ -318,12 +323,13 @@ export default function OfferLetterModal({
                 >
                   <option value="1">Account</option>
                   <option value="2">Supplier</option>
+                  <option value="3">Credit Card</option>
                 </select>
                 {errors.offerLetterChargeOn && <div className="invalid-feedback">{errors.offerLetterChargeOn}</div>}
               </div>
               {formData.offerLetterChargeOn === '1' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Account <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Account <span className="text-danger">*</span></label>
                   <select
                     name="offerLetterChargeAccount"
                     className={`form-select ${errors.offerLetterChargeAccount ? 'is-invalid' : ''}`}
@@ -342,7 +348,7 @@ export default function OfferLetterModal({
               )}
               {formData.offerLetterChargeOn === '2' && (
                 <div className="col-md-12 mb-3">
-                  <label className="form-label">Charge Supplier <span className="text-danger">*</span></label>
+                  <label className="form-label">Select Supplier <span className="text-danger">*</span></label>
                   <select
                     name="offerLetterChargeSupplier"
                     className={`form-select ${errors.offerLetterChargeSupplier ? 'is-invalid' : ''}`}
@@ -357,6 +363,25 @@ export default function OfferLetterModal({
                     ))}
                   </select>
                   {errors.offerLetterChargeSupplier && <div className="invalid-feedback">{errors.offerLetterChargeSupplier}</div>}
+                </div>
+              )}
+              {formData.offerLetterChargeOn === '3' && (
+                <div className="col-md-12 mb-3">
+                  <label className="form-label">💳 Select Credit Card <span className="text-danger">*</span></label>
+                  <select
+                    name="offerLetterChargeAccount"
+                    className={`form-select ${errors.offerLetterChargeAccount ? 'is-invalid' : ''}`}
+                    value={formData.offerLetterChargeAccount}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Credit Card</option>
+                    {creditCards.map((card) => (
+                      <option key={card.account_ID} value={card.account_ID}>
+                        {card.display_name || `💳 ${card.account_Name}`}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.offerLetterChargeAccount && <div className="invalid-feedback">{errors.offerLetterChargeAccount}</div>}
                 </div>
               )}
             </div>
