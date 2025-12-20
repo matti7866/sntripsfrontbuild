@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import creditCardService from '../../services/creditCardService';
@@ -328,17 +328,24 @@ export default function CreditCards() {
     return 'danger';
   };
 
-  // Filter credit cards
-  const filteredCards = creditCards.filter(card =>
-    card.account_Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    card.bank_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    card.card_holder_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter credit cards - memoized to prevent recalculation on every render
+  const filteredCards = useMemo(() => {
+    if (!searchTerm) return creditCards;
+    const lowerSearch = searchTerm.toLowerCase();
+    return creditCards.filter(card =>
+      card.account_Name.toLowerCase().includes(lowerSearch) ||
+      card.bank_name?.toLowerCase().includes(lowerSearch) ||
+      card.card_holder_name?.toLowerCase().includes(lowerSearch)
+    );
+  }, [creditCards, searchTerm]);
 
-  // Calculate totals
-  const totalCreditLimit = creditCards.reduce((sum, card) => sum + (card.credit_limit || 0), 0);
-  const totalBalance = creditCards.reduce((sum, card) => sum + (card.current_balance || 0), 0);
-  const totalAvailable = totalCreditLimit - totalBalance;
+  // Calculate totals - memoized to prevent recalculation on every render
+  const { totalCreditLimit, totalBalance, totalAvailable } = useMemo(() => {
+    const limit = creditCards.reduce((sum, card) => sum + (card.credit_limit || 0), 0);
+    const balance = creditCards.reduce((sum, card) => sum + (card.current_balance || 0), 0);
+    const available = limit - balance;
+    return { totalCreditLimit: limit, totalBalance: balance, totalAvailable: available };
+  }, [creditCards]);
 
   return (
     <div className="credit-cards-container">
@@ -449,57 +456,65 @@ export default function CreditCards() {
             const utilizationColor = getUtilizationColor(utilization);
 
             return (
-              <div key={card.account_ID} className={`credit-card-item ${!card.is_active ? 'inactive' : ''}`}>
-                <div className="card-header">
-                  <div className="card-type">
-                    <span className="card-icon">{getCardTypeIcon(card.card_type)}</span>
-                    <span className="card-type-name">{card.card_type || 'Credit Card'}</span>
+              <div 
+                key={card.account_ID} 
+                className={`credit-card-item landscape ${!card.is_active ? 'inactive' : ''}`}
+                data-card-type={card.card_type || 'Default'}
+              >
+                <div className="card-left-section">
+                  <div className="card-header-landscape">
+                    <div className="card-type">
+                      <span className="card-icon">{getCardTypeIcon(card.card_type)}</span>
+                      <span className="card-type-name">{card.card_type || 'Credit Card'}</span>
+                    </div>
+                    {!card.is_active && <span className="badge badge-secondary">Inactive</span>}
                   </div>
-                  {!card.is_active && <span className="badge badge-secondary">Inactive</span>}
+                  
+                  <div className="card-main-info">
+                    <h3 className="card-name">{card.account_Name}</h3>
+                    <p className="bank-name">
+                      <i className="fa fa-university me-2"></i>
+                      {card.bank_name || 'N/A'}
+                    </p>
+                    
+                    <div className="card-number">
+                      <span>•••• •••• •••• {card.accountNum || '****'}</span>
+                    </div>
+
+                    <div className="card-details-row">
+                      <div className="card-holder">
+                        <i className="fa fa-user me-2"></i>
+                        {card.card_holder_name || 'N/A'}
+                      </div>
+                      {card.expiry_date && (
+                        <div className="card-expiry">
+                          <i className="fa fa-calendar me-2"></i>
+                          {card.expiry_date}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                <div className="card-body">
-                  <h3 className="card-name">{card.account_Name}</h3>
-                  <p className="bank-name">
-                    <i className="fa fa-university me-2"></i>
-                    {card.bank_name || 'N/A'}
-                  </p>
-                  
-                  <div className="card-number">
-                    <span>•••• •••• •••• {card.accountNum || '****'}</span>
-                  </div>
-
-                  <div className="card-holder">
-                    <i className="fa fa-user me-2"></i>
-                    {card.card_holder_name || 'N/A'}
-                  </div>
-
-                  {card.expiry_date && (
-                    <div className="card-expiry">
-                      <i className="fa fa-calendar me-2"></i>
-                      Expires: {card.expiry_date}
+                <div className="card-right-section">
+                  <div className="card-financials-landscape">
+                    <div className="financial-item">
+                      <span className="financial-label">Credit Limit</span>
+                      <strong className="financial-value">{card.credit_limit?.toLocaleString() || 0} {card.currencyName || ''}</strong>
                     </div>
-                  )}
-
-                  {/* Credit Limit and Balance */}
-                  <div className="card-financials">
-                    <div className="financial-row">
-                      <span>Credit Limit:</span>
-                      <strong>{card.credit_limit?.toLocaleString() || 0} {card.currencyName || ''}</strong>
+                    <div className="financial-item">
+                      <span className="financial-label">Balance</span>
+                      <strong className="financial-value text-danger">{card.current_balance?.toLocaleString() || 0} {card.currencyName || ''}</strong>
                     </div>
-                    <div className="financial-row">
-                      <span>Current Balance:</span>
-                      <strong className="text-danger">{card.current_balance?.toLocaleString() || 0} {card.currencyName || ''}</strong>
-                    </div>
-                    <div className="financial-row">
-                      <span>Available:</span>
-                      <strong className="text-success">{card.available_credit?.toLocaleString() || card.credit_limit || 0} {card.currencyName || ''}</strong>
+                    <div className="financial-item">
+                      <span className="financial-label">Available</span>
+                      <strong className="financial-value text-success">{card.available_credit?.toLocaleString() || card.credit_limit || 0} {card.currencyName || ''}</strong>
                     </div>
                   </div>
 
                   {/* Utilization Bar */}
                   {card.credit_limit && card.credit_limit > 0 && (
-                    <div className="utilization-section">
+                    <div className="utilization-section-landscape">
                       <div className="utilization-label">
                         <span>Utilization</span>
                         <span className={`text-${utilizationColor}`}>{utilization.toFixed(1)}%</span>
@@ -515,7 +530,7 @@ export default function CreditCards() {
 
                   {/* Billing Info */}
                   {(card.billing_cycle_day || card.payment_due_day) && (
-                    <div className="billing-info">
+                    <div className="billing-info-landscape">
                       {card.billing_cycle_day && (
                         <span className="info-badge">
                           <i className="fa fa-calendar-alt me-1"></i>
@@ -530,44 +545,44 @@ export default function CreditCards() {
                       )}
                     </div>
                   )}
-                </div>
 
-                <div className="card-footer">
-                  <button
-                    className="btn btn-sm btn-success"
-                    onClick={() => openTransactionModal(card, 'debit')}
-                    title="Add Expense"
-                  >
-                    <i className="fa fa-minus-circle"></i>
-                  </button>
-                  <button
-                    className="btn btn-sm btn-info"
-                    onClick={() => openTransactionModal(card, 'credit')}
-                    title="Add Payment"
-                  >
-                    <i className="fa fa-plus-circle"></i>
-                  </button>
-                  <button
-                    className="btn btn-sm btn-secondary"
-                    onClick={() => handleViewTransactions(card)}
-                    title="View Transactions"
-                  >
-                    <i className="fa fa-list"></i>
-                  </button>
-                  <button
-                    className="btn btn-sm btn-primary"
-                    onClick={() => handleEditClick(card)}
-                    title="Edit"
-                  >
-                    <i className="fa fa-edit"></i>
-                  </button>
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={() => handleDelete(card.account_ID)}
-                    title="Delete"
-                  >
-                    <i className="fa fa-trash"></i>
-                  </button>
+                  <div className="card-footer-landscape">
+                    <button
+                      className="btn btn-sm btn-success"
+                      onClick={() => openTransactionModal(card, 'debit')}
+                      title="Add Expense"
+                    >
+                      <i className="fa fa-minus-circle"></i>
+                    </button>
+                    <button
+                      className="btn btn-sm btn-info"
+                      onClick={() => openTransactionModal(card, 'credit')}
+                      title="Add Payment"
+                    >
+                      <i className="fa fa-plus-circle"></i>
+                    </button>
+                    <button
+                      className="btn btn-sm btn-secondary"
+                      onClick={() => handleViewTransactions(card)}
+                      title="View Transactions"
+                    >
+                      <i className="fa fa-list"></i>
+                    </button>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={() => handleEditClick(card)}
+                      title="Edit"
+                    >
+                      <i className="fa fa-edit"></i>
+                    </button>
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => handleDelete(card.account_ID)}
+                      title="Delete"
+                    >
+                      <i className="fa fa-trash"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             );
