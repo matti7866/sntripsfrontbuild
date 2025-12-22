@@ -7,16 +7,21 @@ import Button from '../../components/common/Button';
 import StepWorkflow from '../../components/residence/StepWorkflow';
 import ResidenceInfo from '../../components/residence/ResidenceInfo';
 import CancelResidenceModal from '../../components/residence/CancelResidenceModal';
+import { useAuth } from '../../context/AuthContext';
 import './ResidenceDetail.css';
 
 export default function ResidenceDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [residence, setResidence] = useState<Residence | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCancelModal, setShowCancelModal] = useState(false);
+
+  // Check if current user can edit workflow (only user ID 1)
+  const canEditWorkflow = user?.staff_id === 1;
 
   useEffect(() => {
     if (id) {
@@ -170,25 +175,27 @@ export default function ResidenceDetail() {
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className={`grid grid-cols-1 ${canEditWorkflow ? 'lg:grid-cols-3' : ''} gap-6`}>
         {/* Left Column - Residence Info */}
-        <div className="lg:col-span-1">
+        <div className={canEditWorkflow ? 'lg:col-span-1' : ''}>
           <ResidenceInfo residence={residence} onUpdate={loadResidence} />
         </div>
 
-        {/* Right Column - Workflow */}
-        <div className="lg:col-span-2">
-          <div className="card p-6" style={{ backgroundColor: '#2d353c', border: '1px solid #495057' }}>
-            <h2 className="text-xl font-bold mb-6" style={{ color: '#ffffff' }}>
-              10-Step Workflow Process
-            </h2>
-            <StepWorkflow 
-              residence={residence} 
-              onStepUpdate={handleStepUpdate}
-              disabled={residence.cancelled === 1 || residence.hold === 1}
-            />
+        {/* Right Column - Workflow (Only visible for User ID 1) */}
+        {canEditWorkflow && (
+          <div className="lg:col-span-2">
+            <div className="card p-6" style={{ backgroundColor: '#2d353c', border: '1px solid #495057' }}>
+              <h2 className="text-xl font-bold mb-6" style={{ color: '#ffffff' }}>
+                10-Step Workflow Process
+              </h2>
+              <StepWorkflow 
+                residence={residence} 
+                onStepUpdate={handleStepUpdate}
+                disabled={residence.cancelled === 1 || residence.hold === 1}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Cancel Modal */}
