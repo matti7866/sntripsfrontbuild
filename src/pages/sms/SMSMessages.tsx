@@ -105,6 +105,12 @@ export default function SMSMessages() {
     
     try {
       const data = await smsService.getMessages(selectedDevice, thread.thread_id);
+      
+      // Sort messages by timestamp (oldest first) to display chronologically
+      if (data && data.thread && Array.isArray(data.thread)) {
+        data.thread.sort((a: any, b: any) => a.timestamp - b.timestamp);
+      }
+      
       setThreadMessages(data);
     } catch (error) {
       console.error('Error loading thread messages:', error);
