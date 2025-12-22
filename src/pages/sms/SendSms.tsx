@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Panel, PanelHeader, PanelBody } from '../../coloradmin-components/panel/panel';
-import { smsService } from '../../services/smsService';
+import smsService from '../../services/smsService';
 import './SendSms.css';
 
 interface SmsRequest {
