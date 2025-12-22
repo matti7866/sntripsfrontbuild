@@ -18,6 +18,7 @@ export default function Expenses() {
     expense_amount: undefined,
     currency_id: undefined,
     account_id: undefined,
+    charge_on: '1', // Default to Account
     expense_remark: '',
     amount_type: 'fixed'
   });
@@ -176,6 +177,7 @@ export default function Expenses() {
         expense_amount: undefined,
         currency_id: undefined,
         account_id: undefined,
+        charge_on: '1',
         expense_remark: '',
         amount_type: 'fixed'
       });
@@ -467,11 +469,20 @@ export default function Expenses() {
   const handleEditExpense = async (expense: Expense) => {
     try {
       const expenseData = await expenseService.getExpense(expense.expense_id);
+      
+      // Determine if the account is a credit card
+      let charge_on = '1'; // Default to Account
+      if (dropdowns?.creditCards && expenseData.accountID) {
+        const isCreditCard = dropdowns.creditCards.some(cc => cc.account_ID === expenseData.accountID);
+        charge_on = isCreditCard ? '3' : '1';
+      }
+      
       setEditingExpense({
         ...expense,
         expense_type_id: expenseData.expense_type_id,
         CurrencyID: expenseData.CurrencyID,
-        accountID: expenseData.accountID
+        accountID: expenseData.accountID,
+        charge_on: charge_on
       } as any);
       setShowUpdateExpenseModal(true);
     } catch (error: any) {
@@ -544,7 +555,8 @@ export default function Expenses() {
       expense_amount: parseFloat(editingExpense.expense_amount),
       currency_id: editingExpense.CurrencyID as any,
       account_id: editingExpense.accountID as any,
-      expense_remark: editingExpense.expense_remark
+      expense_remark: editingExpense.expense_remark,
+      charge_on: (editingExpense as any).charge_on || '1'
     };
     
     updateExpenseMutation.mutate(updateData);
@@ -810,24 +822,68 @@ export default function Expenses() {
                   
                   <div className="form-row">
                     <div className="form-group">
-                      <label htmlFor="addaccount_id">
-                        <i className="fa fa-paypal me-2"></i>Account:
+                      <label htmlFor="charge_on">
+                        <i className="fa fa-exchange me-2"></i>Charge On:
                       </label>
-                      <SearchableSelect
-                        options={[
-                          { value: '-1', label: '--Account--' },
-                          ...(dropdowns?.accounts?.map(a => ({
-                            value: String(a.account_ID),
-                            label: a.account_Name
-                          })) || [])
-                        ]}
-                        value={formData.account_id ? String(formData.account_id) : '-1'}
-                        onChange={(value) => setFormData({ ...formData, account_id: value === '-1' ? undefined : Number(value) })}
-                        placeholder="Select Account"
+                      <select
+                        id="charge_on"
+                        name="charge_on"
+                        className="form-control"
+                        value={formData.charge_on || '1'}
+                        onChange={(e) => setFormData({ ...formData, charge_on: e.target.value, account_id: undefined })}
                         required
-                      />
+                      >
+                        <option value="1">Account</option>
+                        <option value="3">Credit Card</option>
+                      </select>
                     </div>
                   </div>
+                  
+                  {formData.charge_on === '1' && (
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label htmlFor="addaccount_id">
+                          <i className="fa fa-paypal me-2"></i>Account:
+                        </label>
+                        <SearchableSelect
+                          options={[
+                            { value: '-1', label: '--Account--' },
+                            ...(dropdowns?.accounts?.map(a => ({
+                              value: String(a.account_ID),
+                              label: a.account_Name
+                            })) || [])
+                          ]}
+                          value={formData.account_id ? String(formData.account_id) : '-1'}
+                          onChange={(value) => setFormData({ ...formData, account_id: value === '-1' ? undefined : Number(value) })}
+                          placeholder="Select Account"
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  {formData.charge_on === '3' && (
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label htmlFor="addcreditcard_id">
+                          <i className="fa fa-credit-card me-2"></i>💳 Credit Card:
+                        </label>
+                        <SearchableSelect
+                          options={[
+                            { value: '-1', label: '--Credit Card--' },
+                            ...(dropdowns?.creditCards?.map(c => ({
+                              value: String(c.account_ID),
+                              label: c.display_name || `💳 ${c.account_Name}`
+                            })) || [])
+                          ]}
+                          value={formData.account_id ? String(formData.account_id) : '-1'}
+                          onChange={(value) => setFormData({ ...formData, account_id: value === '-1' ? undefined : Number(value) })}
+                          placeholder="Select Credit Card"
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="form-row">
                     <div className="form-group">
@@ -1288,22 +1344,61 @@ export default function Expenses() {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="update_account_id" className="form-label">Account *</label>
-                    <SearchableSelect
-                      options={[
-                        { value: '', label: '--Select Account--' },
-                        ...(dropdowns?.accounts?.map(a => ({
-                          value: String(a.account_ID),
-                          label: a.account_Name
-                        })) || [])
-                      ]}
-                      value={editingExpense.accountID ? String(editingExpense.accountID) : ''}
-                      onChange={(value) => setEditingExpense({ ...editingExpense, accountID: value ? Number(value) : undefined } as any)}
-                      placeholder="Select Account"
+                    <label htmlFor="update_charge_on" className="form-label">Charge On *</label>
+                    <select
+                      id="update_charge_on"
+                      className="form-control"
+                      value={(editingExpense as any).charge_on || '1'}
+                      onChange={(e) => setEditingExpense({ ...editingExpense, charge_on: e.target.value, accountID: undefined } as any)}
                       required
-                    />
+                    >
+                      <option value="1">Account</option>
+                      <option value="3">Credit Card</option>
+                    </select>
                   </div>
                 </div>
+                
+                {((editingExpense as any).charge_on === '1' || !(editingExpense as any).charge_on) && (
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="update_account_id" className="form-label">Account *</label>
+                      <SearchableSelect
+                        options={[
+                          { value: '', label: '--Select Account--' },
+                          ...(dropdowns?.accounts?.map(a => ({
+                            value: String(a.account_ID),
+                            label: a.account_Name
+                          })) || [])
+                        ]}
+                        value={editingExpense.accountID ? String(editingExpense.accountID) : ''}
+                        onChange={(value) => setEditingExpense({ ...editingExpense, accountID: value ? Number(value) : undefined } as any)}
+                        placeholder="Select Account"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {(editingExpense as any).charge_on === '3' && (
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="update_creditcard_id" className="form-label">💳 Credit Card *</label>
+                      <SearchableSelect
+                        options={[
+                          { value: '', label: '--Select Credit Card--' },
+                          ...(dropdowns?.creditCards?.map(c => ({
+                            value: String(c.account_ID),
+                            label: c.display_name || `💳 ${c.account_Name}`
+                          })) || [])
+                        ]}
+                        value={editingExpense.accountID ? String(editingExpense.accountID) : ''}
+                        onChange={(value) => setEditingExpense({ ...editingExpense, accountID: value ? Number(value) : undefined } as any)}
+                        placeholder="Select Credit Card"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="form-group">
                   <label htmlFor="update_remarks" className="form-label">Remarks *</label>
                   <textarea

@@ -22,6 +22,7 @@ const expenseService = {
     formData.append('expense_amount', String(data.expense_amount));
     formData.append('currency_id', String(data.currency_id));
     formData.append('account_id', String(data.account_id));
+    formData.append('charge_on', data.charge_on || '1'); // Default to Account
     formData.append('expense_remark', data.expense_remark);
     formData.append('amount_type', data.amount_type || 'fixed');
     
@@ -101,10 +102,12 @@ const expenseService = {
     currency_id: number;
     account_id: number;
     expense_remark: string;
+    charge_on?: string;
   }): Promise<{ success: boolean; message: string }> {
     const response = await apiClient.post('/expense/expenses.php', {
       action: 'updateExpense',
-      ...data
+      ...data,
+      charge_on: data.charge_on || '1'
     });
     
     return {

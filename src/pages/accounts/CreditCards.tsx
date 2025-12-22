@@ -1013,7 +1013,7 @@ export default function CreditCards() {
               <div className="modal-body">
                 <div className="alert alert-info" style={{ padding: '15px', marginBottom: '20px', background: '#e3f2fd', borderRadius: '8px' }}>
                   <strong>Card:</strong> {selectedCard.account_Name}<br />
-                  <strong>Type:</strong> {transactionType === 'debit' ? 'Expense (increases balance)' : 'Payment (decreases balance)'}
+                  <strong>Type:</strong> {transactionType === 'debit' ? 'Expense (increases amount owed)' : 'Payment (reduces amount owed)'}
                 </div>
 
                 <div className="form-row">
@@ -1144,20 +1144,61 @@ export default function CreditCards() {
                   <p>No transactions found</p>
                 </div>
               ) : (
-                <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                  <table className="table table-striped" style={{ width: '100%' }}>
-                    <thead style={{ position: 'sticky', top: 0, background: 'white', zIndex: 1 }}>
-                      <tr>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Category</th>
-                        <th>Merchant</th>
-                        <th>Description</th>
-                        <th className="text-end">Amount</th>
-                        <th className="text-end">Balance</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
+                <>
+                  {/* Current Balance Summary */}
+                  <div style={{ 
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                    padding: '20px', 
+                    borderRadius: '10px', 
+                    marginBottom: '20px',
+                    color: 'white'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '5px' }}>Current Balance</div>
+                        <div style={{ fontSize: '32px', fontWeight: 'bold' }}>
+                          {selectedCard.current_balance?.toLocaleString() || '0.00'} {selectedCard.currencyName}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '14px', opacity: 0.9, marginBottom: '5px' }}>Available Credit</div>
+                        <div style={{ fontSize: '24px', fontWeight: 'bold' }}>
+                          {selectedCard.available_credit?.toLocaleString() || selectedCard.credit_limit?.toLocaleString() || '0.00'} {selectedCard.currencyName}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ 
+                      marginTop: '15px', 
+                      paddingTop: '15px', 
+                      borderTop: '1px solid rgba(255,255,255,0.3)',
+                      fontSize: '13px',
+                      opacity: 0.9
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Credit Limit:</span>
+                        <span style={{ fontWeight: '600' }}>{selectedCard.credit_limit?.toLocaleString() || '0.00'} {selectedCard.currencyName}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+                        <span>Total Transactions:</span>
+                        <span style={{ fontWeight: '600' }}>{transactions.length}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                    <table className="table table-striped" style={{ width: '100%' }}>
+                      <thead style={{ position: 'sticky', top: 0, background: 'white', zIndex: 1 }}>
+                        <tr>
+                          <th>Date</th>
+                          <th>Type</th>
+                          <th>Category</th>
+                          <th>Merchant</th>
+                          <th>Description</th>
+                          <th className="text-end">Amount</th>
+                          <th className="text-end">Running Balance</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
                     <tbody>
                       {transactions.map((txn) => (
                         <tr key={txn.transaction_id}>
@@ -1176,7 +1217,7 @@ export default function CreditCards() {
                           <td style={{ fontSize: '13px' }}>{txn.merchant || '-'}</td>
                           <td style={{ fontSize: '13px' }}>{txn.description || '-'}</td>
                           <td className={`text-end ${txn.transaction_type === 'debit' || txn.transaction_type === 'fee' ? 'text-danger' : 'text-success'}`} style={{ fontWeight: '600', fontSize: '14px' }}>
-                            {txn.transaction_type === 'debit' || txn.transaction_type === 'fee' ? '+' : '-'}
+                            {txn.transaction_type === 'debit' || txn.transaction_type === 'fee' ? '-' : '+'}
                             {parseFloat(txn.amount).toFixed(2)}
                           </td>
                           <td className="text-end" style={{ fontWeight: '600', fontSize: '14px' }}>
@@ -1210,6 +1251,7 @@ export default function CreditCards() {
                     </tbody>
                   </table>
                 </div>
+                </>
               )}
             </div>
             <div className="modal-footer">

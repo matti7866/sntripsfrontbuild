@@ -47,6 +47,7 @@ export interface SupplierDropdownData {
   suppliers: { supp_id: number; supp_name: string }[];
   currencies: { currencyID: number; currencyName: string }[];
   accounts: { account_ID: number; account_Name: string }[];
+  creditCards?: { account_ID: number; account_Name: string; card_holder_name?: string; card_type?: string; bank_name?: string; accountNum?: string; display_name?: string }[];
 }
 
 export interface SupplierPaymentDetails {

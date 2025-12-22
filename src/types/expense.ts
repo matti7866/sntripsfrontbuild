@@ -26,6 +26,7 @@ export interface CreateExpenseRequest {
   expense_amount: number;
   currency_id: number;
   account_id: number;
+  charge_on?: string;  // '1' for Account, '3' for Credit Card
   expense_remark: string;
   amount_type?: string;
   expense_document?: File;
