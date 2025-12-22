@@ -171,6 +171,13 @@ export default function ColorAdminHeader() {
           </div>
         </div>
 
+        {/* SMS Icon */}
+        <div className="navbar-item">
+          <Link to="/sms" className="navbar-link icon" title="SMS Messages">
+            <i className="fa fa-comment-dots"></i>
+          </Link>
+        </div>
+
         {/* User Profile Dropdown */}
         <div className="navbar-item navbar-user dropdown">
           <a 

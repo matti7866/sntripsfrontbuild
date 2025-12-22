@@ -1,0 +1,270 @@
+.sms-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.sms-icon-button {
+  position: relative;
+  padding: 8px 12px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.sms-icon-button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.sms-icon-button .badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #dc3545;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 18px;
+  text-align: center;
+}
+
+.sms-dropdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 1000;
+}
+
+.sms-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  width: 380px;
+  max-height: 500px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+}
+
+.sms-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e9ecef;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px 8px 0 0;
+}
+
+.sms-dropdown-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+}
+
+.sms-dropdown-header .close-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.sms-dropdown-header .close-btn:hover {
+  opacity: 1;
+}
+
+.sms-dropdown-body {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.sms-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  gap: 10px;
+}
+
+.sms-loading i {
+  font-size: 24px;
+}
+
+.sms-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #adb5bd;
+}
+
+.sms-empty i {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.sms-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.sms-list {
+  padding: 0;
+}
+
+.sms-item {
+  display: flex;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sms-item:hover {
+  background: #f8f9fa;
+}
+
+.sms-item:last-child {
+  border-bottom: none;
+}
+
+.sms-item-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.sms-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.sms-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.sms-contact {
+  font-size: 14px;
+  font-weight: 600;
+  color: #212529;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sms-time {
+  font-size: 11px;
+  color: #6c757d;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.sms-item-message {
+  font-size: 13px;
+  color: #495057;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sms-direction {
+  font-size: 12px;
+}
+
+.sms-phone-number {
+  font-size: 11px;
+  color: #868e96;
+  margin-top: 2px;
+}
+
+.sms-dropdown-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #e9ecef;
+  background: #f8f9fa;
+  border-radius: 0 0 8px 8px;
+}
+
+.btn-view-all {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-view-all:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-view-all:active {
+  transform: translateY(0);
+}
+
+/* Scrollbar styling */
+.sms-dropdown-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sms-dropdown-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.sms-dropdown-body::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.sms-dropdown-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  .sms-dropdown-menu {
+    width: 320px;
+    right: -20px;
+  }
+}
+

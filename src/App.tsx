@@ -77,6 +77,7 @@ import Settings from './pages/settings/Settings';
 import AssetList from './pages/assets/AssetList';
 import CreateAsset from './pages/assets/CreateAsset';
 import SendSms from './pages/sms/SendSms';
+import SMSMessages from './pages/sms/SMSMessages';
 import WalletReceipt from './pages/payment/WalletReceipt';
 
 function App() {
@@ -231,6 +232,7 @@ function App() {
               <Route path="currency" element={<Currency />} />
               
               {/* SMS */}
+              <Route path="sms" element={<SMSMessages />} />
               <Route path="sms/send" element={<SendSms />} />
               
               {/* Notes */}
