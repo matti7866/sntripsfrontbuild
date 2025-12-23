@@ -33,7 +33,6 @@ const fileTypeNames: Record<number, string> = {
   7: 'Medical',
   8: 'Emirates ID',
   9: 'Visa Stamping',
-  10: 'Contract Submission',
   11: 'Photo',
   12: 'ID Front',
   13: 'ID Back',
@@ -49,7 +48,6 @@ const stepToFileType: Record<string, number> = {
   '6': 7,   // Medical
   '7': 8,   // Emirates ID
   '8': 9,   // Visa Stamping
-  '9': 10,  // Contract Submission
   '0': 1,   // Initial Documents (Passport)
 };
 
@@ -250,7 +248,6 @@ const AttachmentsModal: React.FC<AttachmentsModalProps> = ({
                   <option value="6">Medical</option>
                   <option value="7">Emirates ID</option>
                   <option value="8">Visa Stamping</option>
-                  <option value="9">Contract Submission</option>
                 </select>
               </div>
               <div className="col-md-6">

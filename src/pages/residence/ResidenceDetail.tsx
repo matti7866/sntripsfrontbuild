@@ -136,7 +136,7 @@ export default function ResidenceDetail() {
             </div>
           </div>
           <div className="flex gap-2">
-            {!residence.cancelled && !residence.hold && residence.completedStep < 10 && (
+            {!residence.cancelled && !residence.hold && residence.completedStep < 9 && (
               <Button variant="danger" onClick={() => setShowCancelModal(true)}>
                 <i className="fa fa-times-circle mr-2"></i>
                 Cancel Residence
@@ -161,14 +161,14 @@ export default function ResidenceDetail() {
               ON HOLD
             </span>
           )}
-          {residence.completedStep === 10 && !residence.cancelled && (
+          {residence.completedStep === 9 && !residence.cancelled && (
             <span className="px-3 py-1 text-sm font-semibold rounded bg-green-600 text-white">
               COMPLETED
             </span>
           )}
-          {residence.completedStep < 10 && !residence.cancelled && !residence.hold && (
+          {residence.completedStep < 9 && !residence.cancelled && !residence.hold && (
             <span className="px-3 py-1 text-sm font-semibold rounded bg-blue-600 text-white">
-              IN PROGRESS - STEP {residence.completedStep}/10
+              IN PROGRESS - STEP {residence.completedStep}/9
             </span>
           )}
         </div>

@@ -91,10 +91,10 @@ export default function StepCard({ step, residence, isExpanded, onToggle, onUpda
       currencyType: 'visaStamping'
     },
     9: {
-      // Step 9: Contract Submission (matches old PHP Step 10)
-      fields: ['emiratesIDNumber'],
+      // Step 9: Completed (EID Delivered)
+      fields: ['eid_delivered', 'eid_delivered_datetime'],
       chargedType: null,
-      fileField: 'contractSubmissionFile',
+      fileField: null,
       currencyType: null
     }
   };
@@ -1089,7 +1089,7 @@ export default function StepCard({ step, residence, isExpanded, onToggle, onUpda
                   </>
                 )}
 
-                {/* Step 9: Contract Submission */}
+                {/* Step 9: Completed */}
                 {step.number === 9 && (
                   <>
                     <div>

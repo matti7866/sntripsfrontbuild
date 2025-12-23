@@ -178,22 +178,7 @@ export default function StepWorkflow({ residence, onStepUpdate, disabled }: Step
     },
     {
       number: 9,
-      title: 'EID Received',
-      icon: 'fa-inbox',
-      fields: {
-        received: residence.eid_received,
-        receiveDate: residence.eid_received_date,
-        expiry: residence.eid_expiry,
-      },
-      fieldNames: {
-        received: 'eid_received',
-        receiveDate: 'eid_received_date',
-        expiry: 'eid_expiry',
-      }
-    },
-    {
-      number: 10,
-      title: 'EID Delivered',
+      title: 'Completed',
       icon: 'fa-check-circle',
       fields: {
         delivered: residence.eid_delivered,
@@ -213,14 +198,14 @@ export default function StepWorkflow({ residence, onStepUpdate, disabled }: Step
         <div className="flex justify-between mb-2">
           <span className="text-sm" style={{ color: '#9ca3af' }}>Overall Progress</span>
           <span className="text-sm font-bold" style={{ color: '#ffffff' }}>
-            {Math.round((residence.completedStep / 10) * 100)}%
+            {Math.round((residence.completedStep / 9) * 100)}%
           </span>
         </div>
         <div className="w-full rounded-full h-3 overflow-hidden" style={{ backgroundColor: '#374151' }}>
           <div
             className="h-full transition-all duration-500 rounded-full"
             style={{ 
-              width: `${(residence.completedStep / 10) * 100}%`,
+              width: `${(residence.completedStep / 9) * 100}%`,
               background: 'linear-gradient(to right, #dc2626, #991b1b)'
             }}
           />

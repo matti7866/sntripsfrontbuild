@@ -105,11 +105,11 @@ export default function ResidenceCard({
   const totalRemaining = totalAmount - totalPaid;
 
   // Calculate completion percentage
-  const completionPercentage = (residence.completedStep / 10) * 100;
+  const completionPercentage = (residence.completedStep / 9) * 100;
 
   // Determine status badge - match old app logic exactly
   const getStatusBadge = () => {
-    if (residence.completedStep === 10) {
+    if (residence.completedStep === 9) {
       return { class: 'bg-success', text: 'Completed' };
     } else if (totalPaid >= salePrice) {
       return { class: 'bg-warning', text: 'Pending Processing (Payment Complete)' };
@@ -338,7 +338,7 @@ export default function ResidenceCard({
                       className="btn btn-info"
                       onClick={() => onContinue(residence)}
                     >
-                      <i className={`fa fa-${residence.completedStep === 10 ? 'eye' : 'arrow-right'}`}></i> {residence.completedStep === 10 ? 'View' : 'Continue'}
+                      <i className={`fa fa-${residence.completedStep === 9 ? 'eye' : 'arrow-right'}`}></i> {residence.completedStep === 9 ? 'View' : 'Continue'}
                     </button>
                     <button 
                       className="btn btn-success"
@@ -477,7 +477,7 @@ export default function ResidenceCard({
                   </button>
 
                   {/* Renew button - conditional */}
-                  {residence.current_status === 'Active' && residence.completedStep === 10 && onRenew && (
+                  {residence.current_status === 'Active' && residence.completedStep === 9 && onRenew && (
                     <button
                       className="btn btn-primary"
                       type="button"

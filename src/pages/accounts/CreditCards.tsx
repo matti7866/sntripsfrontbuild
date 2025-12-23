@@ -1199,7 +1199,7 @@ export default function CreditCards() {
                           <th>Actions</th>
                         </tr>
                       </thead>
-                    <tbody>
+                      <tbody>
                       {transactions.map((txn) => (
                         <tr key={txn.transaction_id}>
                           <td style={{ fontSize: '13px' }}>
@@ -1248,9 +1248,9 @@ export default function CreditCards() {
                           </td>
                         </tr>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </tbody>
+                    </table>
+                  </div>
                 </>
               )}
             </div>

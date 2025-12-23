@@ -168,11 +168,11 @@ export default function EstablishmentEmployees() {
   };
 
   const getProgressBarColor = (completedStep: number) => {
-    return completedStep === 10 ? 'bg-success' : 'bg-indigo';
+    return completedStep === 9 ? 'bg-success' : 'bg-indigo';
   };
 
   const percentCompleted = (completedStep: number) => {
-    return (completedStep / 10) * 100;
+    return (completedStep / 9) * 100;
   };
 
   const handleExportPDF = () => {

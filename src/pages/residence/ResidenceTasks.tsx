@@ -4,7 +4,7 @@ import residenceService from '../../services/residenceService';
 import Swal from 'sweetalert2';
 import SearchableSelect from '../../components/common/SearchableSelect';
 import OfferLetterModal from '../../components/residence/tasks/OfferLetterModal';
-import { InsuranceModal, LabourCardModal, EVisaModal, ChangeStatusModal, MedicalModal, EmiratesIDModal, VisaStampingModal, ContractSubmissionModal } from '../../components/residence/tasks/StepModals';
+import { InsuranceModal, LabourCardModal, EVisaModal, ChangeStatusModal, MedicalModal, EmiratesIDModal, VisaStampingModal } from '../../components/residence/tasks/StepModals';
 import AttachmentsModal from '../../components/residence/AttachmentsModal';
 import TawjeehModal from '../../components/residence/TawjeehModal';
 import ILOEModal from '../../components/residence/ILOEModal';
@@ -61,8 +61,7 @@ const steps: Record<string, StepInfo> = {
   '6': { name: 'Medical', count: 0, icon: 'fa fa-medkit' },
   '7': { name: 'EID', count: 0, icon: 'fa fa-id-card' },
   '8': { name: 'Visa Stamping', count: 0, icon: 'fas fa-stamp' },
-  '9': { name: 'Contract Submission', count: 0, icon: 'fas fa-file-signature' },
-  '10': { name: 'Completed', count: 0, icon: 'fa fa-hand-holding' },
+  '9': { name: 'Completed', count: 0, icon: 'fa fa-hand-holding' },
 };
 
 export default function ResidenceTasks() {
@@ -110,7 +109,6 @@ export default function ResidenceTasks() {
   const [showMedicalModal, setShowMedicalModal] = useState(false);
   const [showEmiratesIDModal, setShowEmiratesIDModal] = useState(false);
   const [showVisaStampingModal, setShowVisaStampingModal] = useState(false);
-  const [showContractSubmissionModal, setShowContractSubmissionModal] = useState(false);
   const [showTawjeehModal, setShowTawjeehModal] = useState(false);
   const [showILOEModal, setShowILOEModal] = useState(false);
   const [showAttachmentsModal, setShowAttachmentsModal] = useState(false);
@@ -398,12 +396,6 @@ export default function ResidenceTasks() {
           Continue
         </button>
       );
-    } else if (step === '9') {
-      buttons.push(
-        <button key="continue" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowContractSubmissionModal(true); }}>
-          Continue
-        </button>
-      );
     }
 
     if (step === '1a') {
@@ -656,8 +648,7 @@ export default function ResidenceTasks() {
       { value: '6', label: '6 - Medical', completedStep: 7, hasTransaction: stepsWithTransactions['6'] },
       { value: '7', label: '7 - Emirates ID', completedStep: 8, hasTransaction: stepsWithTransactions['7'] },
       { value: '8', label: '8 - Visa Stamping', completedStep: 9, hasTransaction: stepsWithTransactions['8'] },
-      { value: '9', label: '9 - Contract Submission', completedStep: 10, hasTransaction: false },
-      { value: '10', label: '10 - Completed', completedStep: 10, hasTransaction: false }
+      { value: '9', label: '9 - Completed', completedStep: 9, hasTransaction: false }
     ];
 
     // NEW LOGIC: Allow moving to ANY step EXCEPT:
@@ -1378,17 +1369,6 @@ export default function ResidenceTasks() {
           <VisaStampingModal
             isOpen={showVisaStampingModal}
             onClose={() => { setShowVisaStampingModal(false); setSelectedResidenceId(null); }}
-            residenceId={selectedResidenceId}
-            onSuccess={loadTasks}
-            currencies={lookups.currencies}
-            accounts={lookups.accounts}
-            creditCards={lookups.creditCards}
-            suppliers={lookups.suppliers}
-          />
-
-          <ContractSubmissionModal
-            isOpen={showContractSubmissionModal}
-            onClose={() => { setShowContractSubmissionModal(false); setSelectedResidenceId(null); }}
             residenceId={selectedResidenceId}
             onSuccess={loadTasks}
             currencies={lookups.currencies}

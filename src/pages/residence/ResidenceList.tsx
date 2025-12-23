@@ -148,8 +148,8 @@ export default function ResidenceList() {
   const getFilteredResidences = () => {
     let filtered = [...residences];
 
-    // Exclude completed residences (step 10 and above)
-    filtered = filtered.filter(r => r.completedStep < 10);
+    // Exclude completed residences (step 9 and above)
+    filtered = filtered.filter(r => r.completedStep < 9);
 
     // Search filter
     if (search) {
@@ -230,7 +230,7 @@ export default function ResidenceList() {
     if (residence.hold === 1) {
       return <span className="badge bg-warning text-dark">On Hold</span>;
     }
-    if (residence.completedStep === 10) {
+    if (residence.completedStep === 9) {
       return <span className="badge bg-success">Completed</span>;
     }
     return <span className="badge bg-primary">In Progress</span>;

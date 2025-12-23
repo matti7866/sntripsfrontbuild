@@ -944,7 +944,7 @@ function ChargeAssignmentModal({
       if (creditCard) {
         setPaymentType('creditCard');
       } else {
-        setPaymentType('account');
+      setPaymentType('account');
       }
       
       setFormData(prev => ({

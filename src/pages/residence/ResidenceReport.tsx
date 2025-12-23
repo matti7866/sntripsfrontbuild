@@ -303,7 +303,7 @@ export default function ResidenceReport() {
 
   // Get status class and text
   const getStatus = (residence: Residence) => {
-    if (residence.completedStep === 10) {
+    if (residence.completedStep === 9) {
       return { class: 'bg-success', text: 'Completed' };
     } else if ((residence.total_paid || 0) >= residence.sale_price) {
       return { class: 'bg-warning', text: 'Pending Processing (Payment Complete)' };
@@ -314,7 +314,7 @@ export default function ResidenceReport() {
 
   // Calculate completion percentage
   const getCompletionPercentage = (step: number) => {
-    return Math.round((step / 10) * 100);
+    return Math.round((step / 9) * 100);
   };
 
   // Calculate financial totals - matching ResidenceCard and Ledger calculations
