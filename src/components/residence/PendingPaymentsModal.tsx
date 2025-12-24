@@ -19,6 +19,24 @@ interface PendingPaymentsData {
   payments: Payment[];
 }
 
+interface ResidenceCardData {
+  company_name?: string;
+  company_code?: string;
+  category?: string;
+  classification?: string;
+  person_name?: string;
+  designation?: string;
+  expiry_date?: string;
+  employee_classification?: string;
+  permit_number?: string;
+  permit_type?: string;
+  permit_active?: string;
+  payment_number?: string;
+  paycard_number?: string;
+  person_code?: string;
+  transaction_number?: string;
+}
+
 interface PendingPaymentsModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -29,8 +47,11 @@ interface PendingPaymentsModalProps {
 export default function PendingPaymentsModal({ isOpen, onClose, companyNumber, companyName }: PendingPaymentsModalProps) {
   const [loading, setLoading] = useState(false);
   const [paymentsData, setPaymentsData] = useState<PendingPaymentsData | null>(null);
+  const [residenceCardData, setResidenceCardData] = useState<ResidenceCardData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [rcError, setRcError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'pending' | 'residence'>('pending');
 
   // Function to decode HTML entities
   const decodeHtmlEntities = (text: string): string => {
@@ -62,6 +83,7 @@ export default function PendingPaymentsModal({ isOpen, onClose, companyNumber, c
   useEffect(() => {
     if (isOpen && companyNumber) {
       fetchPendingPayments();
+      fetchResidenceCardInfo();
       setSearchQuery(''); // Reset search when modal opens
     }
   }, [isOpen, companyNumber]);
@@ -92,9 +114,52 @@ export default function PendingPaymentsModal({ isOpen, onClose, companyNumber, c
     }
   };
 
+  const fetchResidenceCardInfo = async () => {
+    if (!companyNumber) {
+      setRcError('Company number not available');
+      return;
+    }
+
+    setRcError(null);
+
+    try {
+      const response = await fetch(`https://api.sntrips.com/residence-card-info.php?companyCode=${companyNumber}`);
+      const data = await response.json();
+
+      if (data.status === 'success' && data.data) {
+        setResidenceCardData({
+          company_name: data.data.company_info?.company_name,
+          company_code: data.data.company_info?.company_code,
+          category: data.data.company_info?.category,
+          classification: data.data.company_info?.classification,
+          person_name: data.data.residence_info?.person_name,
+          designation: data.data.residence_info?.designation,
+          expiry_date: data.data.residence_info?.expiry_date,
+          employee_classification: data.data.residence_info?.employee_classification,
+          permit_number: data.data.residence_info?.card_number,
+          permit_type: data.data.residence_info?.card_type,
+          permit_active: data.data.residence_info?.card_active,
+          payment_number: data.data.residence_info?.payment_number,
+          paycard_number: data.data.residence_info?.paycard_number,
+          person_code: data.data.residence_info?.person_code,
+          transaction_number: data.data.residence_info?.transaction_number
+        });
+      } else {
+        setRcError(data.message || 'Failed to fetch residence card information');
+      }
+    } catch (err: any) {
+      console.error('Error fetching residence card info:', err);
+      setRcError('Failed to fetch residence card information. Please try again.');
+    }
+  };
+
   const handleRefresh = () => {
     setSearchQuery(''); // Reset search on refresh
-    fetchPendingPayments();
+    if (activeTab === 'pending') {
+      fetchPendingPayments();
+    } else {
+      fetchResidenceCardInfo();
+    }
   };
 
   if (!isOpen) return null;

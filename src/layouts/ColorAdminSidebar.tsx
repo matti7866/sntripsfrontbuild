@@ -68,6 +68,13 @@ const menuItems: MenuItem[] = [
     ]
   },
   {
+    icon: 'fa fa-building',
+    title: 'MOHRE',
+    children: [
+      { path: '/mohre/inquiry', title: 'MOHRE Inquiry' }
+    ]
+  },
+  {
     icon: 'fa fa-university',
     title: 'Loan',
     children: [

@@ -78,6 +78,7 @@ import AssetList from './pages/assets/AssetList';
 import CreateAsset from './pages/assets/CreateAsset';
 import SendSms from './pages/sms/SendSms';
 import SMSMessages from './pages/sms/SMSMessages';
+import MohreInquiry from './pages/mohre/MohreInquiry';
 import WalletReceipt from './pages/payment/WalletReceipt';
 
 function App() {
@@ -131,6 +132,9 @@ function App() {
               <Route path="residence/cancellation" element={<ResidenceCancellation />} />
               <Route path="residence/replacements" element={<ResidenceReplacements />} />
               <Route path="residence/:id" element={<ResidenceDetail />} />
+              
+              {/* MOHRE */}
+              <Route path="mohre/inquiry" element={<MohreInquiry />} />
               
               {/* Tickets */}
               <Route path="ticket/report" element={<TicketList />} />
