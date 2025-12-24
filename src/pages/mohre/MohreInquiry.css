@@ -236,3 +236,11 @@ strong.text-muted {
   background-color: #007bff !important;
 }
 
+/* Wingdings font for checkmark */
+font[face="Wingdings"] {
+  font-family: Wingdings, "Segoe UI Symbol", Arial, sans-serif !important;
+  color: #dc3545;
+  font-size: 1.2em;
+  margin-left: 4px;
+}
+

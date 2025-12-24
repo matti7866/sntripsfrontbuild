@@ -66,6 +66,62 @@ export default function MohreInquiry() {
     return textarea.value;
   };
 
+  // Function to process paycard number with checkmark
+  const processPaycardNumber = (html: string): string => {
+    // Replace &#xFC; or ü with actual checkmark
+    let processed = html.replace(/&#xFC;/gi, '✓');
+    processed = processed.replace(/ü/g, '✓');
+    // Remove font tags but keep the checkmark
+    processed = processed.replace(/<font[^>]*>/gi, '<span style="color: #dc3545; font-size: 1.2em; margin-left: 4px;">');
+    processed = processed.replace(/<\/font>/gi, '</span>');
+    return processed;
+  };
+
+  // Function to translate Arabic to English
+  const translateArabicToEnglish = (text: string): string => {
+    const translations: { [key: string]: string } = {
+      // Common Arabic terms from MOHRE
+      'نشط': 'Active',
+      'ملغي': 'Cancelled',
+      'ملغى': 'Cancelled',
+      'معلق': 'Suspended',
+      'قيد المعالجة': 'In Progress',
+      'مكتمل': 'Completed',
+      'محدود المهارة': 'Limited Skilled',
+      'ماهر': 'Skilled',
+      'عالي المهارة': 'Highly Skilled',
+      'كبيرة': 'Large',
+      'متوسطة': 'Medium',
+      'صغيرة': 'Small',
+      'تصريح عمل الكتروني جديد': 'NEW ELECTRONIC WORK PERMIT',
+      'اشعار الموافقة المبدئية لتصريح العمل': 'PRE APPROVAL FOR WORK PERMIT',
+      'تجديد تصريح العمل الالكتروني': 'ELECTRONIC WORK PERMIT RENEWAL',
+      'عامل النظافة في المستشفى': 'Hospital Cleaner',
+      'عامل النظافة': 'Cleaner',
+      'موظف مبيعات': 'Sales Officer',
+      'مساعد مبيعات': 'Sales Assistant',
+      'محاسب': 'Accountant',
+      'مهندس': 'Engineer',
+      'طباخ': 'Cook',
+      'طباخ أجنبي': 'Foreign Cook',
+      'نادل': 'Waiter',
+      'سائق': 'Driver',
+      'معلومات تصريح العمل قد تم إرسالها': 'Workpermit information already sent',
+      'تم ارسال بيانات تصريح العمل لرقم الملف': 'Workpermit information has been sent with file number',
+      'و الرقم الموحد': 'And Unified No'
+    };
+
+    let translated = text;
+    
+    // Replace each Arabic term with English
+    Object.keys(translations).forEach(arabic => {
+      const regex = new RegExp(arabic, 'gi');
+      translated = translated.replace(regex, translations[arabic]);
+    });
+
+    return translated;
+  };
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -282,38 +338,33 @@ export default function MohreInquiry() {
           {/* Company Information */}
           {data.company_info && Object.keys(data.company_info).length > 0 && (
             <div className="card mb-4">
-              <div className="card-header bg-info text-white">
-                <h5 className="mb-0">
-                  <i className="fa fa-building me-2"></i>
+              <div className="card-body p-4" style={{ backgroundColor: '#f8f9fa' }}>
+                <h4 className="text-center mb-4" style={{ fontSize: '1.5rem', fontWeight: '500' }}>
                   Company Information
-                </h5>
-              </div>
-              <div className="card-body">
-                <div className="row">
-                  {data.company_info.company_name && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Company Name:</strong>
-                      <p className="mb-0">{decodeHtmlEntities(data.company_info.company_name)}</p>
-                    </div>
-                  )}
-                  {data.company_info.company_code && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Company Code:</strong>
-                      <p className="mb-0">{data.company_info.company_code}</p>
-                    </div>
-                  )}
-                  {data.company_info.category && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Category:</strong>
-                      <p className="mb-0">{decodeHtmlEntities(data.company_info.category)}</p>
-                    </div>
-                  )}
-                  {data.company_info.classification && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Classification:</strong>
-                      <p className="mb-0">{decodeHtmlEntities(data.company_info.classification)}</p>
-                    </div>
-                  )}
+                </h4>
+                <div className="bg-white p-4 rounded">
+                  <div className="row">
+                    {data.company_info.company_name && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Est Name:</strong> {translateArabicToEnglish(decodeHtmlEntities(data.company_info.company_name))}</div>
+                      </div>
+                    )}
+                    {data.company_info.company_code && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Company Code:</strong> {data.company_info.company_code}</div>
+                      </div>
+                    )}
+                    {data.company_info.category && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Category:</strong> {translateArabicToEnglish(decodeHtmlEntities(data.company_info.category))}</div>
+                      </div>
+                    )}
+                    {data.company_info.classification && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Classification:</strong> {translateArabicToEnglish(decodeHtmlEntities(data.company_info.classification))}</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -322,88 +373,75 @@ export default function MohreInquiry() {
           {/* Permit Information */}
           {data.permit_info && Object.keys(data.permit_info).length > 0 && (
             <div className="card mb-4">
-              <div className="card-header bg-success text-white">
-                <h5 className="mb-0">
-                  <i className="fa fa-id-badge me-2"></i>
-                  Electronic Work Permit Details
-                </h5>
-              </div>
-              <div className="card-body">
-                <div className="row">
-                  {data.permit_info.person_name && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Name:</strong>
-                      <p className="mb-0">{decodeHtmlEntities(data.permit_info.person_name)}</p>
-                    </div>
-                  )}
-                  {data.permit_info.designation && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Designation:</strong>
-                      <p className="mb-0">{decodeHtmlEntities(data.permit_info.designation)}</p>
-                    </div>
-                  )}
-                  {data.permit_info.permit_number && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Permit Number:</strong>
-                      <p className="mb-0 fw-bold text-primary">{data.permit_info.permit_number}</p>
-                    </div>
-                  )}
-                  {data.permit_info.permit_type && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Permit Type:</strong>
-                      <p className="mb-0">{decodeHtmlEntities(data.permit_info.permit_type)}</p>
-                    </div>
-                  )}
-                  {data.permit_info.permit_active && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Status:</strong>
-                      <p className="mb-0">
-                        <span className={`badge ${
-                          decodeHtmlEntities(data.permit_info.permit_active).toLowerCase().includes('active') || 
-                          decodeHtmlEntities(data.permit_info.permit_active).includes('نشط') ? 
-                          'bg-success' : 'bg-danger'
-                        }`}>
-                          {decodeHtmlEntities(data.permit_info.permit_active)}
-                        </span>
-                      </p>
-                    </div>
-                  )}
-                  {data.permit_info.expiry_date && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Expiry Date:</strong>
-                      <p className="mb-0">{data.permit_info.expiry_date}</p>
-                    </div>
-                  )}
-                  {data.permit_info.employee_classification && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Employee Classification:</strong>
-                      <p className="mb-0">{decodeHtmlEntities(data.permit_info.employee_classification)}</p>
-                    </div>
-                  )}
-                  {data.permit_info.payment_number && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Payment Number:</strong>
-                      <p className="mb-0">{data.permit_info.payment_number}</p>
-                    </div>
-                  )}
-                  {data.permit_info.paycard_number && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Paycard Number:</strong>
-                      <p className="mb-0">{data.permit_info.paycard_number}</p>
-                    </div>
-                  )}
-                  {data.permit_info.person_code && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Person Code:</strong>
-                      <p className="mb-0">{data.permit_info.person_code}</p>
-                    </div>
-                  )}
-                  {data.permit_info.transaction_number && (
-                    <div className="col-md-6 mb-3">
-                      <strong className="text-muted">Transaction Number:</strong>
-                      <p className="mb-0">{data.permit_info.transaction_number}</p>
-                    </div>
-                  )}
+              <div className="card-body p-4" style={{ backgroundColor: '#f8f9fa' }}>
+                <h4 className="text-center mb-4" style={{ fontSize: '1.5rem', fontWeight: '500' }}>
+                  Electronic Work PermitIn formation
+                </h4>
+                <div className="bg-white p-4 rounded">
+                  <div className="row">
+                    {data.permit_info.person_name && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Name:</strong> {translateArabicToEnglish(decodeHtmlEntities(data.permit_info.person_name))}</div>
+                      </div>
+                    )}
+                    {data.permit_info.designation && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Designation:</strong> {translateArabicToEnglish(decodeHtmlEntities(data.permit_info.designation))}</div>
+                      </div>
+                    )}
+                    {data.permit_info.expiry_date && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Expiry Date:</strong> {data.permit_info.expiry_date}</div>
+                      </div>
+                    )}
+                    {data.permit_info.employee_classification && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Employee Classification:</strong> {translateArabicToEnglish(decodeHtmlEntities(data.permit_info.employee_classification))}</div>
+                      </div>
+                    )}
+                    {data.permit_info.permit_number && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Electronic Work Permit Number:</strong> {data.permit_info.permit_number}</div>
+                      </div>
+                    )}
+                    {data.permit_info.permit_type && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Electronic Work Permit Type:</strong> {translateArabicToEnglish(decodeHtmlEntities(data.permit_info.permit_type))}</div>
+                      </div>
+                    )}
+                    {data.permit_info.permit_active && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Electronic Work Permit Active:</strong> {translateArabicToEnglish(decodeHtmlEntities(data.permit_info.permit_active))}</div>
+                      </div>
+                    )}
+                    {data.permit_info.payment_number && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Payment Number:</strong> {data.permit_info.payment_number}</div>
+                      </div>
+                    )}
+                    {data.permit_info.paycard_number && (
+                      <div className="col-md-6 mb-3">
+                        <div>
+                          <strong>Paycard Number:</strong>{' '}
+                          <span 
+                            dangerouslySetInnerHTML={{ 
+                              __html: processPaycardNumber(data.permit_info.paycard_number)
+                            }} 
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {data.permit_info.person_code && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Person Code:</strong> {data.permit_info.person_code}</div>
+                      </div>
+                    )}
+                    {data.permit_info.transaction_number && (
+                      <div className="col-md-6 mb-3">
+                        <div><strong>Transaction Number:</strong> {data.permit_info.transaction_number}</div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -412,20 +450,16 @@ export default function MohreInquiry() {
           {/* Work Permits List */}
           {data.work_permits && data.work_permits.length > 0 && (
             <div className="card mb-4">
-              <div className="card-header bg-warning text-dark">
-                <h5 className="mb-0">
-                  <i className="fa fa-list me-2"></i>
-                  Electronic Work Permits ({data.total_permits})
-                </h5>
-              </div>
-              <div className="card-body">
+              <div className="card-body p-4" style={{ backgroundColor: '#f8f9fa' }}>
+                <h4 className="text-center mb-4" style={{ fontSize: '1.5rem', fontWeight: '500' }}>
+                  Electronic Work Permits Information
+                </h4>
                 <div className="table-responsive">
-                  <table className="table table-striped table-bordered table-hover">
-                    <thead className="table-dark">
+                  <table className="table table-bordered" style={{ backgroundColor: 'white' }}>
+                    <thead style={{ backgroundColor: '#6c757d', color: 'white' }}>
                       <tr>
-                        <th>#</th>
-                        <th>Permit Number</th>
-                        <th>Permit Type</th>
+                        <th>Electronic Work Permit Number</th>
+                        <th>Electronic Work Permit Type</th>
                         <th>Status</th>
                         <th>Transaction Number</th>
                       </tr>
@@ -437,28 +471,31 @@ export default function MohreInquiry() {
                         
                         return (
                           <tr key={index}>
-                            <td>{index + 1}</td>
-                            <td>
-                              <strong className="text-primary">{permit.permit_number}</strong>
-                            </td>
-                            <td>{decodedPermitType}</td>
-                            <td>
-                              <span className={`badge ${
-                                decodedStatus.toLowerCase().includes('active') || 
-                                decodedStatus.includes('نشط') ||
-                                decodedStatus.includes('ملغي') ? 
-                                (decodedStatus.includes('ملغي') ? 'bg-danger' : 'bg-success') : 
-                                'bg-warning text-dark'
-                              }`}>
-                                {decodedStatus}
-                              </span>
-                            </td>
+                            <td>{permit.permit_number}</td>
+                            <td>{translateArabicToEnglish(decodedPermitType)}</td>
+                            <td>{translateArabicToEnglish(decodedStatus)}</td>
                             <td>{permit.transaction_number}</td>
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
+                </div>
+                <div className="text-center mt-4">
+                  <button 
+                    className="btn btn-outline-secondary" 
+                    onClick={() => window.print()}
+                    style={{ 
+                      borderRadius: '20px',
+                      padding: '8px 30px',
+                      backgroundColor: '#f5f5dc',
+                      border: '1px solid #d4af37',
+                      color: '#666'
+                    }}
+                  >
+                    <i className="fa fa-print me-2"></i>
+                    Print
+                  </button>
                 </div>
               </div>
             </div>
@@ -543,7 +580,7 @@ export default function MohreInquiry() {
                     <strong className="text-muted">Application Status:</strong>
                     <div className="alert alert-success mt-2 mb-0">
                       <i className="fa fa-check-circle me-2"></i>
-                      {immigrationData.immigration_status.application_status}
+                      {translateArabicToEnglish(immigrationData.immigration_status.application_status)}
                     </div>
                   </div>
                 )}
