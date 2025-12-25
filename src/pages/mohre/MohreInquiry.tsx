@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+import SearchableSelect from '../../components/common/SearchableSelect';
+import residenceService from '../../services/residenceService';
 import './MohreInquiry.css';
 
 interface WorkPermit {
@@ -73,11 +75,26 @@ export default function MohreInquiry() {
   const [permitNumber, setPermitNumber] = useState('');
   const [mbNumber, setMbNumber] = useState('');
   const [companyNumber, setCompanyNumber] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState('');
+  const [companies, setCompanies] = useState<Array<{ company_id: number; company_name: string; company_number: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<EWPData | null>(null);
   const [immigrationData, setImmigrationData] = useState<ImmigrationData | null>(null);
   const [companyData, setCompanyData] = useState<CompanyData | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadCompanies();
+  }, []);
+
+  const loadCompanies = async () => {
+    try {
+      const data = await residenceService.getCompanies();
+      setCompanies(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error loading companies:', error);
+    }
+  };
 
   // Function to decode HTML entities
   const decodeHtmlEntities = (text: string): string => {
@@ -262,6 +279,7 @@ export default function MohreInquiry() {
     setPermitNumber('');
     setMbNumber('');
     setCompanyNumber('');
+    setSelectedCompany('');
     setData(null);
     setImmigrationData(null);
     setCompanyData(null);
@@ -394,6 +412,32 @@ export default function MohreInquiry() {
             <div className="card-body">
               <form onSubmit={handleSearchCompany}>
                 <div className="mb-3">
+                  <label htmlFor="companyDropdown" className="form-label">
+                    Select Company
+                  </label>
+                  <SearchableSelect
+                    options={[
+                      { value: '', label: 'Select from saved companies...' },
+                      ...companies
+                        .filter(company => company && company.company_id)
+                        .map((company) => ({
+                          value: String(company.company_number || ''),
+                          label: `${company.company_name || 'Unknown'} - ${company.company_number || ''}`
+                        }))
+                    ]}
+                    value={selectedCompany}
+                    onChange={(value) => {
+                      setSelectedCompany(String(value));
+                      setCompanyNumber(String(value));
+                    }}
+                    placeholder="Select Company"
+                  />
+                  <small className="text-muted d-block mt-1">
+                    <i className="fa fa-info-circle me-1"></i>
+                    Or enter manually below
+                  </small>
+                </div>
+                <div className="mb-3">
                   <label htmlFor="companyNumber" className="form-label">
                     Company Number <span className="text-danger">*</span>
                   </label>
@@ -403,12 +447,15 @@ export default function MohreInquiry() {
                     className="form-control"
                     placeholder="Enter company number (e.g., 1206022)"
                     value={companyNumber}
-                    onChange={(e) => setCompanyNumber(e.target.value)}
+                    onChange={(e) => {
+                      setCompanyNumber(e.target.value);
+                      setSelectedCompany(e.target.value);
+                    }}
                     disabled={loading}
                   />
                   <small className="text-muted">
                     <i className="fa fa-info-circle me-1"></i>
-                    Try example: <a href="#" onClick={(e) => { e.preventDefault(); setCompanyNumber('1206022'); }} className="text-warning">1206022</a>
+                    Try example: <a href="#" onClick={(e) => { e.preventDefault(); setCompanyNumber('1206022'); setSelectedCompany('1206022'); }} className="text-warning">1206022</a>
                   </small>
                 </div>
                 <button 
