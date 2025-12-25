@@ -114,6 +114,13 @@ export default function MohreInquiry() {
     return processed;
   };
 
+  // Helper function to decode and translate
+  const decodeAndTranslate = (text: string, keepArabic: boolean = false): string => {
+    const decoded = decodeHtmlEntities(text);
+    if (keepArabic) return decoded;
+    return translateArabicToEnglish(decoded);
+  };
+
   // Function to translate Arabic to English
   const translateArabicToEnglish = (text: string): string => {
     const translations: { [key: string]: string } = {
@@ -162,7 +169,22 @@ export default function MohreInquiry() {
       'تجارية': 'Commercial',
       'صناعية': 'Industrial',
       'خدمية': 'Service',
-      'مهنية': 'Professional'
+      'مهنية': 'Professional',
+      // Additional company terms
+      'فردية': 'Single',
+      'نيبال': 'Nepal',
+      'الهند': 'India',
+      'باكستان': 'Pakistan',
+      'بنغلاديش': 'Bangladesh',
+      'سريلانكا': 'Sri Lanka',
+      'الفلبين': 'Philippines',
+      'مصر': 'Egypt',
+      'الأردن': 'Jordan',
+      'سوريا': 'Syria',
+      'لبنان': 'Lebanon',
+      'عدم الالتزام بالنسبة المطلوبة لتحويل الأجور': 'Non-compliance with the required wage transfer percentage',
+      'وقف التصاريح الجديدة': 'Stop new permits',
+      'حماية الاجور': 'Wage protection'
     };
 
     let translated = text;
@@ -773,8 +795,8 @@ export default function MohreInquiry() {
               <div className="bg-white p-4 rounded" style={{ backgroundColor: '#f5f5f5' }}>
                 <div className="row">
                   {companyData.company_info.company_name && (
-                    <div className="col-md-6 mb-3">
-                      <div><strong>Company Name:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.company_name))}</div>
+                    <div className="col-12 mb-3">
+                      <div><strong>Company Name:</strong> {decodeHtmlEntities(companyData.company_info.company_name)}</div>
                     </div>
                   )}
                   {companyData.company_info.company_number && (
@@ -789,17 +811,17 @@ export default function MohreInquiry() {
                   )}
                   {companyData.company_info.nationality && (
                     <div className="col-md-6 mb-3">
-                      <div><strong>Nationality:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.nationality))}</div>
+                      <div><strong>Nationality:</strong> {decodeAndTranslate(companyData.company_info.nationality)}</div>
                     </div>
                   )}
                   {companyData.company_info.class_desc && (
                     <div className="col-md-6 mb-3">
-                      <div><strong>Class Desc:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.class_desc))}</div>
+                      <div><strong>Class Desc:</strong> {decodeAndTranslate(companyData.company_info.class_desc)}</div>
                     </div>
                   )}
                   {companyData.company_info.company_type && (
                     <div className="col-md-6 mb-3">
-                      <div><strong>Company Type:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.company_type))}</div>
+                      <div><strong>Company Type:</strong> {decodeAndTranslate(companyData.company_info.company_type)}</div>
                     </div>
                   )}
                   {companyData.company_info.license_number && (
@@ -809,17 +831,17 @@ export default function MohreInquiry() {
                   )}
                   {companyData.company_info.license_type && (
                     <div className="col-md-6 mb-3">
-                      <div><strong>License Type:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.license_type))}</div>
+                      <div><strong>License Type:</strong> {decodeAndTranslate(companyData.company_info.license_type)}</div>
                     </div>
                   )}
                   {companyData.company_info.emirate && (
                     <div className="col-md-6 mb-3">
-                      <div><strong>Emirate:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.emirate))}</div>
+                      <div><strong>Emirate:</strong> {decodeAndTranslate(companyData.company_info.emirate)}</div>
                     </div>
                   )}
                   {companyData.company_info.labour_office && (
                     <div className="col-md-6 mb-3">
-                      <div><strong>Labour Office:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.labour_office))}</div>
+                      <div><strong>Labour Office:</strong> {decodeAndTranslate(companyData.company_info.labour_office)}</div>
                     </div>
                   )}
                   {companyData.company_info.mission_quota_available !== undefined && (
@@ -833,8 +855,21 @@ export default function MohreInquiry() {
                     </div>
                   )}
                   {companyData.company_info.company_status && (
-                    <div className="col-md-6 mb-3">
-                      <div><strong>Company Status:</strong> {companyData.company_info.company_status}</div>
+                    <div className="col-12 mb-3">
+                      <div>
+                        <strong>Company Status:</strong>
+                        <div style={{ marginTop: '8px' }}>
+                          {decodeAndTranslate(companyData.company_info.company_status).split(/[\r\n,]+/).filter(line => line.trim()).map((line, i) => (
+                            <div key={i} style={{ marginBottom: '4px' }}>
+                              {line.trim().startsWith('*') ? (
+                                <span className="text-danger">• {line.trim().substring(1)}</span>
+                              ) : (
+                                <span>{line.trim()}</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
