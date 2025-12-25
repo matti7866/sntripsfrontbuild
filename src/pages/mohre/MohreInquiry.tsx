@@ -51,12 +51,32 @@ interface ImmigrationData {
   immigration_status: ImmigrationStatus;
 }
 
+interface CompanyData {
+  company_info: {
+    company_name?: string;
+    company_number?: string;
+    category?: string;
+    nationality?: string;
+    class_desc?: string;
+    company_type?: string;
+    license_number?: string;
+    license_type?: string;
+    emirate?: string;
+    labour_office?: string;
+    mission_quota_available?: string;
+    electronic_quota_available?: string;
+    company_status?: string;
+  };
+}
+
 export default function MohreInquiry() {
   const [permitNumber, setPermitNumber] = useState('');
   const [mbNumber, setMbNumber] = useState('');
+  const [companyNumber, setCompanyNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<EWPData | null>(null);
   const [immigrationData, setImmigrationData] = useState<ImmigrationData | null>(null);
+  const [companyData, setCompanyData] = useState<CompanyData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Function to decode HTML entities
@@ -108,7 +128,24 @@ export default function MohreInquiry() {
       'سائق': 'Driver',
       'معلومات تصريح العمل قد تم إرسالها': 'Workpermit information already sent',
       'تم ارسال بيانات تصريح العمل لرقم الملف': 'Workpermit information has been sent with file number',
-      'و الرقم الموحد': 'And Unified No'
+      'و الرقم الموحد': 'And Unified No',
+      // Company related terms
+      'الإمارات': 'EMIRATES',
+      'ذات مسئولية محدودة': 'Limited Liability Company',
+      'مفردة': 'Single',
+      'سياحية': 'Tourism',
+      'دبي': 'Dubai',
+      'دبى': 'Dubai',
+      'أبوظبي': 'Abu Dhabi',
+      'الشارقة': 'Sharjah',
+      'عجمان': 'Ajman',
+      'أم القيوين': 'Umm Al Quwain',
+      'رأس الخيمة': 'Ras Al Khaimah',
+      'الفجيرة': 'Fujairah',
+      'تجارية': 'Commercial',
+      'صناعية': 'Industrial',
+      'خدمية': 'Service',
+      'مهنية': 'Professional'
     };
 
     let translated = text;
@@ -134,6 +171,7 @@ export default function MohreInquiry() {
     setError(null);
     setData(null);
     setImmigrationData(null);
+    setCompanyData(null);
 
     try {
       const response = await fetch(`https://api.sntrips.com/trx/ewp.php?permitNumber=${permitNumber.trim()}`);
@@ -166,6 +204,7 @@ export default function MohreInquiry() {
     setError(null);
     setImmigrationData(null);
     setData(null);
+    setCompanyData(null);
 
     try {
       const response = await fetch(`https://api.sntrips.com/trx/wpricp.php?mbNumber=${mbNumber.trim()}`);
@@ -186,11 +225,46 @@ export default function MohreInquiry() {
     }
   };
 
+  const handleSearchCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!companyNumber.trim()) {
+      Swal.fire('Error', 'Please enter a company number', 'error');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setCompanyData(null);
+    setData(null);
+    setImmigrationData(null);
+
+    try {
+      const response = await fetch(`https://api.sntrips.com/trx/company-info.php?companyNumber=${companyNumber.trim()}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setCompanyData(result.data);
+      } else {
+        setError(result.message || 'Failed to fetch company information');
+        Swal.fire('Error', result.message || 'Failed to fetch company information', 'error');
+      }
+    } catch (err: any) {
+      console.error('Error fetching company info:', err);
+      setError('Failed to connect to MOHRE. Please try again.');
+      Swal.fire('Error', 'Failed to connect to MOHRE. Please try again.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleReset = () => {
     setPermitNumber('');
     setMbNumber('');
+    setCompanyNumber('');
     setData(null);
     setImmigrationData(null);
+    setCompanyData(null);
     setError(null);
   };
 
@@ -207,7 +281,7 @@ export default function MohreInquiry() {
       {/* Search Cards Row */}
       <div className="row">
         {/* Electronic Work Permit Search */}
-        <div className="col-md-6 mb-4">
+        <div className="col-md-4 mb-4">
           <div className="card h-100">
             <div className="card-header bg-primary text-white">
               <h5 className="mb-0">
@@ -258,7 +332,7 @@ export default function MohreInquiry() {
         </div>
 
         {/* Immigration Status Search */}
-        <div className="col-md-6 mb-4">
+        <div className="col-md-4 mb-4">
           <div className="card h-100">
             <div className="card-header bg-success text-white">
               <h5 className="mb-0">
@@ -283,7 +357,7 @@ export default function MohreInquiry() {
                   />
                   <small className="text-muted">
                     <i className="fa fa-info-circle me-1"></i>
-                    Try example: <a href="#" onClick={(e) => { e.preventDefault(); setMbNumber('MB295943148AE'); }} className="text-primary">MB295943148AE</a>
+                    Try example: <a href="#" onClick={(e) => { e.preventDefault(); setMbNumber('MB295943148AE'); }} className="text-success">MB295943148AE</a>
                   </small>
                 </div>
                 <button 
@@ -307,10 +381,61 @@ export default function MohreInquiry() {
             </div>
           </div>
         </div>
+
+        {/* Company Information Search */}
+        <div className="col-md-4 mb-4">
+          <div className="card h-100">
+            <div className="card-header bg-warning text-dark">
+              <h5 className="mb-0">
+                <i className="fa fa-building me-2"></i>
+                Company Information
+              </h5>
+            </div>
+            <div className="card-body">
+              <form onSubmit={handleSearchCompany}>
+                <div className="mb-3">
+                  <label htmlFor="companyNumber" className="form-label">
+                    Company Number <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="companyNumber"
+                    className="form-control"
+                    placeholder="Enter company number (e.g., 1206022)"
+                    value={companyNumber}
+                    onChange={(e) => setCompanyNumber(e.target.value)}
+                    disabled={loading}
+                  />
+                  <small className="text-muted">
+                    <i className="fa fa-info-circle me-1"></i>
+                    Try example: <a href="#" onClick={(e) => { e.preventDefault(); setCompanyNumber('1206022'); }} className="text-warning">1206022</a>
+                  </small>
+                </div>
+                <button 
+                  type="submit" 
+                  className="btn btn-warning w-100"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <i className="fa fa-spinner fa-spin me-2"></i>
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa fa-search me-2"></i>
+                      Search by Company Number
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Reset Button */}
-      {(data || immigrationData) && (
+      {(data || immigrationData || companyData) && (
         <div className="text-center mb-4">
           <button 
             type="button" 
@@ -590,8 +715,106 @@ export default function MohreInquiry() {
         </div>
       )}
 
+      {/* Company Information Results */}
+      {companyData && !loading && (
+        <div className="results-container">
+          <div className="card mb-4">
+            <div className="card-body p-4" style={{ backgroundColor: '#f8f9fa' }}>
+              <h4 className="text-center mb-4" style={{ fontSize: '1.5rem', fontWeight: '500' }}>
+                Company Information
+              </h4>
+              <div className="bg-white p-4 rounded" style={{ backgroundColor: '#f5f5f5' }}>
+                <div className="row">
+                  {companyData.company_info.company_name && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>Company Name:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.company_name))}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.company_number && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>Company Number:</strong> {companyData.company_info.company_number}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.category && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>Category:</strong> {companyData.company_info.category}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.nationality && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>Nationality:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.nationality))}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.class_desc && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>Class Desc:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.class_desc))}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.company_type && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>Company Type:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.company_type))}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.license_number && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>License Number:</strong> {companyData.company_info.license_number}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.license_type && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>License Type:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.license_type))}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.emirate && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>Emirate:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.emirate))}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.labour_office && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>Labour Office:</strong> {translateArabicToEnglish(decodeHtmlEntities(companyData.company_info.labour_office))}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.mission_quota_available !== undefined && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>Mission Work Permit Quota Available:</strong> {companyData.company_info.mission_quota_available}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.electronic_quota_available !== undefined && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>Electronic Work Permit Quota Available:</strong> {companyData.company_info.electronic_quota_available}</div>
+                    </div>
+                  )}
+                  {companyData.company_info.company_status && (
+                    <div className="col-md-6 mb-3">
+                      <div><strong>Company Status:</strong> {companyData.company_info.company_status}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="text-center mt-4">
+                <button 
+                  className="btn btn-outline-secondary" 
+                  onClick={() => window.print()}
+                  style={{ 
+                    borderRadius: '20px',
+                    padding: '8px 30px',
+                    backgroundColor: '#f5f5dc',
+                    border: '1px solid #d4af37',
+                    color: '#666'
+                  }}
+                >
+                  <i className="fa fa-print me-2"></i>
+                  Print
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Error Message */}
-      {error && !loading && !data && !immigrationData && (
+      {error && !loading && !data && !immigrationData && !companyData && (
         <div className="alert alert-danger">
           <i className="fa fa-exclamation-circle me-2"></i>
           {error}
