@@ -209,6 +209,11 @@ const menuItems: MenuItem[] = [
     title: 'Company Documents'
   },
   {
+    path: '/documents/receipts',
+    icon: 'fa fa-file-contract',
+    title: 'Document Receipts'
+  },
+  {
     path: '/reminder',
     icon: 'fa fa-clock',
     title: 'Set Reminder'

@@ -1,0 +1,836 @@
+.document-receipts-page {
+  padding: 1.5rem;
+  min-height: 100vh;
+}
+
+.document-receipts-page .page-header {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+/* Statistics Cards */
+.bg-gradient-blue {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-green {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.bg-gradient-orange {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.bg-gradient-purple {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.text-white-transparent-5 {
+  opacity: 0.3;
+}
+
+/* Table Styles */
+.document-receipts-page .table {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.document-receipts-page .table thead {
+  background-color: #f8f9fa;
+}
+
+.document-receipts-page .table thead th {
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  color: #495057;
+  padding: 1rem 0.75rem;
+}
+
+.document-receipts-page .table tbody tr {
+  transition: all 0.2s ease;
+}
+
+.document-receipts-page .table tbody tr:hover {
+  background-color: #f8f9fa;
+  transform: translateX(2px);
+}
+
+.document-receipts-page .table td {
+  vertical-align: middle;
+  padding: 0.75rem;
+}
+
+/* Document Types Cell */
+.document-types-cell {
+  max-width: 200px;
+}
+
+.document-types-cell .small {
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Badge Styles */
+.badge {
+  padding: 0.35rem 0.65rem;
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+/* Modal Styles */
+.modal.show {
+  display: block;
+}
+
+.modal-dialog {
+  margin-top: 3rem;
+}
+
+.modal-content {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding: 1.25rem 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+}
+
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  padding: 1rem 1.5rem;
+}
+
+/* Card in Modal */
+.modal-body .card {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.modal-body .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+}
+
+.modal-body .card-body {
+  padding: 1rem;
+}
+
+/* Form Styles */
+.form-label {
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-control,
+.form-select {
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Receipt Selection List */
+.receipt-selection-item {
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.receipt-selection-item:hover {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+}
+
+.receipt-selection-item.border-primary {
+  border-color: #007bff !important;
+  background-color: #e7f3ff;
+}
+
+/* Button Styles */
+.btn {
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-group .btn {
+  margin: 0;
+}
+
+.btn-group-sm .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Pagination */
+.pagination {
+  gap: 0.25rem;
+}
+
+.pagination .page-link {
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: 0.5rem 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.pagination .page-link:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+  color: #212529;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #6c757d;
+  pointer-events: none;
+  background-color: #fff;
+  border-color: #dee2e6;
+}
+
+/* File List */
+.list-group-item {
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.list-group-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Alert Styles */
+.alert {
+  border-radius: 8px;
+  border: none;
+  padding: 1rem 1.25rem;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+}
+
+/* Receipt Details View (for simple modal) */
+.receipt-details-view {
+  padding: 0;
+}
+
+.detail-section {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.detail-section:last-child {
+  border-bottom: none;
+}
+
+.section-title {
+  color: #495057;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #dc3545;
+  display: inline-block;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.detail-value {
+  font-size: 1rem;
+  color: #212529;
+  font-weight: 400;
+}
+
+/* Professional Receipt - Payment Receipt Style */
+.page {
+  display: block;
+  margin: 20px auto;
+  width: 8.27in;
+  min-height: auto;
+  border: 1px solid #000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+.page.print-a5 {
+  width: 5.83in;
+  min-height: auto;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  height: 1.5in;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #000;
+  padding: 10px 0;
+}
+
+.heading {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  flex: 1;
+}
+
+.heading span {
+  padding: 10px 20px;
+  border: 2px dashed #000;
+  border-radius: 10px;
+}
+
+.qr {
+  height: 1.2in;
+  width: 1.2in;
+  margin-right: 30px;
+}
+
+.qr img {
+  width: 100%;
+  height: 100%;
+}
+
+.logo-container {
+  width: 2.5in;
+  margin-left: 30px;
+  background-color: #000;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-container img {
+  width: 100%;
+  height: auto;
+  max-width: 200px;
+}
+
+.data {
+  padding: 30px;
+}
+
+.row {
+  margin-bottom: 20px;
+  display: flex;
+}
+
+.row .col {
+  width: 33%;
+  margin: 5px;
+}
+
+.col .label {
+  background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+  padding: 10px;
+  font-weight: 600;
+  border-radius: 4px 4px 0 0;
+  border: 1px solid #dee2e6;
+  border-bottom: none;
+  font-size: 0.9rem;
+}
+
+.col .value {
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  border-top: 2px solid #007bff;
+  border-radius: 0 0 4px 4px;
+  font-weight: 500;
+  background: white;
+}
+
+.col.col-full {
+  width: 100%;
+}
+
+.english, .arabic {
+  margin-top: 15px;
+  font-style: italic;
+  color: #555;
+  text-align: center;
+}
+
+.arabic {
+  direction: rtl;
+  font-size: 1rem;
+}
+
+/* Print Styles */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 5mm;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    height: 100%;
+    background: white;
+    overflow: hidden !important;
+  }
+  
+  header,
+  nav,
+  .header-nav,
+  .sidebar,
+  .app-header,
+  .app-sidebar,
+  .app-sidebar-bg,
+  .app-sidebar-mobile-backdrop,
+  #header,
+  #sidebar,
+  #top-menu,
+  .receipt-print-buttons,
+  .modal-header,
+  .modal-footer,
+  .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  
+  .page {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 2px solid #000 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+  
+  .header {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    height: 1.3in !important;
+    padding: 10px 15px !important;
+    border-bottom: 2px solid #000 !important;
+  }
+  
+  .logo-container {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: #000 !important;
+    padding: 12px !important;
+    width: 1.8in !important;
+  }
+  
+  .heading {
+    font-size: 22px !important;
+  }
+  
+  .heading span {
+    padding: 8px 20px !important;
+    border: 2px dashed #000 !important;
+  }
+  
+  .qr {
+    height: 1.1in !important;
+    width: 1.1in !important;
+  }
+  
+  .data {
+    padding: 15px 20px 10px 20px !important;
+  }
+  
+  .row {
+    margin-bottom: 10px !important;
+  }
+  
+  .col .label {
+    padding: 8px 10px !important;
+    font-size: 1.1rem !important;
+    background: linear-gradient(to bottom, #f8f9fa, #e9ecef) !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    border: 1px solid #dee2e6 !important;
+    border-bottom: none !important;
+    font-weight: 600 !important;
+  }
+  
+  .col .value {
+    padding: 8px 10px !important;
+    font-size: 1.2rem !important;
+    font-weight: 600;
+    border: 1px solid #dee2e6 !important;
+    border-top: 2px solid #007bff !important;
+  }
+  
+  table {
+    margin-top: 12px !important;
+    margin-bottom: 12px !important;
+    font-size: 1rem !important;
+    border: 2px solid #000 !important;
+  }
+  
+  table th {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: linear-gradient(to bottom, #e9ecef, #dee2e6) !important;
+    padding: 10px 8px !important;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    border-bottom: 2px solid #000 !important;
+  }
+  
+  table td {
+    padding: 8px 6px !important;
+    font-size: 0.95rem !important;
+    border: 1px solid #dee2e6 !important;
+  }
+  
+  table tbody tr:last-child td {
+    font-weight: 700 !important;
+    background-color: #f8f9fa !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 1.05rem !important;
+  }
+  
+  .english, .arabic {
+    margin-top: 12px !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* Responsive Styles */
+@media (max-width: 1200px) {
+  .page {
+    width: 95%;
+    max-width: 8.27in;
+  }
+  
+  .page.print-a5 {
+    width: 90%;
+    max-width: 5.83in;
+  }
+}
+
+@media (max-width: 768px) {
+  .document-receipts-page {
+    padding: 1rem;
+  }
+
+  .document-receipts-page .page-header {
+    font-size: 1.5rem;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn-group .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+
+  .table-responsive {
+    font-size: 0.85rem;
+  }
+
+  .document-types-cell {
+    max-width: 150px;
+  }
+}
+
+/* Loading Spinner */
+.spinner-border {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}
+
+/* Cursor Pointer */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Text Utilities */
+.text-muted {
+  color: #6c757d !important;
+}
+
+.text-primary {
+  color: #007bff !important;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+/* Font Size Utilities */
+.fs-48px {
+  font-size: 48px;
+}
+
+.fs-28px {
+  font-size: 28px;
+}
+
+.fs-24px {
+  font-size: 24px;
+}
+
+.fs-16px {
+  font-size: 16px;
+}
+
+/* Spacing Utilities */
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+.mt-2 {
+  margin-top: 0.5rem !important;
+}
+
+.mt-3 {
+  margin-top: 1rem !important;
+}
+
+.mt-4 {
+  margin-top: 1.5rem !important;
+}
+
+.mt-5 {
+  margin-top: 3rem !important;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.mb-3 {
+  margin-bottom: 1rem !important;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem !important;
+}
+
+.me-1 {
+  margin-right: 0.25rem !important;
+}
+
+.me-2 {
+  margin-right: 0.5rem !important;
+}
+
+.ms-2 {
+  margin-left: 0.5rem !important;
+}
+
+.p-2 {
+  padding: 0.5rem !important;
+}
+
+.py-5 {
+  padding-top: 3rem !important;
+  padding-bottom: 3rem !important;
+}
+
+/* Width Utilities */
+.w-100 {
+  width: 100% !important;
+}
+
+/* Display Utilities */
+.d-block {
+  display: block !important;
+}
+
+.d-flex {
+  display: flex !important;
+}
+
+/* Flex Utilities */
+.justify-content-between {
+  justify-content: space-between !important;
+}
+
+.align-items-center {
+  align-items: center !important;
+}
+
+.align-items-end {
+  align-items: flex-end !important;
+}
+
+.flex-grow-1 {
+  flex-grow: 1 !important;
+}
+
+/* Gap Utilities */
+.g-2 > * {
+  padding: 0.5rem;
+}
+
+.g-3 > * {
+  padding: 1rem;
+}
+
+/* Background Utilities */
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+
+/* Border Utilities */
+.rounded {
+  border-radius: 0.25rem !important;
+}
+
+/* Text Alignment */
+.text-center {
+  text-align: center !important;
+}
+
+/* Scrollbar Styling */
+.modal-body::-webkit-scrollbar,
+.receipt-selection-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track,
+.receipt-selection-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb,
+.receipt-selection-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover,
+.receipt-selection-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal.show .modal-dialog {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Document Type Row */
+.document-type-row {
+  background-color: #f8f9fa;
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #6c757d;
+}
+
+.empty-state i {
+  opacity: 0.5;
+}
+
+/* Small Text */
+.small {
+  font-size: 0.875rem;
+}
+
+/* Font Weight */
+.fw-bold {
+  font-weight: 700 !important;
+}
+
+/* Visually Hidden */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+

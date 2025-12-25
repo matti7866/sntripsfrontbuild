@@ -80,6 +80,8 @@ import SendSms from './pages/sms/SendSms';
 import SMSMessages from './pages/sms/SMSMessages';
 import MohreInquiry from './pages/mohre/MohreInquiry';
 import WalletReceipt from './pages/payment/WalletReceipt';
+import DocumentReceipts from './pages/documents/DocumentReceipts';
+import EmailInbox from './pages/email/EmailInbox';
 
 function App() {
   return (
@@ -231,6 +233,14 @@ function App() {
               
               {/* Company Documents */}
               <Route path="company-documents" element={<CompanyDocuments />} />
+              
+              {/* Document Receipts */}
+              <Route path="documents/receipts" element={<DocumentReceipts />} />
+              
+              {/* Email */}
+              <Route path="email/inbox" element={<EmailInbox />} />
+              <Route path="email/compose" element={<EmailInbox />} />
+              <Route path="email/detail/:id" element={<EmailInbox />} />
               
               {/* Currency */}
               <Route path="currency" element={<Currency />} />
