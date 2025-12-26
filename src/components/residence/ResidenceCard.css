@@ -1,3 +1,42 @@
+/* Residence Card Hover Fix - Prevent white background */
+.residence-card {
+  background-color: #2d353c !important;
+  transition: all 0.2s ease;
+}
+
+.residence-card:hover {
+  background-color: #2d353c !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+.residence-card .card-body {
+  background-color: #2d353c !important;
+}
+
+.residence-card:hover .card-body {
+  background-color: #2d353c !important;
+}
+
+/* Ensure all child elements maintain transparent background (so dark card shows through) */
+.residence-card .row,
+.residence-card .col-md-8,
+.residence-card .col-md-4,
+.residence-card .col-md-6,
+.residence-card .col-md-12,
+.residence-card .col-12 {
+  background-color: transparent !important;
+}
+
+.residence-card:hover .row,
+.residence-card:hover .col-md-8,
+.residence-card:hover .col-md-4,
+.residence-card:hover .col-md-6,
+.residence-card:hover .col-md-12,
+.residence-card:hover .col-12 {
+  background-color: transparent !important;
+}
+
 /* Progress Circle Styles */
 .progress-circle-old {
   transform: rotate(-90deg);

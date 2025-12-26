@@ -1284,8 +1284,17 @@ html, body, #root {
   font-size: 12px !important;
 }
 
+/* Prevent cards from changing background on hover - keep original color */
+.card:hover {
+  background-color: inherit !important;
+}
+
 .card-body {
   padding: 4px 8px !important; /* Minimal top/bottom, keep side padding */
+}
+
+.card:hover .card-body {
+  background-color: inherit !important;
 }
 
 .card-header {
