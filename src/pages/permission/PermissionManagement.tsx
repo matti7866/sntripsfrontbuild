@@ -30,6 +30,7 @@ const PAGE_NAMES = [
   'Expense',
   'Customer',
   'Residence',
+  'Data Corrections',
   'Service',
   'Staff',
   'Role',
@@ -55,7 +56,7 @@ export default function PermissionManagement() {
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [permissions, setPermissions] = useState<{ [key: string]: Permission }>({});
   
-  // Initialize permissions
+  // Initialize permissions with static list
   useEffect(() => {
     const initialPermissions: { [key: string]: Permission } = {};
     PAGE_NAMES.forEach(pageName => {
@@ -175,6 +176,20 @@ export default function PermissionManagement() {
     });
     setPermissions(updatedPermissions);
   };
+
+  const handleDeselectAll = () => {
+    const updatedPermissions: { [key: string]: Permission } = {};
+    Object.keys(permissions).forEach(pageName => {
+      updatedPermissions[pageName] = {
+        page_name: pageName,
+        select: 0,
+        insert: 0,
+        update: 0,
+        delete: 0
+      };
+    });
+    setPermissions(updatedPermissions);
+  };
   
   const handleSave = () => {
     if (!selectedRole) {
@@ -234,11 +249,21 @@ export default function PermissionManagement() {
             <div className="button-group">
               <button
                 type="button"
-                className="btn btn-danger"
+                className="btn btn-success"
                 onClick={handleSelectAll}
                 disabled={!selectedRole}
               >
+                <i className="fa fa-check-double me-1"></i>
                 Select All
+              </button>
+              <button
+                type="button"
+                className="btn btn-warning"
+                onClick={handleDeselectAll}
+                disabled={!selectedRole}
+              >
+                <i className="fa fa-times me-1"></i>
+                Deselect All
               </button>
               <button
                 type="button"

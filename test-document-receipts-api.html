@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Document Receipts API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow: auto;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Document Receipts API Tester</h1>
+    
+    <div class="test-section">
+        <h2>1. Test Get Customers</h2>
+        <button onclick="testGetCustomers()">Get Customers</button>
+        <div id="customers-result" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Get Document Type Options</h2>
+        <button onclick="testGetDocumentTypes()">Get Document Types</button>
+        <div id="doctypes-result" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Add Document Type</h2>
+        <input type="text" id="newTypeName" placeholder="Enter document type name" value="Test Document Type">
+        <button onclick="testAddDocumentType()">Add Document Type</button>
+        <div id="add-doctype-result" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Get Stats</h2>
+        <button onclick="testGetStats()">Get Statistics</button>
+        <div id="stats-result" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Test Get Receipts</h2>
+        <button onclick="testGetReceipts()">Get All Receipts</button>
+        <div id="receipts-result" class="result" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Database Table Check</h2>
+        <p>Open your MySQL console and run:</p>
+        <pre style="background: #f8f9fa; padding: 10px; border-radius: 4px;">
+-- Check tables exist
+SHOW TABLES LIKE 'document%';
+
+-- Check structure
+DESCRIBE document_receipts;
+DESCRIBE document_receipt_items;
+DESCRIBE document_receipt_attachments;
+DESCRIBE document_type_options;
+
+-- Check data
+SELECT COUNT(*) FROM document_type_options;
+SELECT * FROM document_type_options LIMIT 5;
+
+-- Check customer table
+SELECT COUNT(*) FROM customer WHERE is_active = 1;
+        </pre>
+    </div>
+
+    <script>
+        const API_BASE = '/documents/document-receipts.php';
+
+        async function makeRequest(action, data = {}) {
+            try {
+                const response = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action, ...data })
+                });
+                
+                const result = await response.json();
+                return { success: true, data: result, status: response.status };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = isError ? 'result error' : 'result success';
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function testGetCustomers() {
+            const result = await makeRequest('getCustomers');
+            showResult('customers-result', result, !result.success);
+        }
+
+        async function testGetDocumentTypes() {
+            const result = await makeRequest('getDocumentTypeOptions');
+            showResult('doctypes-result', result, !result.success);
+        }
+
+        async function testAddDocumentType() {
+            const typeName = document.getElementById('newTypeName').value;
+            if (!typeName) {
+                alert('Please enter a document type name');
+                return;
+            }
+            const result = await makeRequest('addDocumentTypeOption', { type_name: typeName });
+            showResult('add-doctype-result', result, !result.success || !result.data?.success);
+        }
+
+        async function testGetStats() {
+            const result = await makeRequest('getStats');
+            showResult('stats-result', result, !result.success);
+        }
+
+        async function testGetReceipts() {
+            const result = await makeRequest('getReceipts', { page: 1, limit: 10 });
+            showResult('receipts-result', result, !result.success);
+        }
+
+        // Auto-run basic tests on page load
+        window.onload = function() {
+            console.log('Page loaded. Click buttons to test API endpoints.');
+        };
+    </script>
+</body>
+</html>
+
+

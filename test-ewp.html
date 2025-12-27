@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Electronic Work Permit API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: none;
+            color: #007bff;
+            margin: 20px 0;
+        }
+        .loading.show {
+            display: block;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #f5c6cb;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #c3e6cb;
+            margin-bottom: 20px;
+        }
+        .info-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+            border-radius: 5px;
+        }
+        .info-section h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        table th {
+            background-color: #007bff;
+            color: white;
+        }
+        table tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test Electronic Work Permit API</h1>
+        
+        <div class="input-group">
+            <label for="permitNumber">Electronic Work Permit Number:</label>
+            <input type="text" id="permitNumber" placeholder="Enter permit number (e.g., 123217758)" value="123217758">
+        </div>
+
+        <button onclick="testAPI()" id="testBtn">Test API</button>
+        
+        <div class="loading" id="loading">
+            <strong>⏳ Loading...</strong> Fetching data from MOHRE...
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const permitNumber = document.getElementById('permitNumber').value.trim();
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            const testBtn = document.getElementById('testBtn');
+
+            if (!permitNumber) {
+                resultDiv.innerHTML = '<div class="error">❌ Please enter a permit number</div>';
+                return;
+            }
+
+            // Show loading
+            loadingDiv.classList.add('show');
+            testBtn.disabled = true;
+            resultDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(`ewp.php?permitNumber=${permitNumber}`);
+                const data = await response.json();
+
+                // Hide loading
+                loadingDiv.classList.remove('show');
+                testBtn.disabled = false;
+
+                if (data.status === 'success') {
+                    let html = '<div class="success">✅ ' + data.message + '</div>';
+
+                    // Company Information
+                    if (data.data.company_info) {
+                        html += '<div class="info-section">';
+                        html += '<h3>🏢 Company Information</h3>';
+                        html += '<table>';
+                        html += '<tr><th>Field</th><th>Value</th></tr>';
+                        
+                        if (data.data.company_info.company_name) {
+                            html += `<tr><td><strong>Company Name</strong></td><td>${data.data.company_info.company_name}</td></tr>`;
+                        }
+                        if (data.data.company_info.company_code) {
+                            html += `<tr><td><strong>Company Code</strong></td><td>${data.data.company_info.company_code}</td></tr>`;
+                        }
+                        if (data.data.company_info.category) {
+                            html += `<tr><td><strong>Category</strong></td><td>${data.data.company_info.category}</td></tr>`;
+                        }
+                        if (data.data.company_info.classification) {
+                            html += `<tr><td><strong>Classification</strong></td><td>${data.data.company_info.classification}</td></tr>`;
+                        }
+                        
+                        html += '</table>';
+                        html += '</div>';
+                    }
+
+                    // Electronic Work Permit Information
+                    if (data.data.permit_info) {
+                        html += '<div class="info-section">';
+                        html += '<h3>📋 Electronic Work Permit Information</h3>';
+                        html += '<table>';
+                        html += '<tr><th>Field</th><th>Value</th></tr>';
+                        
+                        const permitInfo = data.data.permit_info;
+                        if (permitInfo.person_name) html += `<tr><td><strong>Name</strong></td><td>${permitInfo.person_name}</td></tr>`;
+                        if (permitInfo.designation) html += `<tr><td><strong>Designation</strong></td><td>${permitInfo.designation}</td></tr>`;
+                        if (permitInfo.expiry_date) html += `<tr><td><strong>Expiry Date</strong></td><td>${permitInfo.expiry_date}</td></tr>`;
+                        if (permitInfo.employee_classification) html += `<tr><td><strong>Employee Classification</strong></td><td>${permitInfo.employee_classification}</td></tr>`;
+                        if (permitInfo.permit_number) html += `<tr><td><strong>Permit Number</strong></td><td>${permitInfo.permit_number}</td></tr>`;
+                        if (permitInfo.permit_type) html += `<tr><td><strong>Permit Type</strong></td><td>${permitInfo.permit_type}</td></tr>`;
+                        if (permitInfo.permit_active) html += `<tr><td><strong>Permit Active</strong></td><td><span style="color: ${permitInfo.permit_active === 'Active' ? 'green' : 'red'}; font-weight: bold;">${permitInfo.permit_active}</span></td></tr>`;
+                        if (permitInfo.payment_number) html += `<tr><td><strong>Payment Number</strong></td><td>${permitInfo.payment_number}</td></tr>`;
+                        if (permitInfo.paycard_number) html += `<tr><td><strong>Paycard Number</strong></td><td>${permitInfo.paycard_number}</td></tr>`;
+                        if (permitInfo.person_code) html += `<tr><td><strong>Person Code</strong></td><td>${permitInfo.person_code}</td></tr>`;
+                        if (permitInfo.transaction_number) html += `<tr><td><strong>Transaction Number</strong></td><td>${permitInfo.transaction_number}</td></tr>`;
+                        
+                        html += '</table>';
+                        html += '</div>';
+                    }
+
+                    // Work Permits List
+                    if (data.data.work_permits && data.data.work_permits.length > 0) {
+                        html += '<div class="info-section">';
+                        html += '<h3>📑 Electronic Work Permits (' + data.data.total_permits + ')</h3>';
+                        html += '<table>';
+                        html += '<tr><th>Permit Number</th><th>Permit Type</th><th>Status</th><th>Transaction Number</th></tr>';
+                        
+                        data.data.work_permits.forEach(permit => {
+                            const statusColor = permit.status === 'Active' ? 'green' : 'red';
+                            html += `<tr>
+                                <td>${permit.permit_number}</td>
+                                <td>${permit.permit_type}</td>
+                                <td><span style="color: ${statusColor}; font-weight: bold;">${permit.status}</span></td>
+                                <td>${permit.transaction_number}</td>
+                            </tr>`;
+                        });
+                        
+                        html += '</table>';
+                        html += '</div>';
+                    }
+
+                    // Raw JSON Response
+                    html += '<div class="info-section">';
+                    html += '<h3>📄 Raw JSON Response</h3>';
+                    html += '<div class="result">' + JSON.stringify(data, null, 2) + '</div>';
+                    html += '</div>';
+
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ ' + data.message + '</div>';
+                }
+            } catch (error) {
+                loadingDiv.classList.remove('show');
+                testBtn.disabled = false;
+                resultDiv.innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
+            }
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('permitNumber').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                testAPI();
+            }
+        });
+    </script>
+</body>
+</html>
+
+

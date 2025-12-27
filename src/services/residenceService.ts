@@ -1344,6 +1344,35 @@ const residenceService = {
       expiry_date: expiryDate
     });
     return response.data;
+  },
+
+  /**
+   * Get data corrections (unfixed passport/visa data)
+   */
+  async getDataCorrections(params: { status: 'fixed' | 'unfixed'; company_id?: string; search?: string }) {
+    const response = await axios.get('/residence/data-corrections.php', { params });
+    
+    if (response.data.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    } else if (Array.isArray(response.data)) {
+      return response.data;
+    } else {
+      return [];
+    }
+  },
+
+  /**
+   * Update passport and visa data
+   */
+  async updatePassportVisaData(data: {
+    residenceID: number;
+    passportNumber: string;
+    passportExpiryDate: string;
+    visaExpiryDate: string;
+    uid?: string;
+  }) {
+    const response = await axios.post('/residence/update-passport-visa-data.php', data);
+    return response.data;
   }
 };
 

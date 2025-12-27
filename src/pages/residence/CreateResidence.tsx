@@ -698,48 +698,9 @@ export default function CreateResidence() {
                       </select>
                     </div>
                     <div className="col-md-8">
-                      <label className="form-label fw-bold">
-                        <i className="fa fa-money-bill me-2"></i>Additional Charges Configuration
-                      </label>
-                      <div className="card border-primary">
-                        <div className="card-body">
-                          <div className="row">
-                            <div className="col-md-6">
-                              <div className="form-check">
-                                <input
-                                  className="form-check-input"
-                                  type="checkbox"
-                                  checked={formData.tawjeeh_included}
-                                  onChange={(e) => handleChange('tawjeeh_included', e.target.checked)}
-                                  id="tawjeehIncluded"
-                                />
-                                <label className="form-check-label fw-bold text-primary" htmlFor="tawjeehIncluded">
-                                  <i className="fa fa-check-circle me-2"></i>TAWJEEH Service (150 AED)
-                                </label>
-                                <small className="form-text text-muted d-block ms-4">
-                                  Check if TAWJEEH service cost is included in the sale price
-                                </small>
-                              </div>
-                            </div>
-                            <div className="col-md-6">
-                              <div className="form-check">
-                                <input
-                                  className="form-check-input"
-                                  type="checkbox"
-                                  checked={formData.insurance_included}
-                                  onChange={(e) => handleChange('insurance_included', e.target.checked)}
-                                  id="insuranceIncluded"
-                                />
-                                <label className="form-check-label fw-bold text-primary" htmlFor="insuranceIncluded">
-                                  <i className="fa fa-shield-alt me-2"></i>ILOE Insurance (126 AED)
-                                </label>
-                                <small className="form-text text-muted d-block ms-4">
-                                  Check if ILOE insurance cost is included in the sale price
-                                </small>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                      <div className="alert alert-info">
+                        <i className="fa fa-info-circle me-2"></i>
+                        <strong>Note:</strong> TAWJEEH Service (150 AED) and ILOE Insurance (126 AED) are automatically included in all residence sale prices.
                       </div>
                     </div>
                   </div>
@@ -940,8 +901,7 @@ export default function CreateResidence() {
                           <p><strong>Salary Amount:</strong> {formData.salary_amount?.toLocaleString() || 'N/A'}</p>
                           <p><strong>Position:</strong> {getSelectedPosition()?.position_name || 'N/A'}</p>
                           <p><strong>Sale Price:</strong> {formData.sale_amount?.toLocaleString() || 'N/A'} {getSelectedCurrency()?.currencyName || ''}</p>
-                          <p><strong>TAWJEEH:</strong> {formData.tawjeeh_included ? 'Included in sale price' : 'To be charged separately (150 AED)'}</p>
-                          <p><strong>ILOE Insurance:</strong> {formData.insurance_included ? 'Included in sale price' : 'To be charged separately (126 AED)'}</p>
+                          <p><em className="text-muted">TAWJEEH (150 AED) and ILOE Insurance (126 AED) are included in the sale price</em></p>
                         </div>
                       </div>
                     </div>
@@ -966,8 +926,7 @@ export default function CreateResidence() {
                       <div className="card">
                         <div className="card-body">
                           <p><strong>Sale Price:</strong> {formData.sale_amount?.toLocaleString() || 'N/A'} {getSelectedCurrency()?.currencyName || ''}</p>
-                          <p><strong>TAWJEEH:</strong> {formData.tawjeeh_included ? 'Included in sale price' : 'To be charged separately (150 AED)'}</p>
-                          <p><strong>ILOE Insurance:</strong> {formData.insurance_included ? 'Included in sale price' : 'To be charged separately (126 AED)'}</p>
+                          <p><em className="text-muted">TAWJEEH (150 AED) and ILOE Insurance (126 AED) are included in the sale price</em></p>
                         </div>
                       </div>
                     </div>

@@ -5,8 +5,7 @@ interface ResidenceCardProps {
   residence: Residence;
   onContinue: (residence: Residence) => void;
   onAttachments: (residence: Residence) => void;
-  onTawjeeh: (residence: Residence) => void;
-  onILOE: (residence: Residence) => void;
+  onILOE: (residence: Residence) => void; // Only for ILOE Fine management
   onPaymentHistory: (residence: Residence) => void;
   onLedger?: (residence: Residence) => void;
   onNOC: (residence: Residence) => void;
@@ -31,7 +30,6 @@ export default function ResidenceCard({
   residence, 
   onContinue, 
   onAttachments, 
-  onTawjeeh, 
   onILOE, 
   onPaymentHistory, 
   onLedger,
@@ -53,30 +51,8 @@ export default function ResidenceCard({
   isAdmin = false
 }: ResidenceCardProps) {
   // Calculate financial summary first - ensure all values are numbers
-  // Match ledger calculation: use actual charges if available, otherwise use conditional logic
+  // TAWJEEH and ILOE are now always included in sale price by default
   const salePrice = parseFloat(residence.sale_price as any) || 0;
-  
-  // Use actual charges from API if available (from ledger API format)
-  // Only use conditional logic if actual charges are not provided
-  let tawjeehCharges = parseFloat((residence as any).tawjeeh_charges as any);
-  if (isNaN(tawjeehCharges)) {
-    // Fallback: only add if not included AND amount exists
-    if (residence.tawjeehIncluded === 0 && residence.tawjeeh_amount) {
-      tawjeehCharges = parseFloat(residence.tawjeeh_amount as any) || 0;
-    } else {
-      tawjeehCharges = 0;
-    }
-  }
-  
-  let iloeCharges = parseFloat((residence as any).iloe_charges as any);
-  if (isNaN(iloeCharges)) {
-    // Fallback: only add if not included AND amount exists
-    if (residence.insuranceIncluded === 0 && residence.insuranceAmount) {
-      iloeCharges = parseFloat(residence.insuranceAmount as any) || 0;
-    } else {
-      iloeCharges = 0;
-    }
-  }
   
   const iloeFine = parseFloat(residence.iloe_fine as any) || 0;
   const totalFine = parseFloat((residence as any).total_Fine as any) || 
@@ -85,23 +61,18 @@ export default function ResidenceCard({
                             parseFloat((residence as any).custom_charges as any) || 0;
   const cancellationCharges = parseFloat((residence as any).cancellation_charges as any) || 0;
   
-  // Calculate total amount - matching ledger calculation exactly
+  // Calculate total amount - TAWJEEH and ILOE now included in sale price
   const totalAmount = salePrice + 
-                     tawjeehCharges + 
-                     iloeCharges + 
                      iloeFine + 
                      totalFine + 
                      customChargesTotal + 
                      cancellationCharges;
   
-  // Calculate total paid - matching ledger calculation exactly
-  // Ledger uses: residencePayment + finePayment + tawjeeh_payments + iloe_payments
+  // Calculate total paid - TAWJEEH and ILOE payments now part of residence payment
   const residencePayment = parseFloat(residence.total_paid as any) || 0;
   const finePayment = parseFloat((residence as any).totalFinePaid as any) || 0;
-  const tawjeehPayments = parseFloat((residence as any).tawjeeh_payments as any) || 0;
-  const iloePayments = parseFloat((residence as any).iloe_payments as any) || 0;
   
-  const totalPaid = residencePayment + finePayment + tawjeehPayments + iloePayments;
+  const totalPaid = residencePayment + finePayment;
   const totalRemaining = totalAmount - totalPaid;
 
   // Calculate completion percentage
@@ -265,32 +236,10 @@ export default function ResidenceCard({
               <div className="col-md-12">
                 <h6 className="text-white-50 mb-1 small">FINANCIAL SUMMARY</h6>
                 
-                {/* Sale price */}
+                {/* Sale price - TAWJEEH and ILOE now included by default */}
                 <div className="mb-2">
                   <strong className="text-white">Sale Price:</strong> <span className="text-info">{salePrice.toLocaleString()} {residence.sale_currency_name}</span>
                 </div>
-
-                {/* TAWJEEH */}
-                {residence.tawjeehIncluded === 0 ? (
-                  <div className="mb-2">
-                    <strong className="text-white">TAWJEEH:</strong> <span className="text-warning">{(residence.tawjeeh_amount || 150).toLocaleString()} AED (To be charged)</span>
-                  </div>
-                ) : (
-                  <div className="mb-2">
-                    <strong className="text-white">TAWJEEH:</strong> <span className="text-success">Included in sale price</span>
-                  </div>
-                )}
-
-                {/* Insurance */}
-                {residence.insuranceIncluded === 0 ? (
-                  <div className="mb-2">
-                    <strong className="text-white">ILOE Insurance:</strong> <span className="text-warning">{(residence.insuranceAmount || 126).toLocaleString()} AED (To be charged)</span>
-                  </div>
-                ) : (
-                  <div className="mb-2">
-                    <strong className="text-white">ILOE Insurance:</strong> <span className="text-success">Included in sale price</span>
-                  </div>
-                )}
 
                 {/* ILOE Fine if exists */}
                 {hasILOEFine && (
@@ -413,26 +362,6 @@ export default function ResidenceCard({
                     onClick={() => onPayTotal(residence)}
                   >
                     <i className="fa fa-credit-card"></i> Pay Total Outstanding
-                  </button>
-
-                  {/* TAWJEEH Management */}
-                  <button
-                    className="btn btn-secondary text-white"
-                    type="button"
-                    title="Manage TAWJEEH Charges"
-                    onClick={() => onTawjeeh(residence)}
-                  >
-                    <i className="fa fa-check-circle"></i> TAWJEEH
-                  </button>
-
-                  {/* ILOE Management */}
-                  <button
-                    className="btn btn-secondary text-white"
-                    type="button"
-                    title="Manage ILOE Insurance & Fines"
-                    onClick={() => onILOE(residence)}
-                  >
-                    <i className="fa fa-shield-alt"></i> ILOE
                   </button>
 
                   {/* Payment History */}

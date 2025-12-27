@@ -156,7 +156,7 @@ export default function PendingPaymentsModal({ isOpen, onClose, companyNumber, c
   const handleRefresh = () => {
     setSearchQuery(''); // Reset search on refresh
     if (activeTab === 'pending') {
-      fetchPendingPayments();
+    fetchPendingPayments();
     } else {
       fetchResidenceCardInfo();
     }

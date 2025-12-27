@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { config } from '../../utils/config';
 import Swal from 'sweetalert2';
 import residenceService from '../../services/residenceService';
+import axios from '../../services/api';
 import '../modals/Modal.css';
 
 interface Attachment {
@@ -134,6 +135,31 @@ const AttachmentsModal: React.FC<AttachmentsModalProps> = ({
       Swal.fire('Error', error.response?.data?.message || 'Failed to upload file', 'error');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleDownload = async (fileUrl: string, fileName: string, attachmentId: number) => {
+    try {
+      // Use axios to download with proper authentication headers
+      const response = await axios.get(`/residence/download-attachment.php?id=${attachmentId}`, {
+        responseType: 'blob'
+      });
+      
+      // Create blob URL and trigger download
+      const blob = new Blob([response.data]);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download error:', error);
+      Swal.fire('Error', 'Failed to download file', 'error');
     }
   };
 
@@ -404,14 +430,13 @@ const AttachmentsModal: React.FC<AttachmentsModalProps> = ({
                           >
                             <i className="fa fa-eye me-1"></i>View
                           </button>
-                          <a
-                            href={fileUrl}
-                            download
+                          <button
                             className="btn btn-sm btn-outline-success flex-fill"
+                            onClick={() => handleDownload(fileUrl, attachment.file_name, attachment.attachment_id)}
                             title="Download"
                           >
                             <i className="fa fa-download me-1"></i>Download
-                          </a>
+                          </button>
                           <button
                             className="btn btn-sm btn-outline-danger"
                             onClick={() => handleDelete(attachment.attachment_id, attachment.file_name)}

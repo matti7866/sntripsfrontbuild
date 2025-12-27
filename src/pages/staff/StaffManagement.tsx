@@ -1,14 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { config } from '../../utils/config';
 import Swal from 'sweetalert2';
 import staffService from '../../services/staffService';
+import { useViewAsStaff } from '../../context/ViewAsStaffContext';
+import { useAuth } from '../../context/AuthContext';
 import SearchableSelect from '../../components/form/SearchableSelect';
 import PhoneInput from '../../components/form/PhoneInput';
 import type { Staff, CreateStaffRequest, UpdateStaffRequest } from '../../types/staff';
 import './StaffManagement.css';
 
 export default function StaffManagement() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { setViewingAsStaff } = useViewAsStaff();
   const queryClient = useQueryClient();
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -478,18 +484,37 @@ export default function StaffManagement() {
                         )}
                       </td>
                       <td className="action-cell">
-                        <button
-                          className="btn btn-sm btn-outline-dark me-2"
-                          onClick={() => handleEdit(staffMember)}
-                        >
-                          <i className="fa fa-edit"></i>
-                        </button>
-                        <button
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDelete(staffMember.staff_id, staffMember.staff_name)}
-                        >
-                          <i className="fa fa-trash"></i>
-                        </button>
+                        <div className="d-flex gap-1">
+                          <button
+                            className="btn btn-sm btn-outline-info"
+                            onClick={() => {
+                              setViewingAsStaff({
+                                staff_id: staffMember.staff_id,
+                                staff_name: staffMember.staff_name,
+                                role_name: staffMember.role_name,
+                                role_id: staffMember.role_id
+                              });
+                              navigate('/dashboard');
+                            }}
+                            title="View as this staff member"
+                          >
+                            <i className="fa fa-eye"></i>
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline-dark"
+                            onClick={() => handleEdit(staffMember)}
+                            title="Edit staff"
+                          >
+                            <i className="fa fa-edit"></i>
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => handleDelete(staffMember.staff_id, staffMember.staff_name)}
+                            title="Delete staff"
+                          >
+                            <i className="fa fa-trash"></i>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -682,7 +707,7 @@ export default function StaffManagement() {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="modal-footer">
                   <button
                     type="button"
@@ -883,7 +908,7 @@ export default function StaffManagement() {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="modal-footer">
                   <button
                     type="button"

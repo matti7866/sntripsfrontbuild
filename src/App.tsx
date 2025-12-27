@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { AppSettingsProvider } from './context/AppSettingsContext';
+import { ViewAsStaffProvider } from './context/ViewAsStaffContext';
 import queryClient from './utils/queryClient';
 
 // Layout
@@ -36,6 +37,7 @@ import CreateVisa from './pages/visa/CreateVisa';
 import EmiratesIdTasks from './pages/visa/EmiratesIdTasks';
 import FreezoneTasks from './pages/visa/FreezoneTasks';
 import VisaExpiry from './pages/visa/VisaExpiry';
+import DataCorrections from './pages/visa/DataCorrections';
 import Establishments from './pages/establishments/Establishments';
 import EstablishmentEmployees from './pages/establishments/EstablishmentEmployees';
 import ManageEstablishments from './pages/establishments/ManageEstablishments';
@@ -87,8 +89,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppSettingsProvider>
-          <Router>
+        <ViewAsStaffProvider>
+          <AppSettingsProvider>
+            <Router>
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<LoginOTP />} />
@@ -148,6 +151,7 @@ function App() {
               <Route path="visa-tasks/emirates-id" element={<EmiratesIdTasks />} />
               <Route path="visa-tasks/freezone" element={<FreezoneTasks />} />
               <Route path="visa/expiry" element={<VisaExpiry />} />
+              <Route path="visa/data-corrections" element={<DataCorrections />} />
               <Route path="visa/prices" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Visa Prices</h1><p className="mt-4 text-gray-600">Visa prices module coming soon...</p></div>} />
               <Route path="visa/dependents" element={<div className="p-6 bg-white rounded-xl shadow-lg"><h1 className="text-2xl font-bold">Dependents Visa</h1><p className="mt-4 text-gray-600">Dependents visa module coming soon...</p></div>} />
               
@@ -265,9 +269,10 @@ function App() {
 
             {/* 404 Not Found */}
             <Route path="*" element={<div className="min-h-screen flex items-center justify-center bg-gray-100"><div className="text-center"><h1 className="text-6xl font-bold text-red-600">404</h1><p className="text-xl text-gray-600 mt-4">Page not found</p></div></div>} />
-          </Routes>
-        </Router>
+            </Routes>
+          </Router>
         </AppSettingsProvider>
+        </ViewAsStaffProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

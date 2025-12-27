@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAppSettings } from '../context/AppSettingsContext';
+import { useViewAsStaff } from '../context/ViewAsStaffContext';
 import ColorAdminHeader from './ColorAdminHeader';
 import ColorAdminSidebar from './ColorAdminSidebar';
+import ViewAsStaffBanner from '../components/common/ViewAsStaffBanner';
 
 export default function ColorAdminLayout() {
+  const { viewingAsStaff, exitViewAs } = useViewAsStaff();
   const {
     appHeaderNone,
     appSidebarNone,
@@ -37,6 +40,7 @@ export default function ColorAdminLayout() {
         (hasScroll ? 'has-scroll ' : '')
       }
     >
+      <ViewAsStaffBanner viewingAsStaff={viewingAsStaff} onExit={exitViewAs} />
       {!appHeaderNone && <ColorAdminHeader />}
       {!appSidebarNone && <ColorAdminSidebar />}
       

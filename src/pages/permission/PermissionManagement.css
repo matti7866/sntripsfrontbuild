@@ -64,6 +64,24 @@
   transform: translateY(-1px);
 }
 
+.permission-management-page .btn-success {
+  background: #10b981;
+  color: white;
+}
+
+.permission-management-page .btn-success:hover:not(:disabled) {
+  background: #059669;
+}
+
+.permission-management-page .btn-warning {
+  background: #f59e0b;
+  color: white;
+}
+
+.permission-management-page .btn-warning:hover:not(:disabled) {
+  background: #d97706;
+}
+
 .permission-management-page .btn-danger {
   background: #ef4444;
   color: white;

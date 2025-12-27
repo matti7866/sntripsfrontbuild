@@ -1102,7 +1102,6 @@ export default function ResidenceReport() {
                     residence={residence}
                     onContinue={(res) => navigate(`/residence/${res.residenceID}`)}
                     onAttachments={handleAttachments}
-                    onTawjeeh={handleTawjeeh}
                     onILOE={handleILOE}
                     onPaymentHistory={handlePaymentHistory}
                     onNOC={handleNOC}
