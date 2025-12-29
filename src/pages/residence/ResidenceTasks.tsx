@@ -10,6 +10,7 @@ import TawjeehModal from '../../components/residence/TawjeehModal';
 import ILOEModal from '../../components/residence/ILOEModal';
 import RemarksModal from '../../components/residence/RemarksModal';
 import PendingPaymentsModal from '../../components/residence/PendingPaymentsModal';
+import CreateResidenceModal from '../../components/residence/CreateResidenceModal';
 import './ResidenceTasks.css';
 
 interface ResidenceTask {
@@ -822,6 +823,10 @@ export default function ResidenceTasks() {
             </h1>
           </div>
           <div className="d-flex gap-2">
+            <button className="btn btn-sm btn-success" onClick={() => setShowNewResidenceModal(true)}>
+              <i className="fa fa-plus me-1"></i>
+              Add New
+            </button>
             <button className="btn btn-sm btn-primary" onClick={() => navigate('/residence/list')}>
               <i className="fa fa-list me-1"></i>
               List
@@ -1457,6 +1462,28 @@ export default function ResidenceTasks() {
         }}
         companyNumber={selectedCompanyNumber}
         companyName={selectedCompanyName}
+      />
+
+      {/* Create Residence Modal */}
+      <CreateResidenceModal
+        isOpen={showNewResidenceModal}
+        onClose={() => setShowNewResidenceModal(false)}
+        onSuccess={() => {
+          setShowNewResidenceModal(false);
+          loadTasks();
+        }}
+        lookups={{
+          customers: lookups.customers,
+          nationalities: lookups.nationalities.map(n => ({
+            nationality_id: n.airport_id,
+            nationality_name: n.countryName
+          })),
+          currencies: lookups.currencies,
+          positions: lookups.positions.map(p => ({
+            position_id: p.position_id,
+            position_name: p.posiiton_name
+          }))
+        }}
       />
     </div>
   );

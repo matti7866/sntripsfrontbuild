@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import residenceService from '../../services/residenceService';
 import Swal from 'sweetalert2';
+import CreateResidenceModal from '../../components/residence/CreateResidenceModal';
 import './ResidenceList.css';
 
 interface ResidenceWithDetails {
@@ -66,10 +67,24 @@ export default function ResidenceList() {
   const [stepFilter, setStepFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all'); // all, active, hold, cancelled
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Modal states
+  const [createResidenceModalOpen, setCreateResidenceModalOpen] = useState(false);
+  const [fullLookups, setFullLookups] = useState<any>(null);
 
   useEffect(() => {
     loadResidences();
+    loadLookups();
   }, []);
+
+  const loadLookups = async () => {
+    try {
+      const data = await residenceService.getLookups();
+      setFullLookups(data);
+    } catch (error) {
+      console.error('Error loading lookups:', error);
+    }
+  };
 
   const loadResidences = async () => {
     setLoading(true);
@@ -286,7 +301,7 @@ export default function ResidenceList() {
             </button>
             <button 
               className="btn btn-sm btn-primary" 
-              onClick={() => navigate('/residence/create')}
+              onClick={() => setCreateResidenceModalOpen(true)}
             >
               <i className="fa fa-plus-circle me-1"></i>
               Add New
@@ -720,6 +735,30 @@ export default function ResidenceList() {
           )}
         </div>
       </div>
+
+      {/* Create Residence Modal */}
+      {fullLookups && (
+        <CreateResidenceModal
+          isOpen={createResidenceModalOpen}
+          onClose={() => setCreateResidenceModalOpen(false)}
+          onSuccess={() => {
+            setCreateResidenceModalOpen(false);
+            loadResidences();
+          }}
+          lookups={{
+            customers: fullLookups.customers || [],
+            nationalities: (fullLookups.nationalities || []).map((n: any) => ({
+              nationality_id: n.airport_id || n.nationality_id,
+              nationality_name: n.countryName || n.nationality_name
+            })),
+            currencies: fullLookups.currencies || [],
+            positions: (fullLookups.positions || []).map((p: any) => ({
+              position_id: p.position_id,
+              position_name: p.posiiton_name || p.position_name
+            }))
+          }}
+        />
+      )}
     </div>
   );
 }

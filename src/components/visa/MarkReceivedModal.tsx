@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import visaService from '../../services/visaService';
+import config from '../../utils/config';
 import '../modals/Modal.css';
 
 interface EIDTask {
@@ -149,8 +150,7 @@ export default function MarkReceivedModal({ isOpen, onClose, task, onSuccess }: 
       formData.append('front', frontFile);
       formData.append('back', backFile);
       
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-      const response = await fetch(`${apiUrl}/api-ocr-emirates-id.php`, {
+      const response = await fetch(`${config.apiBaseUrl}/api-ocr-emirates-id.php`, {
         method: 'POST',
         body: formData
       });

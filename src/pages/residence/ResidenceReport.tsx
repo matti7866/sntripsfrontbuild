@@ -19,6 +19,7 @@ import AddCustomChargeModal from '../../components/residence/AddCustomChargeModa
 import PerformTawjeehModal from '../../components/residence/PerformTawjeehModal';
 import IssueInsuranceModal from '../../components/residence/IssueInsuranceModal';
 import NOCModal, { type NOCData } from '../../components/residence/NOCModal';
+import CreateResidenceModal from '../../components/residence/CreateResidenceModal';
 import './ResidenceReport.css';
 
 interface DropdownData {
@@ -51,11 +52,13 @@ export default function ResidenceReport() {
   const [performTawjeehModalOpen, setPerformTawjeehModalOpen] = useState(false);
   const [issueInsuranceModalOpen, setIssueInsuranceModalOpen] = useState(false);
   const [nocModalOpen, setNocModalOpen] = useState(false);
+  const [createResidenceModalOpen, setCreateResidenceModalOpen] = useState(false);
   const [nocResidence, setNocResidence] = useState<Residence | null>(null);
   const [fineRefreshTrigger, setFineRefreshTrigger] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [dependentsModalOpen, setDependentsModalOpen] = useState(false);
   const [walletPaymentsMap, setWalletPaymentsMap] = useState<Map<number, number>>(new Map());
+  const [fullLookups, setFullLookups] = useState<any>(null);
 
   useEffect(() => {
     loadDropdowns();
@@ -90,6 +93,9 @@ export default function ResidenceReport() {
   const loadDropdowns = async () => {
     try {
       const data = await residenceService.getLookups();
+      
+      // Store full lookups for CreateResidenceModal
+      setFullLookups(data);
       
       // Map accounts from API format (account_ID, account_Name) to component format (accountID, accountName)
       const mappedAccounts = (data.accounts || []).map((acc: any) => ({
@@ -900,7 +906,7 @@ export default function ResidenceReport() {
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => navigate('/residence/create')}
+              onClick={() => setCreateResidenceModalOpen(true)}
               className="btn btn-primary btn-lg"
               style={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -1442,6 +1448,30 @@ export default function ResidenceReport() {
         }}
         residence={selectedResidence}
       />
+
+      {/* Create Residence Modal */}
+      {fullLookups && (
+        <CreateResidenceModal
+          isOpen={createResidenceModalOpen}
+          onClose={() => setCreateResidenceModalOpen(false)}
+          onSuccess={() => {
+            setCreateResidenceModalOpen(false);
+            loadRecords();
+          }}
+          lookups={{
+            customers: fullLookups.customers || [],
+            nationalities: (fullLookups.nationalities || []).map((n: any) => ({
+              nationality_id: n.airport_id || n.nationality_id,
+              nationality_name: n.countryName || n.nationality_name
+            })),
+            currencies: fullLookups.currencies || [],
+            positions: (fullLookups.positions || []).map((p: any) => ({
+              position_id: p.position_id,
+              position_name: p.posiiton_name || p.position_name
+            }))
+          }}
+        />
+      )}
     </div>
   );
 }
