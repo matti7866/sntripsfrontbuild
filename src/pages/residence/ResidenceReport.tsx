@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 import type { Residence } from '../../types/residence';
 import ResidenceCard from '../../components/residence/ResidenceCard';
 import FamilyResidenceCard from '../../components/residence/FamilyResidenceCard';
+import EditResidenceModal from '../../components/residence/EditResidenceModal';
 import AttachmentsModal from '../../components/residence/AttachmentsModal';
 import DependentsModal from '../../components/residence/DependentsModal';
 import TawjeehModal from '../../components/residence/TawjeehModal';
@@ -40,6 +41,7 @@ export default function ResidenceReport() {
   
   // Modal states
   const [selectedResidence, setSelectedResidence] = useState<Residence | null>(null);
+  const [editResidenceModalOpen, setEditResidenceModalOpen] = useState(false);
   const [attachmentsModalOpen, setAttachmentsModalOpen] = useState(false);
   const [tawjeehModalOpen, setTawjeehModalOpen] = useState(false);
   const [iloeModalOpen, setIloeModalOpen] = useState(false);
@@ -1113,6 +1115,15 @@ export default function ResidenceReport() {
                     onNOC={handleNOC}
                     onSalaryCertificate={handleSalaryCertificate}
                     onPayTotal={handlePayTotal}
+                    onEdit={async (res) => {
+                      try {
+                        const residenceData = await residenceService.getResidence(res.residenceID);
+                        setSelectedResidence(residenceData);
+                        setEditResidenceModalOpen(true);
+                      } catch (error) {
+                        Swal.fire('Error', 'Failed to load residence data', 'error');
+                      }
+                    }}
                     onCancellationFee={handleCancellationFee}
                     onCreditAdjustment={handleCreditAdjustment}
                     onAddFine={handleAddFine}
@@ -1438,6 +1449,21 @@ export default function ResidenceReport() {
           passengerName={nocResidence.passenger_name}
         />
       )}
+
+      {/* Edit Residence Modal */}
+      <EditResidenceModal
+        isOpen={editResidenceModalOpen}
+        onClose={() => {
+          setEditResidenceModalOpen(false);
+          setSelectedResidence(null);
+        }}
+        residence={selectedResidence}
+        onSuccess={() => {
+          setEditResidenceModalOpen(false);
+          setSelectedResidence(null);
+          loadRecords();
+        }}
+      />
 
       {/* Dependents Modal */}
       <DependentsModal

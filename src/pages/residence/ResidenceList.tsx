@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import residenceService from '../../services/residenceService';
 import Swal from 'sweetalert2';
 import CreateResidenceModal from '../../components/residence/CreateResidenceModal';
+import EditResidenceModal from '../../components/residence/EditResidenceModal';
+import type { Residence } from '../../types/residence';
 import './ResidenceList.css';
 
 interface ResidenceWithDetails {
@@ -70,6 +72,8 @@ export default function ResidenceList() {
   
   // Modal states
   const [createResidenceModalOpen, setCreateResidenceModalOpen] = useState(false);
+  const [editResidenceModalOpen, setEditResidenceModalOpen] = useState(false);
+  const [selectedResidence, setSelectedResidence] = useState<Residence | null>(null);
   const [fullLookups, setFullLookups] = useState<any>(null);
 
   useEffect(() => {
@@ -86,7 +90,7 @@ export default function ResidenceList() {
     }
   };
 
-  const loadResidences = async () => {
+  const loadResidences = async (forceRefresh: boolean = false) => {
     setLoading(true);
     setError('');
     try {
@@ -96,7 +100,12 @@ export default function ResidenceList() {
       
       for (const step of steps) {
         try {
-          const data = await residenceService.getTasks({ step, search: '' });
+          // Add cache-busting parameter if force refresh
+          const params: any = { step, search: '' };
+          if (forceRefresh) {
+            params._t = Date.now();
+          }
+          const data = await residenceService.getTasks(params);
           if (data && data.residences) {
             allResidences.push(...data.residences);
           }
@@ -540,7 +549,7 @@ export default function ResidenceList() {
                         </td>
                         <td style={{ padding: '4px 6px' }}>{getStatusBadge(residence)}</td>
                         <td style={{ padding: '4px 6px' }}>
-                          <div className="d-flex gap-1">
+                          <div className="d-flex gap-1 flex-wrap">
                             <button
                               className="btn btn-xs btn-primary"
                               onClick={() => navigate(`/residence/${residence.residenceID}`)}
@@ -556,6 +565,38 @@ export default function ResidenceList() {
                               style={{ padding: '2px 6px', fontSize: '11px' }}
                             >
                               <i className="fa fa-tasks"></i>
+                            </button>
+                            <button
+                              className="btn btn-warning"
+                              onClick={async () => {
+                                try {
+                                  console.log('🔘 Edit button clicked for residence:', residence.residenceID);
+                                  const residenceData = await residenceService.getResidence(residence.residenceID);
+                                  setSelectedResidence(residenceData);
+                                  setEditResidenceModalOpen(true);
+                                } catch (error) {
+                                  console.error('Error loading residence:', error);
+                                  Swal.fire('Error', 'Failed to load residence data', 'error');
+                                }
+                              }}
+                              title="Edit Basic Information"
+                              style={{ 
+                                padding: '6px 12px', 
+                                fontSize: '13px',
+                                fontWeight: 'bold',
+                                backgroundColor: '#ffc107',
+                                borderColor: '#ffc107',
+                                color: '#000',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                whiteSpace: 'nowrap',
+                                minWidth: '70px',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              <i className="fa fa-edit"></i>
+                              <span>EDIT</span>
                             </button>
                           </div>
                         </td>
@@ -735,6 +776,22 @@ export default function ResidenceList() {
           )}
         </div>
       </div>
+
+      {/* Edit Residence Modal */}
+      <EditResidenceModal
+        isOpen={editResidenceModalOpen}
+        onClose={() => {
+          setEditResidenceModalOpen(false);
+          setSelectedResidence(null);
+        }}
+        residence={selectedResidence}
+        onSuccess={() => {
+          setEditResidenceModalOpen(false);
+          setSelectedResidence(null);
+          // Force refresh to get latest data from backend
+          loadResidences(true);
+        }}
+      />
 
       {/* Create Residence Modal */}
       {fullLookups && (

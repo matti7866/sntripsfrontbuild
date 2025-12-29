@@ -838,7 +838,7 @@ const residenceService = {
   /**
    * Get residence tasks (filtered by step)
    */
-  async getTasks(params: { step: string; company_id?: string; customer_id?: string; search?: string }) {
+  async getTasks(params: { step: string; company_id?: string; customer_id?: string; search?: string; _t?: number }) {
     try {
       const response = await axios.get('/residence/tasks.php', { params });
       

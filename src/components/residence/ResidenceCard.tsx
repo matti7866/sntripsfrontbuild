@@ -11,6 +11,7 @@ interface ResidenceCardProps {
   onNOC: (residence: Residence) => void;
   onSalaryCertificate: (residence: Residence) => void;
   onPayTotal: (residence: Residence) => void;
+  onEdit?: (residence: Residence) => void;
   onCancellationFee?: (residence: Residence) => void;
   onCreditAdjustment?: (residence: Residence) => void;
   onAddFine?: (residence: Residence) => void;
@@ -35,7 +36,8 @@ export default function ResidenceCard({
   onLedger,
   onNOC, 
   onSalaryCertificate, 
-  onPayTotal, 
+  onPayTotal,
+  onEdit,
   onCancellationFee, 
   onCreditAdjustment,
   onAddFine,
@@ -295,6 +297,15 @@ export default function ResidenceCard({
                     >
                       <i className="fa fa-paperclip"></i> Attachments
                     </button>
+                    {onEdit && (
+                      <button 
+                        className="btn btn-warning"
+                        onClick={() => onEdit(residence)}
+                        title="Edit Basic Information"
+                      >
+                        <i className="fa fa-edit"></i> Edit
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
