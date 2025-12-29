@@ -39,8 +39,13 @@ const residenceService = {
   /**
    * Get single residence by ID
    */
-  async getResidence(id: number): Promise<Residence> {
-    const response = await axios.get('/residence/get.php', { params: { id } });
+  async getResidence(id: number, cacheBust?: boolean): Promise<Residence> {
+    const params: any = { id };
+    // Add timestamp to prevent caching when explicitly requested
+    if (cacheBust) {
+      params._t = Date.now();
+    }
+    const response = await axios.get('/residence/get.php', { params });
     return response.data.data || response.data;
   },
 
@@ -1302,13 +1307,32 @@ const residenceService = {
     remarks?: string;
     salary_amount?: number;
   }) {
-    const payload = {
+    // Prepare payload - ensure customer_id is properly formatted
+    const payload: any = {
       residenceID,
-      ...data
     };
+    
+    // Only include fields that are defined (not undefined)
+    if (data.customer_id !== undefined) {
+      payload.customer_id = data.customer_id === null || data.customer_id === 0 ? null : Number(data.customer_id);
+    }
+    if (data.passenger_name !== undefined) payload.passenger_name = data.passenger_name;
+    if (data.passportNumber !== undefined) payload.passportNumber = data.passportNumber;
+    if (data.passportExpiryDate !== undefined) payload.passportExpiryDate = data.passportExpiryDate;
+    if (data.gender !== undefined) payload.gender = data.gender;
+    if (data.dob !== undefined) payload.dob = data.dob;
+    if (data.uid !== undefined) payload.uid = data.uid;
+    if (data.sale_price !== undefined) payload.sale_price = data.sale_price;
+    if (data.tawjeehIncluded !== undefined) payload.tawjeehIncluded = data.tawjeehIncluded;
+    if (data.tawjeeh_amount !== undefined) payload.tawjeeh_amount = data.tawjeeh_amount;
+    if (data.insuranceIncluded !== undefined) payload.insuranceIncluded = data.insuranceIncluded;
+    if (data.insuranceAmount !== undefined) payload.insuranceAmount = data.insuranceAmount;
+    if (data.remarks !== undefined) payload.remarks = data.remarks;
+    if (data.salary_amount !== undefined) payload.salary_amount = data.salary_amount;
     
     console.log('🔧 updateResidence - Sending to API:', payload);
     console.log('API endpoint: /residence/update-basic-info.php');
+    console.log('Customer ID being sent:', payload.customer_id);
     
     const response = await axios.post('/residence/update-basic-info.php', payload);
     

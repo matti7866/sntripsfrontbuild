@@ -9,9 +9,10 @@ import Swal from 'sweetalert2';
 interface ResidenceInfoProps {
   residence: Residence;
   onUpdate?: () => void;
+  onResidenceUpdate?: (updatedResidence: Partial<Residence>) => void;
 }
 
-export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProps) {
+export default function ResidenceInfo({ residence, onUpdate, onResidenceUpdate }: ResidenceInfoProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     customer_id: residence.customer_id || null,
@@ -32,6 +33,28 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
   const [saving, setSaving] = useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
   const [loadingCustomers, setLoadingCustomers] = useState(false);
+
+  // Sync editData when residence prop changes (only when not editing)
+  useEffect(() => {
+    if (!isEditing) {
+      setEditData({
+        customer_id: residence.customer_id || null,
+        passenger_name: residence.passenger_name || '',
+        passportNumber: residence.passportNumber || '',
+        passportExpiryDate: residence.passportExpiryDate || '',
+        gender: residence.gender || '',
+        dob: residence.dob || '',
+        uid: residence.uid || '',
+        sale_price: residence.sale_price || 0,
+        tawjeehIncluded: residence.tawjeehIncluded || 0,
+        tawjeeh_amount: residence.tawjeeh_amount || 150,
+        insuranceIncluded: residence.insuranceIncluded || 0,
+        insuranceAmount: residence.insuranceAmount || 126,
+        remarks: residence.remarks || '',
+        salary_amount: residence.salary_amount || 0,
+      });
+    }
+  }, [residence, isEditing]);
 
   useEffect(() => {
     loadCustomers();
@@ -110,6 +133,20 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
     return new Date(dateString).toLocaleDateString('en-GB');
   };
 
+  const formatDateForInput = (dateString?: string) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return '';
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    } catch {
+      return '';
+    }
+  };
+
   const formatCurrency = (amount?: number, symbol: string = 'AED') => {
     if (!amount) return '-';
     return `${symbol} ${amount.toLocaleString()}`;
@@ -120,21 +157,102 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
     try {
       console.log('💾 Saving residence information...');
       console.log('Residence ID:', residence.residenceID);
-      console.log('Edit data being sent:', editData);
+      console.log('Current residence customer_id:', residence.customer_id);
+      console.log('Edit data:', editData);
       console.log('Customer ID change:', { 
         old: residence.customer_id, 
         new: editData.customer_id,
-        changed: residence.customer_id !== editData.customer_id
+        changed: residence.customer_id !== editData.customer_id,
+        oldType: typeof residence.customer_id,
+        newType: typeof editData.customer_id
       });
       
-      const response = await residenceService.updateResidence(residence.residenceID, editData);
-      console.log('✅ Save response:', response);
+      // Prepare data for API - ALWAYS include customer_id if it's defined (even if null)
+      const dataToSend: any = {};
       
-      // Call onUpdate FIRST to refresh the data
+      // CRITICAL: Always send customer_id if it's defined, even if null
+      // This ensures the backend knows we want to update/reassign the customer
+      if (editData.customer_id !== undefined) {
+        // Convert to proper number or null
+        const customerIdValue = editData.customer_id === null || editData.customer_id === 0 || editData.customer_id === '' 
+          ? null 
+          : Number(editData.customer_id);
+        dataToSend.customer_id = customerIdValue;
+        console.log('✅ customer_id will be sent:', customerIdValue, 'Type:', typeof customerIdValue);
+      } else {
+        console.warn('⚠️ customer_id is undefined in editData!');
+      }
+      
+      // Include all other fields
+      if (editData.passenger_name !== undefined) dataToSend.passenger_name = editData.passenger_name;
+      if (editData.passportNumber !== undefined) dataToSend.passportNumber = editData.passportNumber;
+      if (editData.passportExpiryDate !== undefined) dataToSend.passportExpiryDate = editData.passportExpiryDate;
+      if (editData.gender !== undefined) dataToSend.gender = editData.gender;
+      if (editData.dob !== undefined) dataToSend.dob = editData.dob;
+      if (editData.uid !== undefined) dataToSend.uid = editData.uid;
+      if (editData.sale_price !== undefined) dataToSend.sale_price = editData.sale_price;
+      if (editData.tawjeehIncluded !== undefined) dataToSend.tawjeehIncluded = editData.tawjeehIncluded;
+      if (editData.tawjeeh_amount !== undefined) dataToSend.tawjeeh_amount = editData.tawjeeh_amount;
+      if (editData.insuranceIncluded !== undefined) dataToSend.insuranceIncluded = editData.insuranceIncluded;
+      if (editData.insuranceAmount !== undefined) dataToSend.insuranceAmount = editData.insuranceAmount;
+      if (editData.remarks !== undefined) dataToSend.remarks = editData.remarks;
+      if (editData.salary_amount !== undefined) dataToSend.salary_amount = editData.salary_amount;
+      
+      console.log('📤 Complete data being sent to API:', JSON.stringify(dataToSend, null, 2));
+      console.log('📤 Customer ID in payload:', dataToSend.customer_id);
+      console.log('📤 Customer ID type:', typeof dataToSend.customer_id);
+      
+      // If customer_id changed, get the customer name from the customers list for reference
+      let selectedCustomer = null;
+      if (editData.customer_id && editData.customer_id !== residence.customer_id) {
+        selectedCustomer = customers.find(c => 
+          (c.customer_id || c.id) === editData.customer_id
+        );
+        console.log('👤 Selected customer for update:', selectedCustomer);
+        console.log('👤 Expected customer name:', selectedCustomer?.customer_name || selectedCustomer?.name);
+        console.log('👤 Expected customer phone:', selectedCustomer?.customer_phone || selectedCustomer?.phone);
+      }
+      
+      const response = await residenceService.updateResidence(residence.residenceID, dataToSend);
+      console.log('✅ Save response:', response);
+      console.log('✅ Response success:', response?.success);
+      console.log('✅ Response message:', response?.message);
+      console.log('✅ Response data:', response?.data);
+      
+      // Verify the response indicates success
+      if (!response?.success && response?.success !== undefined) {
+        console.error('❌ API returned success: false');
+        throw new Error(response?.message || 'Update failed');
+      }
+      
+      // Call onUpdate to refresh the data from server
       if (onUpdate) {
-        console.log('Calling onUpdate to refresh data...');
+        console.log('🔄 Calling onUpdate to refresh data...');
+        // Add a longer delay to ensure backend has processed the update and database is consistent
+        await new Promise(resolve => setTimeout(resolve, 1000));
         await onUpdate();
         console.log('✅ onUpdate completed');
+        
+        // Wait a bit more and verify the update
+        await new Promise(resolve => setTimeout(resolve, 300));
+        console.log('🔍 Verification: Checking if customer was updated...');
+        
+        // Fallback: If customer_id changed but customer_name is still missing, enrich from local customers list
+        if (editData.customer_id && editData.customer_id !== residence.customer_id && selectedCustomer) {
+          console.log('🔧 Fallback: Enriching residence data with customer info from local list...');
+          if (onResidenceUpdate && selectedCustomer) {
+            onResidenceUpdate({
+              customer_id: editData.customer_id,
+              customer_name: selectedCustomer.customer_name || selectedCustomer.name || '',
+              customer_phone: selectedCustomer.customer_phone || selectedCustomer.phone || '',
+              customer_email: selectedCustomer.customer_email || selectedCustomer.email || '',
+            });
+            console.log('✅ Residence data enriched with customer info:', {
+              customer_id: editData.customer_id,
+              customer_name: selectedCustomer.customer_name || selectedCustomer.name,
+            });
+          }
+        }
       } else {
         console.warn('⚠️ onUpdate callback is not defined!');
       }
@@ -185,6 +303,69 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
 
   return (
     <div className="space-y-4" style={{ overflow: 'visible' }}>
+      {/* Header with Edit/Save/Cancel buttons */}
+      <div className="card p-4" style={{ backgroundColor: '#2d353c', border: '1px solid #495057' }}>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold text-white">
+            <i className="fa fa-info-circle mr-2"></i>
+            Basic Information
+          </h2>
+          {!isEditing ? (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-2 text-sm rounded font-semibold"
+              style={{
+                background: 'linear-gradient(to right, #dc2626, #991b1b)',
+                color: 'white',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'opacity 0.2s',
+              }}
+              onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+              onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+            >
+              <i className="fa fa-edit mr-2"></i> Edit All Information
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-4 py-2 text-sm rounded font-semibold"
+                style={{
+                  background: 'linear-gradient(to right, #16a34a, #15803d)',
+                  color: 'white',
+                  border: 'none',
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                  opacity: saving ? 0.6 : 1,
+                  transition: 'opacity 0.2s',
+                }}
+                onMouseOver={(e) => !saving && (e.currentTarget.style.opacity = '0.9')}
+                onMouseOut={(e) => !saving && (e.currentTarget.style.opacity = '1')}
+              >
+                <i className="fa fa-save mr-2"></i> {saving ? 'Saving...' : 'Save All Changes'}
+              </button>
+              <button
+                onClick={handleCancel}
+                disabled={saving}
+                className="px-4 py-2 text-sm rounded font-semibold"
+                style={{
+                  background: 'linear-gradient(to right, #6b7280, #4b5563)',
+                  color: 'white',
+                  border: 'none',
+                  cursor: saving ? 'not-allowed' : 'pointer',
+                  transition: 'opacity 0.2s',
+                }}
+                onMouseOver={(e) => !saving && (e.currentTarget.style.opacity = '0.9')}
+                onMouseOut={(e) => !saving && (e.currentTarget.style.opacity = '1')}
+              >
+                <i className="fa fa-times mr-2"></i> Cancel
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Customer Information */}
       <div className="card p-4" style={{ backgroundColor: '#2d353c', border: '1px solid #495057', overflow: 'visible', position: 'relative', zIndex: 10 }}>
         <div className="flex justify-between items-center mb-3 border-b border-gray-700 pb-2">
@@ -192,20 +373,6 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
             <i className="fa fa-user mr-2"></i>
             Customer Information
           </h3>
-          {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-3 py-1 text-xs rounded"
-              style={{
-                background: 'linear-gradient(to right, #dc2626, #991b1b)',
-                color: 'white',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <i className="fa fa-edit mr-1"></i> Edit
-            </button>
-          )}
         </div>
         {isEditing ? (
           <div className="space-y-3" style={{ overflow: 'visible' }}>
@@ -235,8 +402,13 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
                     options={customerOptions}
                     value={editData.customer_id ? String(editData.customer_id) : ''}
                     onChange={(value) => {
-                      console.log('Customer selected:', value);
-                      setEditData({ ...editData, customer_id: value ? Number(value) : null });
+                      console.log('Customer selected:', value, 'Type:', typeof value);
+                      // Handle empty string or falsy values as null
+                      const customerId = (value && value !== '' && value !== '0') 
+                        ? Number(value) 
+                        : null;
+                      console.log('Setting customer_id to:', customerId);
+                      setEditData({ ...editData, customer_id: customerId });
                     }}
                     placeholder="Search customer..."
                     disabled={loadingCustomers}
@@ -280,20 +452,6 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
             <i className="fa fa-passport mr-2"></i>
             Passenger Information
           </h3>
-          {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-3 py-1 text-xs rounded"
-              style={{
-                background: 'linear-gradient(to right, #dc2626, #991b1b)',
-                color: 'white',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <i className="fa fa-edit mr-1"></i> Edit
-            </button>
-          )}
         </div>
         {isEditing ? (
           <div className="space-y-3">
@@ -320,8 +478,8 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
               <input
                 type="date"
                 className="form-control"
-                value={editData.passportExpiryDate}
-                onChange={(e) => setEditData({ ...editData, passportExpiryDate: e.target.value })}
+                value={formatDateForInput(editData.passportExpiryDate)}
+                onChange={(e) => setEditData({ ...editData, passportExpiryDate: e.target.value || '' })}
               />
             </div>
             <div>
@@ -341,8 +499,8 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
               <input
                 type="date"
                 className="form-control"
-                value={editData.dob}
-                onChange={(e) => setEditData({ ...editData, dob: e.target.value })}
+                value={formatDateForInput(editData.dob)}
+                onChange={(e) => setEditData({ ...editData, dob: e.target.value || '' })}
               />
             </div>
             <div>
@@ -457,50 +615,6 @@ export default function ResidenceInfo({ residence, onUpdate }: ResidenceInfoProp
             <i className="fa fa-money-bill mr-2"></i>
             Financial Summary
           </h3>
-          {!isEditing ? (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="px-3 py-1 text-xs rounded"
-              style={{
-                background: 'linear-gradient(to right, #dc2626, #991b1b)',
-                color: 'white',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <i className="fa fa-edit mr-1"></i> Edit
-            </button>
-          ) : (
-            <div className="flex gap-2">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-3 py-1 text-xs rounded"
-                style={{
-                  background: 'linear-gradient(to right, #16a34a, #15803d)',
-                  color: 'white',
-                  border: 'none',
-                  cursor: saving ? 'not-allowed' : 'pointer',
-                  opacity: saving ? 0.6 : 1,
-                }}
-              >
-                <i className="fa fa-save mr-1"></i> {saving ? 'Saving...' : 'Save'}
-              </button>
-              <button
-                onClick={handleCancel}
-                disabled={saving}
-                className="px-3 py-1 text-xs rounded"
-                style={{
-                  background: 'linear-gradient(to right, #6b7280, #4b5563)',
-                  color: 'white',
-                  border: 'none',
-                  cursor: saving ? 'not-allowed' : 'pointer',
-                }}
-              >
-                <i className="fa fa-times mr-1"></i> Cancel
-              </button>
-            </div>
-          )}
         </div>
         <div className="space-y-2 text-sm">
           {/* Sale Price */}

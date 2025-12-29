@@ -36,12 +36,30 @@ export default function ResidenceDetail() {
     setError('');
     try {
       console.log('🔄 Reloading residence data for ID:', id);
-      const data = await residenceService.getResidence(parseInt(id));
+      // Force fresh data by adding cache-busting parameter
+      const data = await residenceService.getResidence(parseInt(id), true);
       console.log('✅ Residence data loaded:', data);
-      console.log('Customer ID in loaded data:', data.customer_id);
-      console.log('Customer name in loaded data:', data.customer_name);
+      console.log('📋 Full residence object keys:', Object.keys(data));
+      console.log('👤 Customer ID in loaded data:', data.customer_id);
+      console.log('👤 Customer name in loaded data:', data.customer_name);
+      console.log('👤 Customer phone in loaded data:', data.customer_phone);
+      console.log('👤 Customer email in loaded data:', data.customer_email);
+      
+      // Verify customer data is present
+      if (data.customer_id && !data.customer_name) {
+        console.warn('⚠️ WARNING: Customer ID exists but customer_name is missing!');
+        console.warn('⚠️ This might indicate the backend is not joining customer data properly');
+      }
+      
       setResidence(data);
       console.log('✅ Residence state updated');
+      
+      // Log the updated residence state
+      console.log('🔍 Updated residence state - Customer:', {
+        id: data.customer_id,
+        name: data.customer_name,
+        phone: data.customer_phone
+      });
     } catch (err: any) {
       console.error('❌ Error loading residence:', err);
       setError(err.response?.data?.message || 'An error occurred while loading residence');
@@ -178,7 +196,20 @@ export default function ResidenceDetail() {
       <div className={`grid grid-cols-1 ${canEditWorkflow ? 'lg:grid-cols-3' : ''} gap-6`}>
         {/* Left Column - Residence Info */}
         <div className={canEditWorkflow ? 'lg:col-span-1' : ''}>
-          <ResidenceInfo residence={residence} onUpdate={loadResidence} />
+          <ResidenceInfo 
+            residence={residence} 
+            onUpdate={loadResidence}
+            onResidenceUpdate={(updatedData) => {
+              // Update residence state with enriched customer data
+              if (residence) {
+                setResidence({
+                  ...residence,
+                  ...updatedData
+                });
+                console.log('✅ Residence state updated with enriched customer data');
+              }
+            }}
+          />
         </div>
 
         {/* Right Column - Workflow (Only visible for User ID 1) */}
