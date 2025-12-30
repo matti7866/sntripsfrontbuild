@@ -28,6 +28,7 @@ export default function EditResidenceModal({
     dob: '',
     uid: '',
     sale_price: 0,
+    saleCurID: null as number | null,
     tawjeehIncluded: 0,
     tawjeeh_amount: 150,
     insuranceIncluded: 0,
@@ -38,6 +39,8 @@ export default function EditResidenceModal({
   const [saving, setSaving] = useState(false);
   const [customers, setCustomers] = useState<any[]>([]);
   const [loadingCustomers, setLoadingCustomers] = useState(false);
+  const [currencies, setCurrencies] = useState<any[]>([]);
+  const [loadingCurrencies, setLoadingCurrencies] = useState(false);
 
   // Initialize editData when residence changes
   useEffect(() => {
@@ -51,6 +54,7 @@ export default function EditResidenceModal({
         dob: residence.dob || '',
         uid: residence.uid || '',
         sale_price: residence.sale_price || 0,
+        saleCurID: (residence as any).saleCurID || null,
         tawjeehIncluded: residence.tawjeehIncluded || 0,
         tawjeeh_amount: residence.tawjeeh_amount || 150,
         insuranceIncluded: residence.insuranceIncluded || 0,
@@ -64,6 +68,7 @@ export default function EditResidenceModal({
   useEffect(() => {
     if (isOpen) {
       loadCustomers();
+      loadCurrencies();
     }
   }, [isOpen]);
 
@@ -101,6 +106,23 @@ export default function EditResidenceModal({
       setCustomers([]);
     } finally {
       setLoadingCustomers(false);
+    }
+  };
+
+  const loadCurrencies = async () => {
+    setLoadingCurrencies(true);
+    try {
+      const data = await residenceService.getLookups();
+      const currenciesList = (data.currencies || []).map((curr: any) => ({
+        currencyID: curr.currencyID,
+        currencyName: curr.currencyName
+      }));
+      setCurrencies(currenciesList);
+    } catch (error: any) {
+      console.error('Error loading currencies:', error);
+      setCurrencies([]);
+    } finally {
+      setLoadingCurrencies(false);
     }
   };
 
@@ -150,6 +172,12 @@ export default function EditResidenceModal({
       if (editData.dob !== undefined) dataToSend.dob = editData.dob;
       if (editData.uid !== undefined) dataToSend.uid = editData.uid;
       if (editData.sale_price !== undefined) dataToSend.sale_price = editData.sale_price;
+      if (editData.saleCurID !== undefined) {
+        const currencyIdValue = editData.saleCurID === null || editData.saleCurID === 0 
+          ? null 
+          : Number(editData.saleCurID);
+        dataToSend.saleCurID = currencyIdValue;
+      }
       if (editData.tawjeehIncluded !== undefined) dataToSend.tawjeehIncluded = editData.tawjeehIncluded;
       if (editData.tawjeeh_amount !== undefined) dataToSend.tawjeeh_amount = editData.tawjeeh_amount;
       if (editData.insuranceIncluded !== undefined) dataToSend.insuranceIncluded = editData.insuranceIncluded;
@@ -237,6 +265,7 @@ export default function EditResidenceModal({
         dob: residence.dob || '',
         uid: residence.uid || '',
         sale_price: residence.sale_price || 0,
+        saleCurID: (residence as any).saleCurID || null,
         tawjeehIncluded: residence.tawjeehIncluded || 0,
         tawjeeh_amount: residence.tawjeeh_amount || 150,
         insuranceIncluded: residence.insuranceIncluded || 0,
@@ -390,6 +419,29 @@ export default function EditResidenceModal({
                     value={editData.sale_price}
                     onChange={(e) => setEditData({ ...editData, sale_price: parseFloat(e.target.value) || 0 })}
                   />
+                </div>
+                <div>
+                  <label className="text-gray-400 text-sm block mb-1">
+                    Sale Currency:
+                    {loadingCurrencies && (
+                      <span className="ms-2">
+                        <i className="fa fa-spinner fa-spin"></i> Loading...
+                      </span>
+                    )}
+                  </label>
+                  <select
+                    className="form-control"
+                    value={editData.saleCurID || ''}
+                    onChange={(e) => setEditData({ ...editData, saleCurID: e.target.value ? Number(e.target.value) : null })}
+                    disabled={loadingCurrencies}
+                  >
+                    <option value="">Select Currency</option>
+                    {currencies.map((currency: any) => (
+                      <option key={currency.currencyID} value={currency.currencyID}>
+                        {currency.currencyName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="text-gray-400 text-sm block mb-1">Salary Amount:</label>

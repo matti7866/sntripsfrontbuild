@@ -1300,6 +1300,7 @@ const residenceService = {
     dob?: string;
     uid?: string;
     sale_price?: number;
+    saleCurID?: number | null;
     tawjeehIncluded?: number;
     tawjeeh_amount?: number;
     insuranceIncluded?: number;
@@ -1323,6 +1324,9 @@ const residenceService = {
     if (data.dob !== undefined) payload.dob = data.dob;
     if (data.uid !== undefined) payload.uid = data.uid;
     if (data.sale_price !== undefined) payload.sale_price = data.sale_price;
+    if (data.saleCurID !== undefined) {
+      payload.saleCurID = data.saleCurID === null || data.saleCurID === 0 ? null : Number(data.saleCurID);
+    }
     if (data.tawjeehIncluded !== undefined) payload.tawjeehIncluded = data.tawjeehIncluded;
     if (data.tawjeeh_amount !== undefined) payload.tawjeeh_amount = data.tawjeeh_amount;
     if (data.insuranceIncluded !== undefined) payload.insuranceIncluded = data.insuranceIncluded;
