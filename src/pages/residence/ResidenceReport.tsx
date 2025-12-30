@@ -75,10 +75,10 @@ export default function ResidenceReport() {
   }, [records]);
 
   useEffect(() => {
-    // Debounce search - wait 500ms after user stops typing
+    // Debounce search - wait 300ms after user stops typing (faster response)
     const debounceTimer = setTimeout(() => {
       loadRecords();
-    }, searchQuery ? 500 : 0); // Only debounce if there's a search query
+    }, searchQuery ? 300 : 0); // Only debounce if there's a search query
     
     return () => clearTimeout(debounceTimer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -198,6 +198,9 @@ export default function ResidenceReport() {
     try {
       setLoading(true);
       
+      // Apply search only if it's at least 2 characters (to prevent too broad searches)
+      const effectiveSearch = searchQuery && searchQuery.length >= 2 ? searchQuery : '';
+      
       if (activeTab === 'family') {
         // For family residency, use the family-tasks API
         const params: any = {
@@ -205,8 +208,8 @@ export default function ResidenceReport() {
           page: currentPage,
           limit: 10
         };
-        if (searchQuery) {
-          params.search = searchQuery;
+        if (effectiveSearch) {
+          params.search = effectiveSearch;
         }
         const response = await residenceService.getFamilyResidences(params);
         setRecords(response.data);
@@ -221,8 +224,8 @@ export default function ResidenceReport() {
           limit: pageSize
         };
 
-        if (searchQuery) {
-          params.search = searchQuery;
+        if (effectiveSearch) {
+          params.search = effectiveSearch;
         }
 
         // Fetch regular residences for current page
@@ -235,8 +238,8 @@ export default function ResidenceReport() {
           page: currentPage,
           limit: pageSize
         };
-        if (searchQuery) {
-          familyParams.search = searchQuery;
+        if (effectiveSearch) {
+          familyParams.search = effectiveSearch;
         }
         const familyResponse = await residenceService.getFamilyResidences(familyParams);
         const familyRecords = familyResponse.data || [];
@@ -268,8 +271,8 @@ export default function ResidenceReport() {
           limit: 10 // Match old app - 10 records per page
         };
 
-        if (searchQuery) {
-          params.search = searchQuery;
+        if (effectiveSearch) {
+          params.search = effectiveSearch;
         }
 
         if (activeTab === 'mainland') {
@@ -284,7 +287,10 @@ export default function ResidenceReport() {
         
         // Log summary of loaded records
         console.log(`Loaded ${response.data.length} residences for ${activeTab} tab (page ${currentPage})`);
-        console.log('Search query:', searchQuery || 'none');
+        console.log('Search query:', effectiveSearch || 'none');
+        if (searchQuery && searchQuery.length < 2) {
+          console.log('Search query too short (< 2 characters), showing all records');
+        }
       }
     } catch (error: any) {
       console.error('Error loading records:', error);
@@ -941,14 +947,40 @@ export default function ResidenceReport() {
 
       {/* Search Bar */}
       <div className="mb-6">
-        <div className="card p-4" style={{ backgroundColor: '#2d353c', border: '1px solid #495057' }}>
-          <input
-            type="text"
-            className="form-control"
-            value={searchQuery}
-            onChange={handleSearch}
-            placeholder="Search by Customer, Passenger, Company name, or Company Number"
-          />
+        <div className="card p-4" style={{ backgroundColor: '#2d353c', border: '1px solid #495057', position: 'relative' }}>
+          <div className="position-relative">
+            <input
+              type="text"
+              className="form-control"
+              value={searchQuery}
+              onChange={handleSearch}
+              placeholder="Search by Customer, Passenger, Company name, or Company Number (min 2 characters)"
+              style={{ paddingRight: loading ? '40px' : '12px' }}
+            />
+            {loading && (
+              <div style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                color: '#9ca3af'
+              }}>
+                <i className="fa fa-spinner fa-spin"></i>
+              </div>
+            )}
+          </div>
+          {searchQuery && searchQuery.length > 0 && searchQuery.length < 2 && (
+            <small className="d-block mt-2" style={{ color: '#fbbf24' }}>
+              <i className="fa fa-exclamation-triangle me-1"></i>
+              Please enter at least 2 characters to search
+            </small>
+          )}
+          {searchQuery && searchQuery.length >= 2 && (
+            <small className="text-muted d-block mt-2">
+              <i className="fa fa-search me-1"></i>
+              Searching in: Passenger Name, Customer Name, Passport Number, UID, Company Name, Emirates ID, Residence ID
+            </small>
+          )}
         </div>
       </div>
 
