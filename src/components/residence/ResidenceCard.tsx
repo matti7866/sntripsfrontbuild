@@ -126,7 +126,7 @@ export default function ResidenceCard({
   return (
     <>
     <div 
-      className="card residence-card" 
+      className="card residence-card-component" 
       style={{ 
         backgroundColor: '#2d353c',
         overflow: 'visible',
@@ -136,7 +136,7 @@ export default function ResidenceCard({
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
       }}
     >
-      <div className="card-body p-4" style={{ overflow: 'visible' }}>
+      <div className="card-body residence-card-body p-4" style={{ overflow: 'visible' }}>
         {/* Header with name and progress indicator - match old app exactly */}
         <div className="row mb-3 align-items-center">
           <div className="col-md-8">

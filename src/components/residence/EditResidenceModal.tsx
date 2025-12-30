@@ -29,10 +29,6 @@ export default function EditResidenceModal({
     uid: '',
     sale_price: 0,
     saleCurID: null as number | null,
-    tawjeehIncluded: 0,
-    tawjeeh_amount: 150,
-    insuranceIncluded: 0,
-    insuranceAmount: 126,
     remarks: '',
     salary_amount: 0,
   });
@@ -178,10 +174,6 @@ export default function EditResidenceModal({
           : Number(editData.saleCurID);
         dataToSend.saleCurID = currencyIdValue;
       }
-      if (editData.tawjeehIncluded !== undefined) dataToSend.tawjeehIncluded = editData.tawjeehIncluded;
-      if (editData.tawjeeh_amount !== undefined) dataToSend.tawjeeh_amount = editData.tawjeeh_amount;
-      if (editData.insuranceIncluded !== undefined) dataToSend.insuranceIncluded = editData.insuranceIncluded;
-      if (editData.insuranceAmount !== undefined) dataToSend.insuranceAmount = editData.insuranceAmount;
       if (editData.remarks !== undefined) dataToSend.remarks = editData.remarks;
       if (editData.salary_amount !== undefined) dataToSend.salary_amount = editData.salary_amount;
       
@@ -266,10 +258,6 @@ export default function EditResidenceModal({
         uid: residence.uid || '',
         sale_price: residence.sale_price || 0,
         saleCurID: (residence as any).saleCurID || null,
-        tawjeehIncluded: residence.tawjeehIncluded || 0,
-        tawjeeh_amount: residence.tawjeeh_amount || 150,
-        insuranceIncluded: residence.insuranceIncluded || 0,
-        insuranceAmount: residence.insuranceAmount || 126,
         remarks: residence.remarks || '',
         salary_amount: residence.salary_amount || 0,
       });
@@ -289,33 +277,33 @@ export default function EditResidenceModal({
 
   return (
     <div className="modal-overlay" onClick={handleCancel}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto' }}>
+      <div className="modal-container edit-residence-modal-classic" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px', maxHeight: '90vh', overflowY: 'auto', backgroundColor: '#ffffff' }}>
         {/* Modal Header */}
-        <div className="modal-header" style={{ backgroundColor: '#2d353c', color: 'white', borderBottom: '1px solid #495057' }}>
-          <h2 className="modal-title">
-            <i className="fa fa-edit me-2"></i>
+        <div className="modal-header" style={{ backgroundColor: '#ffffff', color: '#1a1a1a', borderBottom: '2px solid #e5e7eb' }}>
+          <h2 className="modal-title" style={{ color: '#1a1a1a', fontWeight: 'bold' }}>
+            <i className="fa fa-edit me-2" style={{ color: '#dc2626' }}></i>
             Edit Residence Information - #{residence.residenceID}
           </h2>
-          <button className="modal-close" onClick={handleCancel}>
+          <button className="modal-close" onClick={handleCancel} style={{ color: '#1a1a1a' }}>
             <i className="fa fa-times"></i>
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="modal-body" style={{ backgroundColor: '#1e2329', padding: '20px', maxHeight: 'calc(90vh - 120px)', overflowY: 'auto' }}>
+        {/* Modal Body - CLASSIC WHITE BACKGROUND */}
+        <div className="modal-body" style={{ backgroundColor: '#ffffff', padding: '20px', maxHeight: 'calc(90vh - 120px)', overflowY: 'auto' }}>
           <div className="space-y-4">
             {/* Customer Information */}
-            <div className="card p-4" style={{ backgroundColor: '#2d353c', border: '1px solid #495057', overflow: 'visible', position: 'relative', zIndex: 10 }}>
-              <h3 className="text-lg font-bold text-white mb-3 border-b border-gray-700 pb-2">
-                <i className="fa fa-user mr-2"></i>
+            <div className="card p-4" style={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', overflow: 'visible', position: 'relative', zIndex: 10 }}>
+              <h3 className="mb-3 border-b pb-2" style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#1a1a1a', borderColor: '#e5e7eb' }}>
+                <i className="fa fa-user me-2" style={{ color: '#dc2626' }}></i>
                 Customer Information
               </h3>
               <div className="space-y-3" style={{ overflow: 'visible' }}>
                 <div style={{ overflow: 'visible', position: 'relative', zIndex: 100001 }}>
-                  <label className="text-gray-400 text-sm block mb-1">
+                  <label className="text-sm block mb-1" style={{ color: '#374151', fontWeight: '500' }}>
                     Select Customer:
                     {loadingCustomers && (
-                      <span className="ms-2">
+                      <span className="ms-2" style={{ color: '#6b7280' }}>
                         <i className="fa fa-spinner fa-spin"></i> Loading...
                       </span>
                     )}
@@ -337,14 +325,14 @@ export default function EditResidenceModal({
             </div>
 
             {/* Passenger Information */}
-            <div className="card p-4" style={{ backgroundColor: '#2d353c', border: '1px solid #495057' }}>
-              <h3 className="text-lg font-bold text-white mb-3 border-b border-gray-700 pb-2">
-                <i className="fa fa-passport mr-2"></i>
+            <div className="card p-4" style={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb' }}>
+              <h3 className="mb-3 border-b pb-2" style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#1a1a1a', borderColor: '#e5e7eb' }}>
+                <i className="fa fa-passport me-2" style={{ color: '#dc2626' }}></i>
                 Passenger Information
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="text-gray-400 text-sm block mb-1">Passenger Name:</label>
+                  <label className="text-sm block mb-1" style={{ color: '#374151', fontWeight: '500' }}>Passenger Name:</label>
                   <input
                     type="text"
                     className="form-control"
@@ -353,7 +341,7 @@ export default function EditResidenceModal({
                   />
                 </div>
                 <div>
-                  <label className="text-gray-400 text-sm block mb-1">Passport Number:</label>
+                  <label className="text-sm block mb-1" style={{ color: '#374151', fontWeight: '500' }}>Passport Number:</label>
                   <input
                     type="text"
                     className="form-control"
@@ -362,7 +350,7 @@ export default function EditResidenceModal({
                   />
                 </div>
                 <div>
-                  <label className="text-gray-400 text-sm block mb-1">Passport Expiry Date:</label>
+                  <label className="text-sm block mb-1" style={{ color: '#374151', fontWeight: '500' }}>Passport Expiry Date:</label>
                   <input
                     type="date"
                     className="form-control"
@@ -371,7 +359,7 @@ export default function EditResidenceModal({
                   />
                 </div>
                 <div>
-                  <label className="text-gray-400 text-sm block mb-1">Gender:</label>
+                  <label className="text-sm block mb-1" style={{ color: '#374151', fontWeight: '500' }}>Gender:</label>
                   <select
                     className="form-control"
                     value={editData.gender}
@@ -383,7 +371,7 @@ export default function EditResidenceModal({
                   </select>
                 </div>
                 <div>
-                  <label className="text-gray-400 text-sm block mb-1">Date of Birth:</label>
+                  <label className="text-sm block mb-1" style={{ color: '#374151', fontWeight: '500' }}>Date of Birth:</label>
                   <input
                     type="date"
                     className="form-control"
@@ -392,7 +380,7 @@ export default function EditResidenceModal({
                   />
                 </div>
                 <div>
-                  <label className="text-gray-400 text-sm block mb-1">UID Number:</label>
+                  <label className="text-sm block mb-1" style={{ color: '#374151', fontWeight: '500' }}>UID Number:</label>
                   <input
                     type="text"
                     className="form-control"
@@ -405,14 +393,14 @@ export default function EditResidenceModal({
             </div>
 
             {/* Financial Summary */}
-            <div className="card p-4" style={{ backgroundColor: '#2d353c', border: '1px solid #495057' }}>
-              <h3 className="text-lg font-bold text-white mb-3 border-b border-gray-700 pb-2">
-                <i className="fa fa-money-bill mr-2"></i>
+            <div className="card p-4" style={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb' }}>
+              <h3 className="mb-3 border-b pb-2" style={{ fontSize: '1.125rem', fontWeight: 'bold', color: '#1a1a1a', borderColor: '#e5e7eb' }}>
+                <i className="fa fa-money-bill me-2" style={{ color: '#dc2626' }}></i>
                 Financial Summary
               </h3>
               <div className="space-y-3">
                 <div>
-                  <label className="text-gray-400 text-sm block mb-1">Sale Price:</label>
+                  <label className="text-sm block mb-1" style={{ color: '#374151', fontWeight: '500' }}>Sale Price:</label>
                   <input
                     type="number"
                     className="form-control"
@@ -421,10 +409,10 @@ export default function EditResidenceModal({
                   />
                 </div>
                 <div>
-                  <label className="text-gray-400 text-sm block mb-1">
+                  <label className="text-sm block mb-1" style={{ color: '#374151', fontWeight: '500' }}>
                     Sale Currency:
                     {loadingCurrencies && (
-                      <span className="ms-2">
+                      <span className="ms-2" style={{ color: '#6b7280' }}>
                         <i className="fa fa-spinner fa-spin"></i> Loading...
                       </span>
                     )}
@@ -444,7 +432,7 @@ export default function EditResidenceModal({
                   </select>
                 </div>
                 <div>
-                  <label className="text-gray-400 text-sm block mb-1">Salary Amount:</label>
+                  <label className="text-sm block mb-1" style={{ color: '#374151', fontWeight: '500' }}>Salary Amount:</label>
                   <input
                     type="number"
                     className="form-control"
@@ -453,51 +441,7 @@ export default function EditResidenceModal({
                   />
                 </div>
                 <div>
-                  <label className="text-gray-400 text-sm block mb-1">TAWJEEH Included:</label>
-                  <select
-                    className="form-control"
-                    value={editData.tawjeehIncluded}
-                    onChange={(e) => setEditData({ ...editData, tawjeehIncluded: parseInt(e.target.value) })}
-                  >
-                    <option value={1}>Yes (Included)</option>
-                    <option value={0}>No (Separate charge)</option>
-                  </select>
-                </div>
-                {editData.tawjeehIncluded === 0 && (
-                  <div>
-                    <label className="text-gray-400 text-sm block mb-1">TAWJEEH Amount:</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={editData.tawjeeh_amount}
-                      onChange={(e) => setEditData({ ...editData, tawjeeh_amount: parseFloat(e.target.value) || 0 })}
-                    />
-                  </div>
-                )}
-                <div>
-                  <label className="text-gray-400 text-sm block mb-1">Insurance Included:</label>
-                  <select
-                    className="form-control"
-                    value={editData.insuranceIncluded}
-                    onChange={(e) => setEditData({ ...editData, insuranceIncluded: parseInt(e.target.value) })}
-                  >
-                    <option value={1}>Yes (Included)</option>
-                    <option value={0}>No (Separate charge)</option>
-                  </select>
-                </div>
-                {editData.insuranceIncluded === 0 && (
-                  <div>
-                    <label className="text-gray-400 text-sm block mb-1">Insurance Amount:</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={editData.insuranceAmount}
-                      onChange={(e) => setEditData({ ...editData, insuranceAmount: parseFloat(e.target.value) || 0 })}
-                    />
-                  </div>
-                )}
-                <div>
-                  <label className="text-gray-400 text-sm block mb-1">Remarks:</label>
+                  <label className="text-sm block mb-1" style={{ color: '#374151', fontWeight: '500' }}>Remarks:</label>
                   <textarea
                     className="form-control"
                     rows={3}
@@ -512,12 +456,17 @@ export default function EditResidenceModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="modal-footer" style={{ backgroundColor: '#2d353c', borderTop: '1px solid #495057', padding: '15px 20px' }}>
+        <div className="modal-footer" style={{ backgroundColor: '#ffffff', borderTop: '2px solid #e5e7eb', padding: '15px 20px' }}>
           <div className="d-flex justify-content-end gap-2">
             <button
               className="btn btn-secondary"
               onClick={handleCancel}
               disabled={saving}
+              style={{
+                backgroundColor: '#6b7280',
+                borderColor: '#6b7280',
+                color: '#ffffff'
+              }}
             >
               <i className="fa fa-times me-2"></i> Cancel
             </button>
@@ -528,6 +477,7 @@ export default function EditResidenceModal({
               style={{
                 background: 'linear-gradient(to right, #16a34a, #15803d)',
                 border: 'none',
+                color: '#ffffff'
               }}
             >
               <i className="fa fa-save me-2"></i> {saving ? 'Saving...' : 'Save Changes'}

@@ -89,8 +89,8 @@
   color: #fff !important;
 }
 
-/* Card styling - Prevent white background on hover */
-.residence-report-page .card {
+/* Card styling - Prevent white background on hover - SCOPED TO AVOID CONFLICTS */
+.residence-report-page .residence-report-card {
   background-color: #2d353c !important;
   border: 1px solid #495057 !important;
   border-radius: 8px;
@@ -98,13 +98,26 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   margin-bottom: 16px;
   overflow: visible !important;
-  transition: all 0.2s ease;
+  transition: box-shadow 0.2s ease !important;
+  transform: none !important; /* Disable transform to prevent shake */
+  backface-visibility: hidden !important;
 }
 
-.residence-report-page .card:hover {
+.residence-report-page .residence-report-card:hover {
   background-color: #2d353c !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4) !important;
+  transform: none !important; /* NO TRANSFORM - prevents shake completely */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important; /* Just enhance shadow, no movement */
+}
+
+/* Generic card styling (for search box, etc.) */
+.residence-report-page .card:not(.residence-report-card):not(.residence-card-component) {
+  background-color: #2d353c !important;
+  border: 1px solid #495057 !important;
+  border-radius: 8px;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  margin-bottom: 16px;
+  overflow: visible !important;
 }
 
 .residence-report-page .card-body {
@@ -114,17 +127,17 @@
   overflow: visible !important;
 }
 
-.residence-report-page .card:hover .card-body {
+.residence-report-page .residence-report-card:hover .card-body {
   background-color: #2d353c !important;
 }
 
 /* Prevent any white backgrounds on hover for all card children */
-.residence-report-page .card:hover .row,
-.residence-report-page .card:hover .col-md-8,
-.residence-report-page .card:hover .col-md-4,
-.residence-report-page .card:hover .col-md-6,
-.residence-report-page .card:hover .col-md-12,
-.residence-report-page .card:hover div {
+.residence-report-page .residence-report-card:hover .row,
+.residence-report-page .residence-report-card:hover .col-md-8,
+.residence-report-page .residence-report-card:hover .col-md-4,
+.residence-report-page .residence-report-card:hover .col-md-6,
+.residence-report-page .residence-report-card:hover .col-md-12,
+.residence-report-page .residence-report-card:hover div {
   background-color: transparent !important;
 }
 
@@ -287,11 +300,11 @@
   padding: 20px;
 }
 
-/* Card hover effect */
-.residence-report-page .card.bg-gray-700:hover {
-  transform: translateY(-2px);
-  transition: transform 0.2s ease;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+/* Card hover effect - scoped - NO TRANSFORM */
+.residence-report-page .residence-report-card.bg-gray-700:hover {
+  transform: none !important; /* Disable transform completely */
+  transition: box-shadow 0.2s ease !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Dropdown Menu */

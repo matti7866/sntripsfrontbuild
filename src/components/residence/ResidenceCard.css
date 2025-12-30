@@ -1,61 +1,64 @@
-/* Residence Card Hover Fix - Prevent white background */
-.residence-card {
+/* Residence Card Hover Fix - Prevent white background and shake */
+/* Using unique scoped class to avoid conflicts: residence-card-component */
+.residence-card-component {
   background-color: #2d353c !important;
-  transition: all 0.2s ease;
+  transition: box-shadow 0.2s ease !important;
+  transform: none !important; /* Disable transform to prevent shake */
+  backface-visibility: hidden !important;
 }
 
-.residence-card:hover {
+.residence-card-component:hover {
   background-color: #2d353c !important;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4) !important;
+  transform: none !important; /* NO TRANSFORM - prevents shake completely */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important; /* Just enhance shadow, no movement */
 }
 
-.residence-card .card-body {
+.residence-card-component .residence-card-body {
   background-color: #2d353c !important;
 }
 
-.residence-card:hover .card-body {
+.residence-card-component:hover .residence-card-body {
   background-color: #2d353c !important;
 }
 
 /* Ensure all child elements maintain transparent background (so dark card shows through) */
-.residence-card .row,
-.residence-card .col-md-8,
-.residence-card .col-md-4,
-.residence-card .col-md-6,
-.residence-card .col-md-12,
-.residence-card .col-12 {
+.residence-card-component .row,
+.residence-card-component .col-md-8,
+.residence-card-component .col-md-4,
+.residence-card-component .col-md-6,
+.residence-card-component .col-md-12,
+.residence-card-component .col-12 {
   background-color: transparent !important;
 }
 
-.residence-card:hover .row,
-.residence-card:hover .col-md-8,
-.residence-card:hover .col-md-4,
-.residence-card:hover .col-md-6,
-.residence-card:hover .col-md-12,
-.residence-card:hover .col-12 {
+.residence-card-component:hover .row,
+.residence-card-component:hover .col-md-8,
+.residence-card-component:hover .col-md-4,
+.residence-card-component:hover .col-md-6,
+.residence-card-component:hover .col-md-12,
+.residence-card-component:hover .col-12 {
   background-color: transparent !important;
 }
 
-/* Progress Circle Styles */
-.progress-circle-old {
+/* Progress Circle Styles - Scoped */
+.residence-card-progress-circle {
   transform: rotate(-90deg);
 }
 
-.progress-circle-bg-old {
+.residence-card-progress-bg {
   fill: none;
   stroke: #2d353c;
   stroke-width: 10;
 }
 
-.progress-circle-fill-old {
+.residence-card-progress-fill {
   fill: none;
   stroke-width: 10;
   stroke-linecap: round;
   transition: stroke-dasharray 0.3s ease;
 }
 
-.progress-circle-text-old {
+.residence-card-progress-text {
   fill: #ffffff;
   font-size: 20px;
   font-weight: bold;
@@ -63,7 +66,7 @@
   text-anchor: middle;
 }
 
-.progress-container {
+.residence-card-progress-container {
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1287,6 +1287,7 @@ html, body, #root {
 /* Prevent cards from changing background on hover - keep original color */
 .card:hover {
   background-color: inherit !important;
+  transform: none !important; /* Prevent any transform that causes shake */
 }
 
 .card-body {
@@ -1295,6 +1296,16 @@ html, body, #root {
 
 .card:hover .card-body {
   background-color: inherit !important;
+  transform: none !important; /* Prevent any transform that causes shake */
+}
+
+/* Specific override for residence cards - NO TRANSFORM AT ALL */
+.residence-card-component,
+.residence-card-component:hover,
+.residence-report-page .card,
+.residence-report-page .card:hover {
+  transform: none !important;
+  transition: box-shadow 0.2s ease !important;
 }
 
 .card-header {

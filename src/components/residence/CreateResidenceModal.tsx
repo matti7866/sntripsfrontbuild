@@ -438,7 +438,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
     <div className="modal-overlay" onClick={onClose}>
       <div 
         className="modal-container" 
-        style={{ maxWidth: '1200px', maxHeight: '95vh' }}
+        style={{ maxWidth: '1800px', width: '95vw', maxHeight: '95vh' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -477,7 +477,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
               {/* Customer Selection */}
               <div className="row mb-3">
                 <div className="col-md-4">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Customer <span className="text-danger">*</span>
                   </label>
                   <div className="position-relative" ref={customerDropdownRef}>
@@ -487,13 +487,14 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                       style={{ 
                         cursor: 'pointer', 
                         userSelect: 'none',
-                        fontSize: '13px',
-                        padding: '8px 12px',
-                        height: '38px',
+                        fontSize: '14px',
+                        padding: '10px 14px',
+                        height: '42px',
                         backgroundColor: '#ffffff',
                         color: '#000000',
                         border: '1px solid #d1d5db',
-                        borderRadius: '6px'
+                        borderRadius: '6px',
+                        lineHeight: '22px'
                       }}
                     >
                       {getSelectedCustomerDisplay()}
@@ -502,13 +503,15 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                       <div 
                         className="position-absolute w-100 bg-white border rounded mt-1 shadow-lg"
                         style={{ 
-                          zIndex: 10002, 
+                          zIndex: 10010,
                           maxHeight: '300px', 
                           overflow: 'hidden',
                           borderColor: '#d1d5db',
                           backgroundColor: '#ffffff',
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
                           top: '100%',
-                          left: 0
+                          left: 0,
+                          marginTop: '4px'
                         }}
                       >
                         <div className="p-2 border-bottom" style={{ borderColor: '#e5e7eb' }}>
@@ -521,7 +524,15 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                             onClick={(e) => e.stopPropagation()}
                             onFocus={(e) => e.stopPropagation()}
                             autoFocus
-                            style={{ backgroundColor: '#ffffff', color: '#000000' }}
+                            style={{ 
+                              backgroundColor: '#ffffff', 
+                              color: '#000000',
+                              fontSize: '14px',
+                              padding: '8px 12px',
+                              height: '38px',
+                              border: '1px solid #d1d5db',
+                              borderRadius: '6px'
+                            }}
                           />
                         </div>
                         <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
@@ -565,7 +576,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                   </div>
                 </div>
                 <div className="col-md-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Reference <span className="text-danger">*</span>
                   </label>
                   <input
@@ -575,11 +586,11 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     onChange={(e) => handleChange('ref', e.target.value)}
                     placeholder="Enter Reference"
                     required
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                 </div>
                 <div className="col-md-2">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Inside/Outside <span className="text-danger">*</span>
                   </label>
                   <select
@@ -592,7 +603,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                       }
                     }}
                     required
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px', lineHeight: '22px' }}
                   >
                     <option value="">Choose</option>
                     <option value="Inside">Inside</option>
@@ -600,7 +611,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                   </select>
                 </div>
                 <div className="col-md-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Residence Type <span className="text-danger">*</span>
                   </label>
                   <select
@@ -608,7 +619,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     value={formData.res_type}
                     onChange={(e) => handleChange('res_type', e.target.value)}
                     required
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px', lineHeight: '22px' }}
                   >
                     <option value="mainland">Mainland</option>
                     <option value="freezone">Freezone</option>
@@ -619,7 +630,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
               {/* Basic Details */}
               <div className="row mb-3">
                 <div className="col-md-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     UID {formData.insideOutside === 'Inside' && <span className="text-danger">*</span>}
                   </label>
                   <input
@@ -629,11 +640,11 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     onChange={(e) => handleChange('uid', e.target.value)}
                     placeholder={formData.insideOutside === 'Inside' ? 'Enter UID (Required)' : 'UID (Optional)'}
                     required={formData.insideOutside === 'Inside'}
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                 </div>
                 <div className="col-md-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Salary Amount <span className="text-danger">*</span>
                   </label>
                   <input
@@ -644,16 +655,16 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     placeholder="Enter Salary Amount"
                     required
                     min="1"
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                 </div>
                 <div className="col-md-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>Position</label>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>Position</label>
                   <select
                     className="form-select"
                     value={formData.position || ''}
                     onChange={(e) => handleChange('position', e.target.value ? parseInt(e.target.value) : null)}
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px', lineHeight: '22px' }}
                   >
                     <option value="">Select Position</option>
                     {lookups?.positions && Array.isArray(lookups.positions) && lookups.positions.map((p: any) => (
@@ -664,7 +675,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                   </select>
                 </div>
                 <div className="col-md-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Sale Price <span className="text-danger">*</span>
                   </label>
                   <input
@@ -676,7 +687,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     required
                     min="0"
                     step="0.01"
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                 </div>
               </div>
@@ -684,7 +695,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
               {/* Currency */}
               <div className="row mb-3">
                 <div className="col-md-4">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Currency <span className="text-danger">*</span>
                   </label>
                   <select
@@ -692,7 +703,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     value={formData.sale_currency_type || ''}
                     onChange={(e) => handleChange('sale_currency_type', e.target.value ? parseInt(e.target.value) : null)}
                     required
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px', lineHeight: '22px' }}
                   >
                     <option value="">Select Currency</option>
                     {lookups?.currencies && Array.isArray(lookups.currencies) && lookups.currencies.map((c: any) => (
@@ -740,7 +751,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                   </h6>
                 </div>
                 <div className="col-lg-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Passenger Name <span className="text-danger">*</span>
                   </label>
                   <input
@@ -749,11 +760,11 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     onChange={(e) => handleChange('passengerName', e.target.value)}
                     placeholder="Enter or auto-filled from passport"
                     required
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                 </div>
                 <div className="col-lg-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Nationality <span className="text-danger">*</span>
                   </label>
                   <select
@@ -761,7 +772,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     value={formData.nationality || ''}
                     onChange={(e) => handleChange('nationality', e.target.value ? parseInt(e.target.value) : null)}
                     required
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px', lineHeight: '22px' }}
                   >
                     <option value="">Select Nationality</option>
                     {lookups?.nationalities && Array.isArray(lookups.nationalities) && lookups.nationalities.map((n: any) => (
@@ -772,7 +783,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                   </select>
                 </div>
                 <div className="col-md-2">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Passport # <span className="text-danger">*</span>
                   </label>
                   <input
@@ -782,11 +793,11 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     onChange={(e) => handleChange('passportNumber', e.target.value)}
                     placeholder="Enter passport number"
                     required
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                 </div>
                 <div className="col-md-2">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Passport Expiry <span className="text-danger">*</span>
                   </label>
                   <input
@@ -795,11 +806,11 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     value={formData.passportExpiryDate}
                     onChange={(e) => handleChange('passportExpiryDate', e.target.value)}
                     required
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                 </div>
                 <div className="col-md-2">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Gender <span className="text-danger">*</span>
                   </label>
                   <select
@@ -807,7 +818,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     value={formData.gender}
                     onChange={(e) => handleChange('gender', e.target.value)}
                     required
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px', lineHeight: '22px' }}
                   >
                     <option value="">Choose gender</option>
                     <option value="male">Male</option>
@@ -815,7 +826,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                   </select>
                 </div>
                 <div className="col-md-2">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Date of Birth <span className="text-danger">*</span>
                   </label>
                   <input
@@ -824,7 +835,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     value={formData.dob}
                     onChange={(e) => handleChange('dob', e.target.value)}
                     required
-                    style={{ fontSize: '13px', padding: '8px 12px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '10px 14px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                 </div>
               </div>
@@ -832,7 +843,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
               {/* File Uploads */}
               <div className="row mb-3">
                 <div className="col-lg-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     <i className="fa fa-passport me-2"></i>
                     Passport <span className="text-danger">*</span>
                   </label>
@@ -843,7 +854,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     onChange={(e) => handleFileChange('passportFile', e.target.files?.[0] || null)}
                     required
                     disabled={ocrProcessing}
-                    style={{ fontSize: '13px', padding: '6px 10px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '8px 12px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                   <small className="text-muted" style={{ fontSize: '11px', display: 'block', marginTop: '4px' }}>
                     {ocrProcessing ? (
@@ -855,7 +866,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                 </div>
 
                 <div className="col-lg-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>
                     Photo <span className="text-danger">*</span>
                   </label>
                   <input
@@ -864,31 +875,31 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                     accept="image/jpeg,image/png"
                     onChange={(e) => handleFileChange('photoFile', e.target.files?.[0] || null)}
                     required
-                    style={{ fontSize: '13px', padding: '6px 10px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '8px 12px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                   <small className="text-muted" style={{ fontSize: '11px', display: 'block', marginTop: '4px' }}>Upload passport photo</small>
                 </div>
 
                 <div className="col-lg-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>Emirates ID Front</label>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>Emirates ID Front</label>
                   <input
                     type="file"
                     className="form-control"
                     accept="image/jpeg,image/png,application/pdf"
                     onChange={(e) => handleFileChange('emiratesIdFrontFile', e.target.files?.[0] || null)}
-                    style={{ fontSize: '13px', padding: '6px 10px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '8px 12px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                   <small className="text-muted" style={{ fontSize: '11px', display: 'block', marginTop: '4px' }}>Optional</small>
                 </div>
 
                 <div className="col-lg-3">
-                  <label className="form-label" style={{ fontSize: '12px', fontWeight: '600', marginBottom: '4px', color: '#000000' }}>Emirates ID Back</label>
+                  <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', marginBottom: '6px', color: '#000000', display: 'block' }}>Emirates ID Back</label>
                   <input
                     type="file"
                     className="form-control"
                     accept="image/jpeg,image/png,application/pdf"
                     onChange={(e) => handleFileChange('emiratesIdBackFile', e.target.files?.[0] || null)}
-                    style={{ fontSize: '13px', padding: '6px 10px', height: '38px' }}
+                    style={{ fontSize: '14px', padding: '8px 12px', height: '42px', border: '1px solid #d1d5db', borderRadius: '6px' }}
                   />
                   <small className="text-muted" style={{ fontSize: '11px', display: 'block', marginTop: '4px' }}>Optional</small>
                 </div>
