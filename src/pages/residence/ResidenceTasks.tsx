@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import residenceService from '../../services/residenceService';
+import axios from '../../services/api';
 import Swal from 'sweetalert2';
 import SearchableSelect from '../../components/common/SearchableSelect';
 import OfferLetterModal from '../../components/residence/tasks/OfferLetterModal';
@@ -352,7 +353,8 @@ export default function ResidenceTasks() {
           onClick={() => handleDocumentVerification(residence)}
           title="Check Document Verification"
         >
-          <i className="fa fa-file-check"></i>
+          <i className="fa fa-file-check me-1"></i>
+          Check Verification
         </button>
       );
     } else if (step === '2') {
@@ -541,40 +543,164 @@ export default function ResidenceTasks() {
       });
 
       // Get nationality code from lookups
-      const nationality = lookups.nationalities.find(
+      let nationality = lookups.nationalities.find(
         (n) => n.countryName === residence.countryName
       );
 
+      // If not found, try case-insensitive search
       if (!nationality) {
-        Swal.fire('Error', 'Nationality code not found', 'error');
-        return;
+        nationality = lookups.nationalities.find(
+          (n) => n.countryName?.toLowerCase() === residence.countryName?.toLowerCase()
+        );
       }
 
+      // If still not found, try partial match
+      if (!nationality) {
+        nationality = lookups.nationalities.find(
+          (n) => n.countryName?.toLowerCase().includes(residence.countryName?.toLowerCase()) ||
+                 residence.countryName?.toLowerCase().includes(n.countryName?.toLowerCase())
+        );
+      }
+
+      // Common country name variations and their codes
+      const countryCodeMap: { [key: string]: number } = {
+        'afghanistan': 209,
+        'pakistan': 209,
+        'india': 209,
+        'bangladesh': 209,
+        'sri lanka': 209,
+        'nepal': 209,
+        'philippines': 209,
+        'egypt': 209,
+        'jordan': 209,
+        'syria': 209,
+        'lebanon': 209,
+        'yemen': 209,
+        'sudan': 209,
+        'somalia': 209,
+        'ethiopia': 209,
+        'kenya': 209,
+        'uganda': 209,
+        'tanzania': 209
+      };
+
+      // If still not found, use country code map
+      if (!nationality && residence.countryName) {
+        const countryKey = residence.countryName.toLowerCase();
+        if (countryCodeMap[countryKey]) {
+          nationality = { 
+            airport_id: countryCodeMap[countryKey], 
+            countryName: residence.countryName 
+          };
+        }
+      }
+
+      if (!nationality) {
+        // Ask user to enter nationality code manually
+        const { value: nationalityCode } = await Swal.fire({
+          title: 'Nationality Code Required',
+          html: `
+            <div style="text-align: left;">
+              <p>Could not find nationality code for: <strong>${residence.countryName}</strong></p>
+              <p class="text-muted" style="font-size: 12px; margin-bottom: 15px;">
+                Please enter the MOHRE nationality code manually (usually 209 for most countries)
+              </p>
+            </div>
+          `,
+          input: 'text',
+          inputPlaceholder: 'Enter nationality code (e.g., 209)',
+          inputValue: '209',
+          showCancelButton: true,
+          inputValidator: (value) => {
+            if (!value) {
+              return 'Please enter a nationality code!';
+            }
+            return null;
+          }
+        });
+
+        if (!nationalityCode) {
+          return; // User cancelled
+        }
+
+        nationality = { 
+          airport_id: parseInt(nationalityCode), 
+          countryName: residence.countryName 
+        };
+      }
+
+      // Call DVS API
+      console.log('Calling DVS API with:', {
+        passport: residence.passportNumber,
+        nationalityCode: nationality.airport_id
+      });
+
       const response = await fetch(
-        `https://api.sntrips.com/trx/verify.php?passportNumber=${residence.passportNumber}&nationalityCode=${nationality.airport_id}&residenceID=${residence.residenceID}`
+        `https://api.sntrips.com/trx/dvs.php?passportNumber=${residence.passportNumber}&nationalityCode=${nationality.airport_id}`
       );
+      
+      console.log('DVS API response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`API returned status ${response.status}`);
+      }
+      
       const data = await response.json();
+      console.log('DVS API data:', data);
 
       if (data.status === 'success') {
+        // Save verification status to database using FormData for POST
+        let saveFailed = false;
+        try {
+          const alertType = data.data.alert_type;
+          const statusText = alertType === 'success' ? 'Document Approved' : 
+                            (alertType === 'danger' ? 'Document Rejected' : 
+                            (alertType === 'warning' ? 'Document Approved' : 'Pending Verification'));
+          
+          const formData = new FormData();
+          formData.append('residenceID', residence.residenceID.toString());
+          formData.append('document_verify', statusText);
+          formData.append('document_verify_message', data.data.verification_message);
+          
+          const saveResponse = await axios.post('/residence/update-verification.php', formData);
+          console.log('Save result:', saveResponse.data);
+          
+          if (saveResponse.data.status !== 'success') {
+            console.error('Database save failed:', saveResponse.data.message);
+            saveFailed = true;
+          }
+        } catch (saveError) {
+          console.error('Error saving to database:', saveError);
+          saveFailed = true;
+        }
+        
+        // Wait a bit for database to update
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
         await loadTasks(); // Reload to show updated status
         
-        const statusLower = data.data.verification_status.toLowerCase();
         let icon: 'success' | 'error' | 'info' | 'warning' = 'info';
+        const alertType = data.data.alert_type;
         
-        if (statusLower.includes('approved') || statusLower.includes('verified')) {
+        if (alertType === 'success' || data.data.verification_message.toLowerCase().includes('approved')) {
           icon = 'success';
-        } else if (statusLower.includes('rejected') || statusLower.includes('denied')) {
+        } else if (alertType === 'danger' || data.data.verification_message.toLowerCase().includes('rejected')) {
           icon = 'error';
-        } else if (statusLower.includes('pending')) {
+        } else if (alertType === 'warning') {
           icon = 'warning';
         }
 
         Swal.fire({
-          title: 'Verification Status',
+          title: 'Document Verification',
           html: `
             <div style="text-align: left;">
               <p><strong>Passport:</strong> ${residence.passportNumber}</p>
-              <p><strong>Status:</strong> <span style="font-weight: bold; color: ${icon === 'success' ? 'green' : icon === 'error' ? 'red' : icon === 'warning' ? 'orange' : 'blue'};">${data.data.verification_status}</span></p>
+              <p><strong>Nationality:</strong> ${residence.countryName}</p>
+              <p><strong>Nationality Code:</strong> ${nationality.airport_id}</p>
+              <p><strong>Status:</strong></p>
+              <div class="alert alert-${alertType === 'danger' ? 'danger' : alertType === 'success' ? 'success' : 'warning'}" style="text-align: left; margin-top: 10px;">
+                ${data.data.verification_message}
+              </div>
             </div>
           `,
           icon: icon,
@@ -585,7 +711,18 @@ export default function ResidenceTasks() {
       }
     } catch (error: any) {
       console.error('Error checking document verification:', error);
-      Swal.fire('Error', 'Failed to check document verification', 'error');
+      Swal.fire({
+        title: 'Error',
+        html: `
+          <div style="text-align: left;">
+            <p>Failed to check document verification</p>
+            <p class="text-danger" style="font-size: 12px; margin-top: 10px;">
+              ${error.message || error.toString()}
+            </p>
+          </div>
+        `,
+        icon: 'error'
+      });
     }
   };
 
