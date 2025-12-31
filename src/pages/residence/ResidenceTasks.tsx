@@ -653,9 +653,24 @@ export default function ResidenceTasks() {
         let saveFailed = false;
         try {
           const alertType = data.data.alert_type;
-          const statusText = alertType === 'success' ? 'Document Approved' : 
-                            (alertType === 'danger' ? 'Document Rejected' : 
-                            (alertType === 'warning' ? 'Document Approved' : 'Pending Verification'));
+          const message = data.data.verification_message.toLowerCase();
+          
+          // Determine status based on message content
+          let statusText = 'Pending Verification';
+          
+          if (message.includes('not available') || message.includes('no data') || message.includes('no information')) {
+            statusText = 'No Data Available';
+          } else if (message.includes('approved') || message.includes('proceed')) {
+            statusText = 'Document Approved';
+          } else if (message.includes('rejected') || message.includes('denied')) {
+            statusText = 'Document Rejected';
+          } else if (alertType === 'success') {
+            statusText = 'Document Approved';
+          } else if (alertType === 'danger') {
+            statusText = 'Document Rejected';
+          } else if (alertType === 'warning') {
+            statusText = 'Document Approved';
+          }
           
           const formData = new FormData();
           formData.append('residenceID', residence.residenceID.toString());
@@ -1137,11 +1152,12 @@ export default function ResidenceTasks() {
                                   ? 'badge bg-danger'
                                   : residence.document_verify.toLowerCase().includes('pending')
                                   ? 'badge bg-warning text-dark'
-                                  : residence.document_verify.toLowerCase().includes('no data')
+                                  : residence.document_verify.toLowerCase().includes('no data') || residence.document_verify.toLowerCase().includes('not available')
                                   ? 'badge bg-secondary'
                                   : 'badge bg-info'
                               }
                               style={{ fontSize: '9px', padding: '1px 4px' }}
+                              title={residence.document_verify_message || residence.document_verify}
                             >
                               {residence.document_verify}
                             </span>
