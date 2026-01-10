@@ -12,6 +12,7 @@ import ILOEModal from '../../components/residence/ILOEModal';
 import RemarksModal from '../../components/residence/RemarksModal';
 import PendingPaymentsModal from '../../components/residence/PendingPaymentsModal';
 import CreateResidenceModal from '../../components/residence/CreateResidenceModal';
+import HiddenResidencesModal from '../../components/residence/HiddenResidencesModal';
 import './ResidenceTasks.css';
 
 interface ResidenceTask {
@@ -117,6 +118,7 @@ export default function ResidenceTasks() {
   const [showRemarksModal, setShowRemarksModal] = useState(false);
   const [showRemarksHistory, setShowRemarksHistory] = useState(false);
   const [showPendingPaymentsModal, setShowPendingPaymentsModal] = useState(false);
+  const [showHiddenResidencesModal, setShowHiddenResidencesModal] = useState(false);
   const [selectedResidenceId, setSelectedResidenceId] = useState<number | null>(null);
   const [selectedCompanyNumber, setSelectedCompanyNumber] = useState<string>('');
   const [selectedCompanyName, setSelectedCompanyName] = useState<string>('');
@@ -983,6 +985,10 @@ export default function ResidenceTasks() {
               <i className="fa fa-list me-1"></i>
               List
             </button>
+            <button className="btn btn-sm btn-info" onClick={() => setShowHiddenResidencesModal(true)}>
+              <i className="fa fa-eye-slash me-1"></i>
+              Hidden
+            </button>
             <a href="/residence/cancellation" className="btn btn-sm btn-danger">
               <i className="fa fa-times-circle me-1"></i>
               Cancel
@@ -1636,6 +1642,15 @@ export default function ResidenceTasks() {
             position_id: p.position_id,
             position_name: p.posiiton_name
           }))
+        }}
+      />
+
+      {/* Hidden Residences Modal */}
+      <HiddenResidencesModal
+        isOpen={showHiddenResidencesModal}
+        onClose={() => setShowHiddenResidencesModal(false)}
+        onSuccess={() => {
+          loadTasks(); // Reload current step to reflect changes
         }}
       />
     </div>
