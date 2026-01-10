@@ -56,9 +56,9 @@ export default function HiddenResidencesModal({ isOpen, onClose, onSuccess }: Hi
   const loadHiddenResidences = async () => {
     setLoading(true);
     try {
-      // Fetch residences with step 0 and NULL
+      // Fetch residences with step 0, NULL, and Step 2
       const data = await residenceService.getTasks({ 
-        step: '0,null', // Fetch both step 0 and NULL steps
+        step: '0,null,2', // Fetch step 0, NULL, and step 2
         _t: Date.now() // Cache buster
       });
       
@@ -110,79 +110,178 @@ export default function HiddenResidencesModal({ isOpen, onClose, onSuccess }: Hi
       return;
     }
 
-    const result = await Swal.fire({
-      title: 'Confirm Move',
-      html: `
-        <div class="text-start">
-          <p>Are you sure you want to move <strong>${selectedResidences.size}</strong> residence(s) to <strong>Step ${targetStep}</strong>?</p>
-          <div class="alert alert-info mt-3" style="font-size: 12px;">
-            <strong>Note:</strong> This will change the step for all selected residences.
-          </div>
-        </div>
-      `,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, Move',
-      cancelButtonText: 'Cancel',
-      confirmButtonColor: '#007bff',
-      cancelButtonColor: '#6c757d',
+    // Show loading while checking for blocked steps
+    Swal.fire({
+      title: 'Checking...',
+      html: 'Validating move operations...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
     });
 
-    if (result.isConfirmed) {
-      setLoading(true);
-      let successCount = 0;
-      let errorCount = 0;
-      const errors: string[] = [];
+    // Check each selected residence for blocked steps
+    const blockedResidences: Array<{ id: number; reason: string }> = [];
+    const allowedResidences: number[] = [];
 
-      try {
-        for (const residenceId of selectedResidences) {
-          try {
-            await residenceService.moveResidenceToStep(residenceId, targetStep);
-            successCount++;
-          } catch (error: any) {
-            errorCount++;
-            errors.push(`Residence #${residenceId}: ${error.response?.data?.message || error.message}`);
+    try {
+      for (const residenceId of selectedResidences) {
+        try {
+          // Fetch full residence details to check which steps have financial transactions
+          const residenceDetails = await residenceService.getResidence(residenceId);
+          
+          // Map step names to their transaction checks
+          const stepsWithTransactions: Record<string, boolean> = {
+            '1': !!(residenceDetails?.offerLetterCost && (residenceDetails?.offerLetterAccount || residenceDetails?.offerLetterSupplier) && residenceDetails?.offerLetterDate),
+            '2': !!(residenceDetails?.insuranceCost && (residenceDetails?.insuranceAccount || residenceDetails?.insuranceSupplier) && residenceDetails?.insuranceDate),
+            '3': !!(residenceDetails?.laborCardFee && (residenceDetails?.laborCardAccount || residenceDetails?.laborCardSupplier) && residenceDetails?.laborCardDate),
+            '4': !!(residenceDetails?.eVisaCost && (residenceDetails?.eVisaAccount || residenceDetails?.eVisaSupplier) && residenceDetails?.eVisaDate),
+            '5': !!(residenceDetails?.changeStatusCost && (residenceDetails?.changeStatusAccount || residenceDetails?.changeStatusSupplier) && residenceDetails?.changeStatusDate),
+            '6': !!(residenceDetails?.medicalTCost && (residenceDetails?.medicalAccount || residenceDetails?.medicalSupplier) && residenceDetails?.medicalDate),
+            '7': !!(residenceDetails?.emiratesIDCost && (residenceDetails?.emiratesIDAccount || residenceDetails?.emiratesIDSupplier) && residenceDetails?.emiratesIDDate),
+            '8': !!(residenceDetails?.visaStampingCost && (residenceDetails?.visaStampingAccount || residenceDetails?.visaStampingSupplier) && residenceDetails?.visaStampingDate),
+          };
+
+          // Check if target step has transactions
+          if (stepsWithTransactions[targetStep]) {
+            blockedResidences.push({
+              id: residenceId,
+              reason: `Step ${targetStep} has saved financial transactions`
+            });
+          } else {
+            allowedResidences.push(residenceId);
           }
-        }
-
-        // Show results
-        if (errorCount === 0) {
-          await Swal.fire({
-            title: 'Success!',
-            html: `Successfully moved ${successCount} residence(s) to Step ${targetStep}`,
-            icon: 'success',
-            confirmButtonColor: '#007bff'
-          });
-        } else {
-          await Swal.fire({
-            title: 'Partial Success',
-            html: `
-              <div class="text-start">
-                <p><strong>Moved:</strong> ${successCount} residence(s)</p>
-                <p><strong>Failed:</strong> ${errorCount} residence(s)</p>
-                ${errors.length > 0 ? `
-                  <div class="alert alert-danger mt-3" style="font-size: 11px; max-height: 200px; overflow-y: auto;">
-                    <strong>Errors:</strong><br>
-                    ${errors.map(e => `• ${e}`).join('<br>')}
-                  </div>
-                ` : ''}
-              </div>
-            `,
-            icon: 'warning',
-            confirmButtonColor: '#007bff'
+        } catch (error: any) {
+          // If we can't fetch details, add to blocked with error
+          blockedResidences.push({
+            id: residenceId,
+            reason: `Error checking: ${error.message}`
           });
         }
-
-        // Reset selections and reload
-        setSelectedResidences(new Set());
-        setSelectAll(false);
-        await loadHiddenResidences();
-        onSuccess();
-      } catch (error: any) {
-        Swal.fire('Error', 'An unexpected error occurred', 'error');
-      } finally {
-        setLoading(false);
       }
+
+      // Close loading dialog
+      Swal.close();
+
+      // If all are blocked, show error
+      if (allowedResidences.length === 0) {
+        await Swal.fire({
+          title: 'Cannot Move',
+          html: `
+            <div class="text-start">
+              <p>None of the selected residences can be moved to <strong>Step ${targetStep}</strong>.</p>
+              <div class="alert alert-danger mt-3" style="font-size: 11px; max-height: 300px; overflow-y: auto;">
+                <strong>Blocked Residences:</strong><br>
+                ${blockedResidences.map(b => `• Residence #${b.id}: ${b.reason}`).join('<br>')}
+              </div>
+              <div class="alert alert-info mt-2" style="font-size: 11px;">
+                <strong>Note:</strong> Steps with saved financial transactions cannot be moved to prevent data corruption.
+              </div>
+            </div>
+          `,
+          icon: 'error',
+          confirmButtonColor: '#007bff'
+        });
+        return;
+      }
+
+      // Show confirmation with summary
+      let confirmHtml = `
+        <div class="text-start">
+          <p>Move <strong>${allowedResidences.length}</strong> residence(s) to <strong>Step ${targetStep}</strong>?</p>
+      `;
+
+      if (blockedResidences.length > 0) {
+        confirmHtml += `
+          <div class="alert alert-warning mt-3" style="font-size: 11px;">
+            <strong>⚠️ ${blockedResidences.length} residence(s) will be skipped:</strong><br>
+            ${blockedResidences.slice(0, 5).map(b => `• #${b.id}: ${b.reason}`).join('<br>')}
+            ${blockedResidences.length > 5 ? `<br>• ...and ${blockedResidences.length - 5} more` : ''}
+          </div>
+        `;
+      }
+
+      confirmHtml += `
+          <div class="alert alert-info mt-2" style="font-size: 11px;">
+            <strong>Note:</strong> Only residences without saved transactions in the target step will be moved.
+          </div>
+        </div>
+      `;
+
+      const result = await Swal.fire({
+        title: 'Confirm Move',
+        html: confirmHtml,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: `Move ${allowedResidences.length} Residence(s)`,
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#007bff',
+        cancelButtonColor: '#6c757d',
+      });
+
+      if (result.isConfirmed) {
+        setLoading(true);
+        let successCount = 0;
+        let errorCount = 0;
+        const errors: string[] = [];
+
+        try {
+          for (const residenceId of allowedResidences) {
+            try {
+              await residenceService.moveResidenceToStep(residenceId, targetStep);
+              successCount++;
+            } catch (error: any) {
+              errorCount++;
+              errors.push(`Residence #${residenceId}: ${error.response?.data?.message || error.message}`);
+            }
+          }
+
+          // Show results
+          let resultHtml = `
+            <div class="text-start">
+              <p><strong>Successfully Moved:</strong> ${successCount} residence(s)</p>
+          `;
+
+          if (errorCount > 0) {
+            resultHtml += `<p><strong>Failed:</strong> ${errorCount} residence(s)</p>`;
+          }
+
+          if (blockedResidences.length > 0) {
+            resultHtml += `<p><strong>Skipped:</strong> ${blockedResidences.length} residence(s) (had transactions)</p>`;
+          }
+
+          if (errors.length > 0) {
+            resultHtml += `
+              <div class="alert alert-danger mt-3" style="font-size: 11px; max-height: 200px; overflow-y: auto;">
+                <strong>Errors:</strong><br>
+                ${errors.map(e => `• ${e}`).join('<br>')}
+              </div>
+            `;
+          }
+
+          resultHtml += `</div>`;
+
+          await Swal.fire({
+            title: errorCount === 0 ? 'Success!' : 'Partial Success',
+            html: resultHtml,
+            icon: errorCount === 0 ? 'success' : 'warning',
+            confirmButtonColor: '#007bff'
+          });
+
+          // Reset selections and reload
+          setSelectedResidences(new Set());
+          setSelectAll(false);
+          await loadHiddenResidences();
+          onSuccess();
+        } catch (error: any) {
+          Swal.fire('Error', 'An unexpected error occurred', 'error');
+        } finally {
+          setLoading(false);
+        }
+      }
+    } catch (error: any) {
+      Swal.close();
+      Swal.fire('Error', 'Failed to validate residences: ' + error.message, 'error');
     }
   };
 
@@ -199,7 +298,7 @@ export default function HiddenResidencesModal({ isOpen, onClose, onSuccess }: Hi
         <div className="modal-header">
           <h3>
             <i className="fa fa-eye-slash"></i>
-            Hidden Residences (Step 0 / NULL)
+            Manage Residences (Step 0 / NULL / 2)
           </h3>
           <button className="modal-close-btn" onClick={onClose} disabled={loading}>
             <i className="fa fa-times"></i>
@@ -216,7 +315,7 @@ export default function HiddenResidencesModal({ isOpen, onClose, onSuccess }: Hi
           ) : residences.length === 0 ? (
             <div className="text-center py-5">
               <i className="fa fa-check-circle fa-3x text-success"></i>
-              <p className="mt-3 text-muted">No hidden residences found. All residences are assigned to steps!</p>
+              <p className="mt-3 text-muted">No residences found in Step 0, NULL, or Step 2.</p>
             </div>
           ) : (
             <>
@@ -346,7 +445,7 @@ export default function HiddenResidencesModal({ isOpen, onClose, onSuccess }: Hi
               <div className="alert alert-info mt-3" style={{ fontSize: '13px' }}>
                 <strong><i className="fa fa-info-circle me-2"></i>Information:</strong>
                 <ul className="mb-0 mt-2">
-                  <li>These residences are currently in <strong>Step 0 or have NULL steps</strong> and are hidden from the main tasks view.</li>
+                  <li>These residences are in <strong>Step 0, NULL, or Step 2 (Insurance)</strong>.</li>
                   <li>Select one or more residences and choose a target step to move them.</li>
                   <li>Click on a row to select/deselect it, or use the checkbox in the header to select all.</li>
                 </ul>
