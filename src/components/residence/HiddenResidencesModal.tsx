@@ -56,9 +56,9 @@ export default function HiddenResidencesModal({ isOpen, onClose, onSuccess }: Hi
   const loadHiddenResidences = async () => {
     setLoading(true);
     try {
-      // Fetch residences with step 0
+      // Fetch residences with step 0 and NULL
       const data = await residenceService.getTasks({ 
-        step: '0',
+        step: '0,null', // Fetch both step 0 and NULL steps
         _t: Date.now() // Cache buster
       });
       
@@ -199,7 +199,7 @@ export default function HiddenResidencesModal({ isOpen, onClose, onSuccess }: Hi
         <div className="modal-header">
           <h3>
             <i className="fa fa-eye-slash"></i>
-            Hidden Residences (Step 0)
+            Hidden Residences (Step 0 / NULL)
           </h3>
           <button className="modal-close-btn" onClick={onClose} disabled={loading}>
             <i className="fa fa-times"></i>
@@ -333,7 +333,7 @@ export default function HiddenResidencesModal({ isOpen, onClose, onSuccess }: Hi
                         </td>
                         <td>
                           <span className="badge bg-danger">
-                            Step {residence.completedStep || 0}
+                            {residence.completedStep === null || residence.completedStep === undefined ? 'NULL' : `Step ${residence.completedStep}`}
                           </span>
                         </td>
                       </tr>
@@ -346,7 +346,7 @@ export default function HiddenResidencesModal({ isOpen, onClose, onSuccess }: Hi
               <div className="alert alert-info mt-3" style={{ fontSize: '13px' }}>
                 <strong><i className="fa fa-info-circle me-2"></i>Information:</strong>
                 <ul className="mb-0 mt-2">
-                  <li>These residences are currently in <strong>Step 0</strong> and are hidden from the main tasks view.</li>
+                  <li>These residences are currently in <strong>Step 0 or have NULL steps</strong> and are hidden from the main tasks view.</li>
                   <li>Select one or more residences and choose a target step to move them.</li>
                   <li>Click on a row to select/deselect it, or use the checkbox in the header to select all.</li>
                 </ul>

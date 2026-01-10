@@ -1,10 +1,10 @@
 # Hidden Residences Feature
 
 ## Overview
-This feature allows users to manage residences that have been moved to Step 0 and are hidden from the main tasks view. It provides a centralized interface to view all hidden residences and move them back to appropriate steps.
+This feature allows users to manage residences that have been moved to Step 0 or have NULL steps and are hidden from the main tasks view. It provides a centralized interface to view all hidden residences and move them back to appropriate steps.
 
 ## Problem Solved
-Previously, when using the "Move" feature to transfer residences between steps, some records were accidentally moved to Step 0, causing them to become hidden from all step views. This made it difficult to locate and recover these residences.
+Previously, when using the "Move" feature to transfer residences between steps, some records were accidentally moved to Step 0 or ended up with NULL steps, causing them to become hidden from all step views. This made it difficult to locate and recover these residences.
 
 ## Implementation
 
@@ -44,7 +44,7 @@ The modal displays a comprehensive table with:
 - Passport Number
 - Sale Price
 - Paid Amount with percentage
-- Current Step (always Step 0)
+- Current Step (Step 0 or NULL)
 
 ### 3. Select Residences
 - **Individual Selection**: Click on any row or checkbox
@@ -74,7 +74,7 @@ The modal displays a comprehensive table with:
    - Click the "Hidden" button in the header
 
 2. **View Hidden Residences**
-   - Modal opens showing all Step 0 residences
+   - Modal opens showing all Step 0 and NULL step residences
    - If none exist, shows success message
 
 3. **Select Residences to Move**
@@ -97,7 +97,7 @@ The modal displays a comprehensive table with:
 ## Technical Details
 
 ### API Integration
-- **Endpoint**: Uses existing `residenceService.getTasks()` with `step: '0'`
+- **Endpoint**: Uses existing `residenceService.getTasks()` with `step: '0,null'` to fetch both Step 0 and NULL steps
 - **Move API**: Uses existing `residenceService.moveResidenceToStep()`
 - **Cache Busting**: Includes timestamp parameter to ensure fresh data
 
@@ -166,8 +166,9 @@ The modal displays a comprehensive table with:
 
 ## Notes
 
-- The feature uses Step 0 as the identifier for hidden residences
+- The feature uses Step 0 and NULL as identifiers for hidden residences
 - No backend changes were required
 - Compatible with existing move functionality
 - Does not interfere with normal task flow
+- The API call includes both step 0 and NULL values: `step: '0,null'`
 
