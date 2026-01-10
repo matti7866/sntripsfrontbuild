@@ -56,18 +56,43 @@ export default function HiddenResidencesModal({ isOpen, onClose, onSuccess }: Hi
   const loadHiddenResidences = async () => {
     setLoading(true);
     try {
-      // Fetch residences with step 0, NULL, and Step 2
-      const data = await residenceService.getTasks({ 
-        step: '0,null,2', // Fetch step 0, NULL, and step 2
-        _t: Date.now() // Cache buster
-      });
+      // Fetch residences from multiple steps (backend doesn't support comma-separated values)
+      // Make separate calls for step 0, null, and step 2, then merge results
+      const [step0Data, stepNullData, step2Data] = await Promise.all([
+        residenceService.getTasks({ 
+          step: '0',
+          _t: Date.now()
+        }).catch(() => ({ residences: [] })),
+        residenceService.getTasks({ 
+          step: 'null',
+          _t: Date.now()
+        }).catch(() => ({ residences: [] })),
+        residenceService.getTasks({ 
+          step: '2',
+          _t: Date.now()
+        }).catch(() => ({ residences: [] }))
+      ]);
       
-      if (data && data.residences) {
-        const residencesArray = Array.isArray(data.residences) ? data.residences : [];
-        setResidences(residencesArray);
-      } else {
-        setResidences([]);
-      }
+      // Merge all residences and remove duplicates by ID
+      const allResidences: HiddenResidence[] = [];
+      const seenIds = new Set<number>();
+      
+      const addResidences = (data: any) => {
+        if (data && data.residences && Array.isArray(data.residences)) {
+          data.residences.forEach((residence: HiddenResidence) => {
+            if (!seenIds.has(residence.residenceID)) {
+              seenIds.add(residence.residenceID);
+              allResidences.push(residence);
+            }
+          });
+        }
+      };
+      
+      addResidences(step0Data);
+      addResidences(stepNullData);
+      addResidences(step2Data);
+      
+      setResidences(allResidences);
     } catch (error: any) {
       console.error('Error loading hidden residences:', error);
       Swal.fire('Error', error.response?.data?.message || 'Failed to load hidden residences', 'error');
