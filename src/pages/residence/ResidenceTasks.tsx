@@ -44,6 +44,7 @@ interface ResidenceTask {
   tawjeeh_charge: number;
   iloe_charge: number;
   completedStep: number;
+  dob?: string;
 }
 
 interface StepInfo {
@@ -363,6 +364,52 @@ export default function ResidenceTasks() {
       buttons.push(
         <button key="continue" className="btn btn-success btn-xs" style={buttonStyle} onClick={() => { setSelectedResidenceId(residence.residenceID); setShowInsuranceModal(true); }}>
           Continue
+        </button>,
+        <button 
+          key="pay-insurance" 
+          className="btn btn-primary btn-xs" 
+          style={buttonStyle}
+          onClick={() => {
+            if (residence.mb_number) {
+              // Copy MB number to clipboard
+              navigator.clipboard.writeText(residence.mb_number).then(() => {
+                Swal.fire({
+                  title: 'MB Number Copied!',
+                  html: `
+                    <p><strong>MB Number:</strong> ${residence.mb_number}</p>
+                    <p>The MB number has been copied to your clipboard.</p>
+                    <p>Click OK to open the insurance payment page.</p>
+                    <p style="color: #666; font-size: 12px;">Click "Quick Pay" on the login page, then paste the MB number.</p>
+                  `,
+                  icon: 'success',
+                  confirmButtonText: 'Open Insurance Page'
+                }).then(() => {
+                  // Open insurance login page
+                  window.open('https://dinwpp.ae/nsure/app/#/auth/login', '_blank');
+                });
+              }).catch(() => {
+                // If clipboard fails, still show the MB and open the page
+                Swal.fire({
+                  title: 'Pay Insurance',
+                  html: `
+                    <p><strong>MB Number:</strong> ${residence.mb_number}</p>
+                    <p>Please copy this MB number manually.</p>
+                    <p style="color: #666; font-size: 12px;">Click "Quick Pay" on the login page, then paste the MB number.</p>
+                  `,
+                  icon: 'info',
+                  confirmButtonText: 'Open Insurance Page'
+                }).then(() => {
+                  window.open('https://dinwpp.ae/nsure/app/#/auth/login', '_blank');
+                });
+              });
+            } else {
+              Swal.fire('Error', 'MB Number not found for this residence', 'error');
+            }
+          }}
+          title="Pay Insurance Online"
+        >
+          <i className="fa fa-credit-card me-1"></i>
+          Pay Insurance
         </button>
       );
     } else if (step === '3') {
@@ -1143,9 +1190,14 @@ export default function ResidenceTasks() {
                           />
                           <strong style={{ fontSize: '11px' }}>{residence.passenger_name.toUpperCase()}</strong>
                         </div>
+                        {residence.dob && (
+                          <div style={{ fontSize: '9px', marginTop: '2px', color: '#666', fontWeight: '700' }}>
+                            <strong>DOB:</strong> {new Date(residence.dob).toLocaleDateString('en-GB')}
+                          </div>
+                        )}
                         {residence.uid && (
-                          <div className="text-muted" style={{ fontSize: '9px' }}>
-                            UID: {residence.uid}
+                          <div className="text-muted" style={{ fontSize: '9px', fontWeight: '700' }}>
+                            <strong>UID:</strong> {residence.uid}
                           </div>
                         )}
                         {residence.document_verify && (
