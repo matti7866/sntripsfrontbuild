@@ -212,7 +212,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1050;
+  z-index: 9999 !important; /* Higher than any dropdown */
   padding: 20px;
 }
 
@@ -226,6 +226,8 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 10000 !important; /* Even higher for modal content */
 }
 
 .modal-header {

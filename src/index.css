@@ -15,6 +15,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global Modal z-index fix - prevents dropdowns from appearing on top of modals */
+.modal,
+.modal-overlay,
+[class*="modal-overlay"],
+.swal2-container {
+  z-index: 9999 !important;
+}
+
+.modal-content,
+[class*="modal-content"],
+.swal2-popup {
+  z-index: 10000 !important;
+  position: relative;
+}
+
+/* Ensure dropdowns inside modals stay on top */
+.modal .select__menu,
+.modal [class*="__menu"],
+.modal-content .select__menu,
+.modal-content [class*="__menu"] {
+  z-index: 10001 !important;
+}
+
 /* ColorAdmin Base Variables and Styles - Matching nav.php */
 :root {
   --primary-red: #dc2626;

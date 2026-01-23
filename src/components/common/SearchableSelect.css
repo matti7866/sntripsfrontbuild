@@ -1,7 +1,14 @@
 .searchable-select {
   position: relative;
   width: 100%;
-  z-index: 10000;
+  z-index: 100; /* Lower default z-index */
+}
+
+/* Higher z-index only when inside a modal */
+.modal .searchable-select,
+.modal-content .searchable-select,
+[class*="modal"] .searchable-select {
+  z-index: 10001;
 }
 
 .searchable-select.disabled {
@@ -60,11 +67,18 @@
   border: 1px solid #ced4da;
   border-radius: 0.25rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 99999 !important;
+  z-index: 101; /* Default low z-index */
   max-height: 300px;
   display: flex;
   flex-direction: column;
   margin-top: 4px;
+}
+
+/* Higher z-index only when inside a modal */
+.modal .searchable-select-dropdown,
+.modal-content .searchable-select-dropdown,
+[class*="modal"] .searchable-select-dropdown {
+  z-index: 10002 !important;
 }
 
 .searchable-select-search {

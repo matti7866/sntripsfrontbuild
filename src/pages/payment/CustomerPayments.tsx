@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import Swal from 'sweetalert2';
 import { customerPaymentService } from '../../services/paymentService';
 import apiClient from '../../services/api';
@@ -18,6 +19,10 @@ interface DropdownData {
 
 export default function CustomerPayments() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const currentStaffId = user?.staff_id || user?.id || 0;
+  const canEditDelete = currentStaffId === 1; // Only staff ID 1 can edit/delete
+  
   const [filters, setFilters] = useState<CustomerPaymentFilters>({
     start_date: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     end_date: new Date().toISOString().split('T')[0],
@@ -504,20 +509,28 @@ export default function CustomerPayments() {
                               <i className="fa fa-receipt"></i>
                             )}
                           </button>
-                          <button
-                            className="btn btn-sm btn-warning me-2"
-                            onClick={() => handleEditPayment(payment)}
-                            title="Edit Payment"
-                          >
-                            <i className="fa fa-edit"></i>
-                          </button>
-                          <button
-                            className="btn btn-sm btn-danger"
-                            onClick={() => handleDeletePayment(payment.pay_id)}
-                            title="Delete Payment"
-                          >
-                            <i className="fa fa-trash"></i>
-                          </button>
+                          {canEditDelete ? (
+                            <>
+                              <button
+                                className="btn btn-sm btn-warning me-2"
+                                onClick={() => handleEditPayment(payment)}
+                                title="Edit Payment"
+                              >
+                                <i className="fa fa-edit"></i>
+                              </button>
+                              <button
+                                className="btn btn-sm btn-danger"
+                                onClick={() => handleDeletePayment(payment.pay_id)}
+                                title="Delete Payment"
+                              >
+                                <i className="fa fa-trash"></i>
+                              </button>
+                            </>
+                          ) : (
+                            <span className="text-muted" style={{ fontSize: '11px' }}>
+                              <i className="fa fa-lock"></i> Restricted
+                            </span>
+                          )}
                         </div>
                       </td>
                     </tr>

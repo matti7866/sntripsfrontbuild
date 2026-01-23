@@ -18,9 +18,6 @@ interface PaymentModalProps {
 interface UnifiedBreakdown {
   residence_outstanding: number;
   fine_outstanding: number;
-  tawjeeh_outstanding: number;
-  iloe_insurance_outstanding: number;
-  iloe_fine_outstanding: number;
   cancellation_outstanding: number;
   custom_charges_outstanding: number;
   total_outstanding: number;
@@ -84,9 +81,6 @@ export default function PaymentModal({
         setBreakdown({
           residence_outstanding: outstanding,
           fine_outstanding: 0,
-          tawjeeh_outstanding: 0,
-          iloe_insurance_outstanding: 0,
-          iloe_fine_outstanding: 0,
           cancellation_outstanding: 0,
           custom_charges_outstanding: 0,
           total_outstanding: outstanding
@@ -280,24 +274,6 @@ export default function PaymentModal({
                             <tr>
                               <td><i className="fa fa-exclamation-triangle me-2 text-warning"></i>E-Visa Fine</td>
                               <td className="text-end">{breakdown.fine_outstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                            </tr>
-                          )}
-                          {breakdown.tawjeeh_outstanding > 0 && (
-                            <tr>
-                              <td><i className="fa fa-check-circle me-2 text-success"></i>TAWJEEH Service</td>
-                              <td className="text-end">{breakdown.tawjeeh_outstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                            </tr>
-                          )}
-                          {breakdown.iloe_insurance_outstanding > 0 && (
-                            <tr>
-                              <td><i className="fa fa-shield-alt me-2 text-info"></i>ILOE Insurance</td>
-                              <td className="text-end">{breakdown.iloe_insurance_outstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                            </tr>
-                          )}
-                          {breakdown.iloe_fine_outstanding > 0 && (
-                            <tr>
-                              <td><i className="fa fa-exclamation-circle me-2 text-danger"></i>ILOE Fine</td>
-                              <td className="text-end">{breakdown.iloe_fine_outstanding.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                             </tr>
                           )}
                           {breakdown.cancellation_outstanding > 0 && (
