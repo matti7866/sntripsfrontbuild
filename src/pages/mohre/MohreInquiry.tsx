@@ -71,9 +71,18 @@ interface CompanyData {
   };
 }
 
+interface ApplicationStatusData {
+  mb_number: string;
+  status_message?: string;
+  status_type?: string;
+  application_info?: { [key: string]: string };
+  has_details: boolean;
+}
+
 export default function MohreInquiry() {
   const [permitNumber, setPermitNumber] = useState('');
   const [mbNumber, setMbNumber] = useState('');
+  const [mbNumberForStatus, setMbNumberForStatus] = useState('');
   const [companyNumber, setCompanyNumber] = useState('');
   const [selectedCompany, setSelectedCompany] = useState('');
   const [companies, setCompanies] = useState<Array<{ company_id: number; company_name: string; company_number: string }>>([]);
@@ -81,6 +90,7 @@ export default function MohreInquiry() {
   const [data, setData] = useState<EWPData | null>(null);
   const [immigrationData, setImmigrationData] = useState<ImmigrationData | null>(null);
   const [companyData, setCompanyData] = useState<CompanyData | null>(null);
+  const [applicationStatusData, setApplicationStatusData] = useState<ApplicationStatusData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -211,6 +221,7 @@ export default function MohreInquiry() {
     setData(null);
     setImmigrationData(null);
     setCompanyData(null);
+    setApplicationStatusData(null);
 
     try {
       const response = await fetch(`https://api.sntrips.com/trx/ewp.php?permitNumber=${permitNumber.trim()}`);
@@ -244,6 +255,7 @@ export default function MohreInquiry() {
     setImmigrationData(null);
     setData(null);
     setCompanyData(null);
+    setApplicationStatusData(null);
 
     try {
       const response = await fetch(`https://api.sntrips.com/trx/wpricp.php?mbNumber=${mbNumber.trim()}`);
@@ -277,6 +289,7 @@ export default function MohreInquiry() {
     setCompanyData(null);
     setData(null);
     setImmigrationData(null);
+    setApplicationStatusData(null);
 
     try {
       const response = await fetch(`https://api.sntrips.com/trx/company-info.php?companyNumber=${companyNumber.trim()}`);
@@ -297,14 +310,50 @@ export default function MohreInquiry() {
     }
   };
 
+  const handleSearchApplicationStatus = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!mbNumberForStatus.trim()) {
+      Swal.fire('Error', 'Please enter an MB/Transaction number', 'error');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setApplicationStatusData(null);
+    setData(null);
+    setImmigrationData(null);
+    setCompanyData(null);
+
+    try {
+      const response = await fetch(`https://api.sntrips.com/trx/application-status.php?mbNumber=${mbNumberForStatus.trim()}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setApplicationStatusData(result.data);
+      } else {
+        setError(result.message || 'Failed to fetch application status');
+        Swal.fire('Error', result.message || 'Failed to fetch application status', 'error');
+      }
+    } catch (err: any) {
+      console.error('Error fetching application status:', err);
+      setError('Failed to connect to MOHRE. Please try again.');
+      Swal.fire('Error', 'Failed to connect to MOHRE. Please try again.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleReset = () => {
     setPermitNumber('');
     setMbNumber('');
+    setMbNumberForStatus('');
     setCompanyNumber('');
     setSelectedCompany('');
     setData(null);
     setImmigrationData(null);
     setCompanyData(null);
+    setApplicationStatusData(null);
     setError(null);
   };
 
@@ -321,7 +370,7 @@ export default function MohreInquiry() {
       {/* Search Cards Row */}
       <div className="row">
         {/* Electronic Work Permit Search */}
-        <div className="col-md-4 mb-4">
+        <div className="col-md-3 mb-4">
           <div className="card h-100">
             <div className="card-header bg-primary text-white">
               <h5 className="mb-0">
@@ -372,7 +421,7 @@ export default function MohreInquiry() {
         </div>
 
         {/* Immigration Status Search */}
-        <div className="col-md-4 mb-4">
+        <div className="col-md-3 mb-4">
           <div className="card h-100">
             <div className="card-header bg-success text-white">
               <h5 className="mb-0">
@@ -423,7 +472,7 @@ export default function MohreInquiry() {
         </div>
 
         {/* Company Information Search */}
-        <div className="col-md-4 mb-4">
+        <div className="col-md-3 mb-4">
           <div className="card h-100">
             <div className="card-header bg-warning text-dark">
               <h5 className="mb-0">
@@ -501,10 +550,61 @@ export default function MohreInquiry() {
             </div>
           </div>
         </div>
+
+        {/* Application Status Search */}
+        <div className="col-md-3 mb-4">
+          <div className="card h-100">
+            <div className="card-header bg-info text-white">
+              <h5 className="mb-0">
+                <i className="fa fa-tasks me-2"></i>
+                Application Status
+              </h5>
+            </div>
+            <div className="card-body">
+              <form onSubmit={handleSearchApplicationStatus}>
+                <div className="mb-3">
+                  <label htmlFor="mbNumberForStatus" className="form-label">
+                    MB/Transaction Number <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="mbNumberForStatus"
+                    className="form-control"
+                    placeholder="Enter MB number (e.g., MB272236740AE)"
+                    value={mbNumberForStatus}
+                    onChange={(e) => setMbNumberForStatus(e.target.value)}
+                    disabled={loading}
+                  />
+                  <small className="text-muted">
+                    <i className="fa fa-info-circle me-1"></i>
+                    Try example: <a href="#" onClick={(e) => { e.preventDefault(); setMbNumberForStatus('MB272236740AE'); }} className="text-info">MB272236740AE</a>
+                  </small>
+                </div>
+                <button 
+                  type="submit" 
+                  className="btn btn-info w-100"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <i className="fa fa-spinner fa-spin me-2"></i>
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa fa-search me-2"></i>
+                      Check Application Status
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Reset Button */}
-      {(data || immigrationData || companyData) && (
+      {(data || immigrationData || companyData || applicationStatusData) && (
         <div className="text-center mb-4">
           <button 
             type="button" 
@@ -895,8 +995,65 @@ export default function MohreInquiry() {
         </div>
       )}
 
+      {/* Application Status Results */}
+      {applicationStatusData && !loading && (
+        <div className="results-container">
+          <div className="card mb-4">
+            <div className="card-body p-4" style={{ backgroundColor: '#f8f9fa' }}>
+              <h4 className="text-center mb-4" style={{ fontSize: '1.5rem', fontWeight: '500' }}>
+                Application Status
+              </h4>
+              
+              {applicationStatusData.has_details && applicationStatusData.application_info ? (
+                <div className="bg-white p-4 rounded">
+                  <div className="row">
+                    {Object.entries(applicationStatusData.application_info).map(([key, value], index) => {
+                      // Translate Arabic field names to English
+                      const fieldNames: { [key: string]: string } = {
+                        'اسم المنشاة': 'Company Name',
+                        'رقم المعاملة': 'Transaction Number',
+                        'رقم المنشأة': 'Company Number',
+                        'الإمارة': 'Emirate',
+                        'تاريخ التسليم': 'Submission Date',
+                        'نوع المعاملة': 'Transaction Type',
+                        'حالة الطلب': 'Application Status'
+                      };
+                      
+                      const fieldName = fieldNames[key] || key;
+                      const isFullWidth = fieldName === 'Transaction Type' || fieldName === 'Application Status';
+                      
+                      return (
+                        <div key={index} className={isFullWidth ? 'col-12 mb-3' : 'col-md-6 mb-3'}>
+                          <div>
+                            <strong>{fieldName}:</strong>{' '}
+                            {fieldName === 'Application Status' ? (
+                              <span className={`badge ${value.toLowerCase().includes('processed') ? 'bg-success' : 'bg-warning'}`}>
+                                {value}
+                              </span>
+                            ) : (
+                              decodeAndTranslate(value, fieldName === 'Company Name')
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white p-4 rounded text-center">
+                  <div className={`alert alert-${applicationStatusData.status_type || 'info'}`}>
+                    <i className="fa fa-info-circle me-2"></i>
+                    {applicationStatusData.status_message}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Error Message */}
-      {error && !loading && !data && !immigrationData && !companyData && (
+      {error && !loading && !data && !immigrationData && !companyData && !applicationStatusData && (
         <div className="alert alert-danger">
           <i className="fa fa-exclamation-circle me-2"></i>
           {error}
