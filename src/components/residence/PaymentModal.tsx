@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import residenceService from '../../services/residenceService';
 import walletService from '../../services/walletService';
+import mailerooService from '../../services/mailerooService';
 import type { Residence } from '../../types/residence';
 import '../modals/Modal.css';
 
@@ -112,6 +113,75 @@ export default function PaymentModal({
     }
   };
 
+  const sendPaymentNotifications = async (paymentAmount: number, paymentMethodUsed: string) => {
+    if (!residence) return;
+
+    const customerEmail = (residence as any).customer_email || (residence as any).customerEmail || '';
+    const passengerName = residence.passenger_name || 'Customer';
+    const residenceID = residence.residenceID;
+    const currentDate = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    // Send admin notification
+    try {
+      await mailerooService.sendNotification({
+        to: 'selabnadirydxb@gmail.com',
+        subject: `Visa Payment Received - ${passengerName}`,
+        message: `
+          <p><strong>A visa payment has been received</strong></p>
+          <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>Passenger Name:</strong> ${passengerName}</p>
+            <p style="margin: 5px 0;"><strong>Reference ID:</strong> #${residenceID}</p>
+            <p style="margin: 5px 0;"><strong>Payment Amount:</strong> ${paymentAmount.toFixed(2)} AED</p>
+            <p style="margin: 5px 0;"><strong>Payment Method:</strong> ${paymentMethodUsed}</p>
+            <p style="margin: 5px 0;"><strong>Date & Time:</strong> ${currentDate}</p>
+            ${customerEmail ? `<p style="margin: 5px 0;"><strong>Customer Email:</strong> ${customerEmail}</p>` : ''}
+          </div>
+          <p>This is an automated notification from the payment system.</p>
+        `,
+        type: 'success'
+      });
+      console.log('Admin notification sent successfully');
+    } catch (error) {
+      console.error('Failed to send admin notification:', error);
+    }
+
+    // Send customer confirmation (only if email exists)
+    if (customerEmail) {
+      try {
+        await mailerooService.sendNotification({
+          to: customerEmail,
+          subject: 'Visa Payment Confirmation - SN Travels',
+          message: `
+            <p>Dear ${passengerName},</p>
+            <p>Thank you for your payment. We have successfully received your visa payment.</p>
+            <div style="background-color: #f0fdf4; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+              <p style="margin: 5px 0;"><strong>Payment Details:</strong></p>
+              <p style="margin: 5px 0;"><strong>Reference ID:</strong> #${residenceID}</p>
+              <p style="margin: 5px 0;"><strong>Amount Paid:</strong> ${paymentAmount.toFixed(2)} AED</p>
+              <p style="margin: 5px 0;"><strong>Payment Method:</strong> ${paymentMethodUsed}</p>
+              <p style="margin: 5px 0;"><strong>Date & Time:</strong> ${currentDate}</p>
+              <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #10b981;">✓ Confirmed</span></p>
+            </div>
+            <p>Your visa payment has been processed successfully. If you have any questions, please don't hesitate to contact us.</p>
+            <p style="margin-top: 20px; color: #666; font-size: 14px;">
+              Thank you for choosing SN Travels & Tourism.
+            </p>
+          `,
+          type: 'success'
+        });
+        console.log('Customer confirmation sent successfully to:', customerEmail);
+      } catch (error) {
+        console.error('Failed to send customer confirmation:', error);
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -173,7 +243,13 @@ export default function PaymentModal({
           });
         }
         
+        // Show success message immediately
         Swal.fire('Success!', `Payment of ${paymentAmount.toFixed(2)} AED processed from wallet successfully`, 'success');
+        
+        // Send email notifications in background (non-blocking)
+        sendPaymentNotifications(paymentAmount, 'Wallet').catch(err => 
+          console.error('Background email error:', err)
+        );
       } else {
         // Process account payment (existing logic)
         if (isFamilyResidence) {
@@ -183,6 +259,7 @@ export default function PaymentModal({
             accountID: parseInt(formData.accountID),
             remarks: formData.remarks
           });
+          // Show success message immediately
           Swal.fire('Success!', 'Family residence payment processed successfully', 'success');
         } else {
           await residenceService.processUnifiedPayment({
@@ -191,9 +268,19 @@ export default function PaymentModal({
             accountID: parseInt(formData.accountID),
             remarks: formData.remarks
           });
+          // Show success message immediately
           Swal.fire('Success!', 'Unified payment processed successfully', 'success');
         }
+        
+        // Send email notifications in background (non-blocking)
+        const selectedAccount = accounts.find(acc => acc.accountID === parseInt(formData.accountID));
+        const accountName = selectedAccount?.accountName || 'Account';
+        sendPaymentNotifications(paymentAmount, accountName).catch(err => 
+          console.error('Background email error:', err)
+        );
       }
+      
+      // Close modal immediately after showing success
       onClose();
       onSubmit({});
     } catch (error: any) {
