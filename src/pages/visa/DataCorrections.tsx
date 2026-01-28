@@ -385,16 +385,14 @@ export default function DataCorrections() {
                           </td>
                           <td style={{ padding: '4px 6px' }}>
                             <div className="d-flex gap-1">
-                              {currentTab === 'unfixed' && (
-                                <button
-                                  className="btn btn-xs btn-primary"
-                                  style={{ padding: '2px 6px', fontSize: '11px' }}
-                                  onClick={() => handleEditClick(record)}
-                                  title="Fix Data"
-                                >
-                                  <i className="fa fa-edit"></i> Fix
-                                </button>
-                              )}
+                              <button
+                                className={`btn btn-xs ${currentTab === 'unfixed' ? 'btn-primary' : 'btn-success'}`}
+                                style={{ padding: '2px 6px', fontSize: '11px' }}
+                                onClick={() => handleEditClick(record)}
+                                title={currentTab === 'unfixed' ? 'Fix Data' : 'Edit Data'}
+                              >
+                                <i className="fa fa-edit"></i> {currentTab === 'unfixed' ? 'Fix' : 'Edit'}
+                              </button>
                               <button
                                 className="btn btn-xs btn-warning"
                                 style={{ padding: '2px 6px', fontSize: '11px' }}
