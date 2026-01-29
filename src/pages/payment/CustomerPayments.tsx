@@ -5,13 +5,14 @@ import { useAuth } from '../../context/AuthContext';
 import Swal from 'sweetalert2';
 import { customerPaymentService } from '../../services/paymentService';
 import apiClient from '../../services/api';
+import mailerooService from '../../services/mailerooService';
 import SearchableSelect from '../../components/form/SearchableSelect';
 import { PaymentReceiptModal } from '../../components/modals';
 import type { CustomerPayment, CustomerPaymentFilters, CreateCustomerPaymentRequest } from '../../types/payment';
 import './CustomerPayments.css';
 
 interface DropdownData {
-  customers: Array<{ customer_id: number; customer_name: string }>;
+  customers: Array<{ customer_id: number; customer_name: string; customer_email?: string }>;
   accounts: Array<{ account_ID: number; account_Name: string }>;
   currencies: Array<{ currencyID: number; currencyName: string }>;
   staff: Array<{ staff_id: number; staff_name: string }>;
@@ -72,7 +73,7 @@ export default function CustomerPayments() {
   // Add payment mutation
   const addPaymentMutation = useMutation({
     mutationFn: (data: CreateCustomerPaymentRequest) => customerPaymentService.addPayment(data),
-    onSuccess: (response: any) => {
+    onSuccess: (response: any, variables: CreateCustomerPaymentRequest) => {
       const message = response.sms_sent 
         ? 'Payment added and SMS notification sent to customer!' 
         : 'Payment added successfully!';
@@ -84,6 +85,22 @@ export default function CustomerPayments() {
         timer: 2500,
         showConfirmButton: false
       });
+
+      // Send email notifications in background
+      const customer = dropdowns?.customers?.find(c => c.customer_id === variables.customer_id);
+      const currency = dropdowns?.currencies?.find(c => c.currencyID === variables.currency_id);
+      const account = dropdowns?.accounts?.find(a => a.account_ID === variables.account_id);
+      
+      if (customer && currency && account) {
+        sendPaymentNotifications(
+          customer.customer_name,
+          variables.payment_amount || 0,
+          currency.currencyName,
+          account.account_Name,
+          customer.customer_email
+        ).catch(err => console.error('Background email error:', err));
+      }
+
       queryClient.invalidateQueries({ queryKey: ['customer-payments'] });
       setShowAddModal(false);
       resetForm();
@@ -156,6 +173,75 @@ export default function CustomerPayments() {
       }
     } catch (error) {
       setCurrencyDisabled(false);
+    }
+  };
+
+  // Send payment notification emails
+  const sendPaymentNotifications = async (
+    customerName: string,
+    paymentAmount: number,
+    currencyName: string,
+    accountName: string,
+    customerEmail?: string
+  ) => {
+    const currentDate = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    // Send admin notification
+    try {
+      await mailerooService.sendNotification({
+        to: 'selabnadirydxb@gmail.com',
+        subject: `Payment Received - ${customerName}`,
+        message: `
+          <p><strong>A customer payment has been received</strong></p>
+          <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>Customer Name:</strong> ${customerName}</p>
+            <p style="margin: 5px 0;"><strong>Payment Amount:</strong> ${paymentAmount.toFixed(2)} ${currencyName}</p>
+            <p style="margin: 5px 0;"><strong>Payment Account:</strong> ${accountName}</p>
+            <p style="margin: 5px 0;"><strong>Date & Time:</strong> ${currentDate}</p>
+            ${customerEmail ? `<p style="margin: 5px 0;"><strong>Customer Email:</strong> ${customerEmail}</p>` : ''}
+          </div>
+          <p>This is an automated notification from the payment system.</p>
+        `,
+        type: 'success'
+      });
+      console.log('Admin payment notification sent successfully');
+    } catch (error) {
+      console.error('Failed to send admin notification:', error);
+    }
+
+    // Send customer confirmation (only if email exists)
+    if (customerEmail) {
+      try {
+        await mailerooService.sendNotification({
+          to: customerEmail,
+          subject: 'Payment Confirmation - SN Travels',
+          message: `
+            <p>Dear ${customerName},</p>
+            <p>Thank you for your payment. We have successfully received your payment.</p>
+            <div style="background-color: #f0fdf4; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
+              <p style="margin: 5px 0;"><strong>Payment Details:</strong></p>
+              <p style="margin: 5px 0;"><strong>Amount Paid:</strong> ${paymentAmount.toFixed(2)} ${currencyName}</p>
+              <p style="margin: 5px 0;"><strong>Payment Account:</strong> ${accountName}</p>
+              <p style="margin: 5px 0;"><strong>Date & Time:</strong> ${currentDate}</p>
+              <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: #10b981;">✓ Confirmed</span></p>
+            </div>
+            <p>Your payment has been processed successfully. If you have any questions, please don't hesitate to contact us.</p>
+            <p style="margin-top: 20px; color: #666; font-size: 14px;">
+              Thank you for choosing SN Travels & Tourism.
+            </p>
+          `,
+          type: 'success'
+        });
+        console.log('Customer payment confirmation sent successfully to:', customerEmail);
+      } catch (error) {
+        console.error('Failed to send customer confirmation:', error);
+      }
     }
   };
   
