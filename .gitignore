@@ -1,34 +1,17 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# WhatsApp API with credentials (upload to server only)
+whatsapp-api.php
+/api/whatsapp-api.php
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-whatsapp-config.php
+# Composer vendor
 vendor/
 
-# WhatsApp Config (contains credentials - DO NOT COMMIT)
-whatsapp-config.php
-/api/whatsapp-config.php
+# Node modules
+node_modules/
 
-# Composer vendor directory
-vendor/
+# Build output
+dist/
+build/
 
+# Environment files
+.env
+.env.local
