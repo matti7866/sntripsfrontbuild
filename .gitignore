@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+whatsapp-config.php
+vendor/
+
+# WhatsApp Config (contains credentials - DO NOT COMMIT)
+whatsapp-config.php
+/api/whatsapp-config.php
+
+# Composer vendor directory
+vendor/
+

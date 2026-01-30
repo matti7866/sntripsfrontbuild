@@ -39,9 +39,9 @@ class AuthService {
     }
   }
   
-  async sendOTP(email: string): Promise<{ success: boolean; message: string; staff?: { name: string; picture?: string } }> {
+  async sendOTP(email: string): Promise<{ success: boolean; message: string; sms_sent?: boolean; whatsapp_sent?: boolean; staff?: { name: string; picture?: string } }> {
     try {
-      const response = await api.post<{ success: boolean; message: string; staff?: { name: string; picture?: string } }>('/auth/send-otp.php', {
+      const response = await api.post<{ success: boolean; message: string; sms_sent?: boolean; whatsapp_sent?: boolean; staff?: { name: string; picture?: string } }>('/auth/send-otp.php', {
         email
       });
       

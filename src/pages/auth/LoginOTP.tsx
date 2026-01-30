@@ -55,9 +55,13 @@ const LoginOTP: React.FC = () => {
           setStaffInfo(result.staff);
         }
         setStep('otp');
-        // Show appropriate message based on whether SMS was sent
-        const message = result.sms_sent 
-          ? 'OTP sent to your email and phone! Check both.' 
+        // Show appropriate message based on what was sent
+        let channels = ['email'];
+        if (result.sms_sent) channels.push('SMS');
+        if (result.whatsapp_sent) channels.push('WhatsApp');
+        
+        const message = channels.length > 1
+          ? `OTP sent to your ${channels.join(', ')}! Check all channels.`
           : result.message || 'OTP sent successfully! Check your email.';
         setSuccess(message);
       } else {

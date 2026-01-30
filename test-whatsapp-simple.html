@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WhatsApp Test - Quick Send</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #25D366; margin-top: 0; }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #25D366;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background: #1fb855; }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success { background: #d4edda; color: #155724; display: block; }
+        .error { background: #f8d7da; color: #721c24; display: block; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>📱 WhatsApp Test</h1>
+        
+        <label>Template:</label>
+        <select id="template" onchange="updateFields()">
+            <option value="appointment">Appointment (Date + Time)</option>
+            <option value="custom">Custom Template SID</option>
+        </select>
+        
+        <label>Phone Number:</label>
+        <input type="text" id="phone" value="+971585550045">
+        
+        <div id="appointmentFields">
+            <label>Date:</label>
+            <input type="text" id="date" value="February 2, 2026">
+            
+            <label>Time:</label>
+            <input type="text" id="time" value="3:00 PM">
+        </div>
+        
+        <div id="customFields" style="display:none;">
+            <label>Template SID:</label>
+            <input type="text" id="templateSid" placeholder="HX...">
+            
+            <label>Variable 1:</label>
+            <input type="text" id="var1" placeholder="Value for {{1}}">
+            
+            <label>Variable 2 (optional):</label>
+            <input type="text" id="var2" placeholder="Value for {{2}}">
+        </div>
+        
+        <button onclick="sendMessage()">Send WhatsApp Message</button>
+        
+        <div id="result" class="result"></div>
+    </div>
+    
+    <script>
+        function updateFields() {
+            const template = document.getElementById('template').value;
+            document.getElementById('appointmentFields').style.display = 
+                template === 'appointment' ? 'block' : 'none';
+            document.getElementById('customFields').style.display = 
+                template === 'custom' ? 'block' : 'none';
+        }
+        
+        async function sendMessage() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = 'Sending...';
+            resultDiv.style.display = 'block';
+            
+            const template = document.getElementById('template').value;
+            const phone = document.getElementById('phone').value;
+            
+            let data;
+            if (template === 'appointment') {
+                data = {
+                    action: 'custom_template',
+                    to: phone,
+                    template_sid: 'HXb5b62575e6e4ff6129ad7c8efe1f983e',
+                    variables: {
+                        '1': document.getElementById('date').value,
+                        '2': document.getElementById('time').value
+                    }
+                };
+            } else {
+                const vars = { '1': document.getElementById('var1').value };
+                const var2 = document.getElementById('var2').value;
+                if (var2) vars['2'] = var2;
+                
+                data = {
+                    action: 'custom_template',
+                    to: phone,
+                    template_sid: document.getElementById('templateSid').value,
+                    variables: vars
+                };
+            }
+            
+            try {
+                const response = await fetch('/snt/api/whatsapp-api.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>✅ Success!</strong><br>
+                        Message SID: ${result.message_sid}<br>
+                        Status: ${result.status}<br>
+                        To: ${result.to}<br>
+                        <br>Check your WhatsApp!
+                    `;
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<strong>❌ Error:</strong><br>${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
