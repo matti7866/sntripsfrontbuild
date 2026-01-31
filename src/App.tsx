@@ -24,6 +24,7 @@ import ResidenceList from './pages/residence/ResidenceList';
 import ResidenceReport from './pages/residence/ResidenceReport';
 import ResidencePendingReport from './pages/residence/ResidencePendingReport';
 import ResidenceLedger from './pages/residence/ResidenceLedger';
+import ResidenceMonthlyReport from './pages/residence/ResidenceMonthlyReport';
 import ResidenceDetail from './pages/residence/ResidenceDetail';
 import CreateResidence from './pages/residence/CreateResidence';
 import ResidenceTasks from './pages/residence/ResidenceTasks';
@@ -132,6 +133,7 @@ function App() {
               <Route path="residence/list" element={<ResidenceList />} />
               <Route path="residence/create" element={<CreateResidence />} />
               <Route path="residence/ledger/:id" element={<ResidenceLedger />} />
+              <Route path="residence/monthly-report" element={<ResidenceMonthlyReport />} />
               <Route path="residence/tasks" element={<ResidenceTasks />} />
               <Route path="residence/family" element={<FamilyTasks />} />
               <Route path="residence/cancellation" element={<ResidenceCancellation />} />

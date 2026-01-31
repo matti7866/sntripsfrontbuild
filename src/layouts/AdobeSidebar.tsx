@@ -41,6 +41,7 @@ const menuItems: MenuItem[] = [
       { path: '/residence/tasks', title: 'Residence Tasks' },
       { path: '/residence/family', title: 'Family Residence Tasks' },
       { path: '/residence/report', title: 'Residence Report' },
+      { path: '/residence/monthly-report', title: 'Monthly Report' },
       { path: '/visa/report', title: 'Visa Report' },
       { path: '/visa/pending', title: 'Pending Visa' },
       { path: '/visa/supplier-prices', title: 'Supplier Visa Prices' },

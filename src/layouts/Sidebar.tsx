@@ -53,6 +53,7 @@ const Sidebar: React.FC = () => {
         { name: 'Residence Report', path: '/residence', icon: null },
         { name: 'Residence Tasks', path: '/residence/tasks', icon: null },
         { name: 'Residence Ledger', path: '/residence/ledger', icon: null },
+        { name: 'Monthly Report', path: '/residence/monthly-report', icon: null },
       ],
     },
     {
