@@ -18,6 +18,13 @@ export interface AuthCodeParams {
   code: string | number;
 }
 
+export interface PaymentConfirmationParams {
+  to: string;
+  reference_id: string;
+  amount: string | number;
+  payment_method: string;
+}
+
 export interface CustomTemplateParams {
   to: string;
   template_sid: string;
@@ -47,6 +54,36 @@ export const sendAuthCode = async (
     return data;
   } catch (error) {
     console.error('WhatsApp auth code error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to send WhatsApp message',
+    };
+  }
+};
+
+/**
+ * Send payment confirmation via WhatsApp
+ * Template: "Payment received! ✓ Ref: #{{1}} Amount: {{2}} AED Method: {{3}}"
+ */
+export const sendPaymentConfirmation = async (
+  params: PaymentConfirmationParams
+): Promise<WhatsAppResponse> => {
+  try {
+    const response = await fetch(WHATSAPP_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'payment_confirmation',
+        ...params,
+      }),
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('WhatsApp payment confirmation error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to send WhatsApp message',
@@ -129,6 +166,7 @@ export const generateOTP = (length: number = 6): string => {
 
 export default {
   sendAuthCode,
+  sendPaymentConfirmation,
   sendCustomTemplate,
   testWhatsAppAPI,
   formatPhoneForWhatsApp,

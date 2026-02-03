@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 import residenceService from '../../services/residenceService';
 import walletService from '../../services/walletService';
 import mailerooService from '../../services/mailerooService';
+import { sendPaymentConfirmation } from '../../services/whatsappService';
 import type { Residence } from '../../types/residence';
 import '../modals/Modal.css';
 
@@ -179,6 +180,29 @@ export default function PaymentModal({
       } catch (error) {
         console.error('Failed to send customer confirmation:', error);
       }
+    }
+
+    // Send WhatsApp confirmation (if phone number exists)
+    const customerPhone = (residence as any).customer_phone || (residence as any).customerPhone || (residence as any).mobile || '';
+    if (customerPhone && customerPhone.length >= 10) {
+      try {
+        const whatsappResult = await sendPaymentConfirmation({
+          to: customerPhone,
+          reference_id: residenceID.toString(),
+          amount: paymentAmount.toFixed(2),
+          payment_method: paymentMethodUsed
+        });
+        
+        if (whatsappResult.success) {
+          console.log('WhatsApp payment confirmation sent to:', customerPhone);
+        } else {
+          console.error('WhatsApp failed:', whatsappResult.error);
+        }
+      } catch (error) {
+        console.error('Failed to send WhatsApp confirmation:', error);
+      }
+    } else {
+      console.log('No customer phone number for WhatsApp notification');
     }
   };
 
