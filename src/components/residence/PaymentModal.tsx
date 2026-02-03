@@ -183,9 +183,19 @@ export default function PaymentModal({
     }
 
     // Send WhatsApp confirmation (if phone number exists)
-    const customerPhone = (residence as any).customer_phone || (residence as any).customerPhone || (residence as any).mobile || '';
+    // Try multiple possible phone field names from residence data
+    const customerPhone = (residence as any).mobile || 
+                         (residence as any).customer_phone || 
+                         (residence as any).customerPhone || 
+                         (residence as any).phone || 
+                         '';
+    
+    console.log('Customer phone from residence:', customerPhone);
+    console.log('Residence data:', residence);
+    
     if (customerPhone && customerPhone.length >= 10) {
       try {
+        console.log('Sending WhatsApp payment confirmation to:', customerPhone);
         const whatsappResult = await sendPaymentConfirmation({
           to: customerPhone,
           reference_id: residenceID.toString(),
@@ -194,15 +204,16 @@ export default function PaymentModal({
         });
         
         if (whatsappResult.success) {
-          console.log('WhatsApp payment confirmation sent to:', customerPhone);
+          console.log('✅ WhatsApp payment confirmation sent!', whatsappResult.message_sid);
         } else {
-          console.error('WhatsApp failed:', whatsappResult.error);
+          console.error('❌ WhatsApp failed:', whatsappResult.error);
         }
       } catch (error) {
-        console.error('Failed to send WhatsApp confirmation:', error);
+        console.error('❌ Exception sending WhatsApp:', error);
       }
     } else {
-      console.log('No customer phone number for WhatsApp notification');
+      console.warn('⚠️ No customer phone number found for WhatsApp. Phone:', customerPhone);
+      console.warn('Available residence fields:', Object.keys(residence));
     }
   };
 
