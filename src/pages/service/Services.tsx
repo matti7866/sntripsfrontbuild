@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Swal from 'sweetalert2';
 import serviceService from '../../services/serviceService';
 import SearchableSelect from '../../components/form/SearchableSelect';
+import AddCustomerModal from '../../components/customer/AddCustomerModal';
 import type {
   Service,
   ServiceFilters,
@@ -38,6 +39,7 @@ export default function Services() {
     isOpen: boolean;
     service: Service | null;
   }>({ isOpen: false, service: null });
+  const [addCustomerModalOpen, setAddCustomerModalOpen] = useState(false);
   
   const queryClient = useQueryClient();
   
@@ -227,10 +229,16 @@ export default function Services() {
       <div className="page-header">
         <h1><i className="fab fa-servicestack me-2"></i>Services</h1>
         {activeTab === 'records' && (
-          <button className="btn btn-success" onClick={handleAddService}>
-            <i className="fa fa-plus me-2"></i>
-            Add Service
-          </button>
+          <div className="flex gap-2">
+            <button className="btn btn-success" onClick={() => setAddCustomerModalOpen(true)}>
+              <i className="fa fa-user-plus me-2"></i>
+              New Customer
+            </button>
+            <button className="btn btn-success" onClick={handleAddService}>
+              <i className="fa fa-plus me-2"></i>
+              Add Service
+            </button>
+          </div>
         )}
       </div>
       
@@ -697,6 +705,17 @@ export default function Services() {
           </div>
         </div>
       )}
+
+      {/* Add Customer Modal */}
+      <AddCustomerModal
+        isOpen={addCustomerModalOpen}
+        onClose={() => setAddCustomerModalOpen(false)}
+        onSuccess={() => {
+          setAddCustomerModalOpen(false);
+          // Refresh dropdowns to include new customer
+          queryClient.invalidateQueries({ queryKey: ['service-dropdowns'] });
+        }}
+      />
     </div>
   );
 }

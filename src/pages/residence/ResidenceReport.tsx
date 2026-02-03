@@ -21,6 +21,7 @@ import PerformTawjeehModal from '../../components/residence/PerformTawjeehModal'
 import IssueInsuranceModal from '../../components/residence/IssueInsuranceModal';
 import NOCModal, { type NOCData } from '../../components/residence/NOCModal';
 import CreateResidenceModal from '../../components/residence/CreateResidenceModal';
+import AddCustomerModal from '../../components/customer/AddCustomerModal';
 import './ResidenceReport.css';
 
 interface DropdownData {
@@ -61,6 +62,7 @@ export default function ResidenceReport() {
   const [dependentsModalOpen, setDependentsModalOpen] = useState(false);
   const [walletPaymentsMap, setWalletPaymentsMap] = useState<Map<number, number>>(new Map());
   const [fullLookups, setFullLookups] = useState<any>(null);
+  const [addCustomerModalOpen, setAddCustomerModalOpen] = useState(false);
 
   useEffect(() => {
     loadDropdowns();
@@ -914,6 +916,27 @@ export default function ResidenceReport() {
           </div>
           <div className="flex gap-2">
             <button
+              onClick={() => setAddCustomerModalOpen(true)}
+              className="btn btn-success btn-lg"
+              style={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                border: 'none',
+                boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.6)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.4)';
+              }}
+            >
+              <i className="fa fa-user-plus mr-2"></i>
+              New Customer
+            </button>
+            <button
               onClick={() => setCreateResidenceModalOpen(true)}
               className="btn btn-primary btn-lg"
               style={{
@@ -1505,6 +1528,17 @@ export default function ResidenceReport() {
           setSelectedResidence(null);
         }}
         residence={selectedResidence}
+      />
+
+      {/* Add Customer Modal */}
+      <AddCustomerModal
+        isOpen={addCustomerModalOpen}
+        onClose={() => setAddCustomerModalOpen(false)}
+        onSuccess={() => {
+          setAddCustomerModalOpen(false);
+          // Refresh lookups to include new customer
+          loadDropdowns();
+        }}
       />
 
       {/* Create Residence Modal */}

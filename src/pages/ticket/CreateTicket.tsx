@@ -4,12 +4,14 @@ import ticketService from '../../services/ticketService';
 import Swal from 'sweetalert2';
 import FormField from '../../components/form/FormField';
 import FormSection from '../../components/form/FormSection';
+import AddCustomerModal from '../../components/customer/AddCustomerModal';
 import type { Customer, Supplier, Airport, Currency, TicketPassenger } from '../../types/ticket';
 import './CreateTicket.css';
 
 export default function CreateTicket() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [addCustomerModalOpen, setAddCustomerModalOpen] = useState(false);
   
   // Dropdown data
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -225,14 +227,24 @@ export default function CreateTicket() {
           </h2>
           <p className="page-subtitle">Book a new flight ticket for your customer</p>
         </div>
-        <button
-          type="button"
-          className="btn-back"
-          onClick={() => navigate('/ticket/report')}
-        >
-          <i className="fa fa-arrow-left me-2"></i>
-          Back to Tickets
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="btn btn-success"
+            onClick={() => setAddCustomerModalOpen(true)}
+          >
+            <i className="fa fa-user-plus me-2"></i>
+            New Customer
+          </button>
+          <button
+            type="button"
+            className="btn-back"
+            onClick={() => navigate('/ticket/report')}
+          >
+            <i className="fa fa-arrow-left me-2"></i>
+            Back to Tickets
+          </button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -595,6 +607,17 @@ export default function CreateTicket() {
           </button>
         </div>
       </form>
+
+      {/* Add Customer Modal */}
+      <AddCustomerModal
+        isOpen={addCustomerModalOpen}
+        onClose={() => setAddCustomerModalOpen(false)}
+        onSuccess={() => {
+          setAddCustomerModalOpen(false);
+          // Reload dropdowns to include new customer
+          loadDropdowns();
+        }}
+      />
     </div>
   );
 }

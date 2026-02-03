@@ -5,6 +5,7 @@ import { dashboardService } from '../../services/dashboardService';
 import type { TodayStats, DailyEntry, DashboardFilters } from '../../types/dashboard';
 import { EnhancedCalendar } from '../../components/dashboard/EnhancedCalendar';
 import NotesCard from '../../components/dashboard/NotesCard';
+import AddCustomerModal from '../../components/customer/AddCustomerModal';
 import './DashboardRedesigned.css';
 
 export const DashboardRedesigned: React.FC = () => {
@@ -16,6 +17,7 @@ export const DashboardRedesigned: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month'>('today');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [addCustomerModalOpen, setAddCustomerModalOpen] = useState(false);
 
   // Default to last 30 days to show data
   const getDefaultStartDate = () => {
@@ -130,6 +132,14 @@ export const DashboardRedesigned: React.FC = () => {
     <div className="dashboard-redesigned">
       {/* Quick Actions - Moved to top */}
       <div className="quick-actions">
+        <button 
+          className="action-btn action-btn-success"
+          onClick={() => setAddCustomerModalOpen(true)}
+          style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
+        >
+          <i className="fas fa-user-plus"></i>
+          New Customer
+        </button>
         <button 
           className="action-btn action-btn-primary"
           onClick={() => navigate('/ticket/new')}
@@ -422,6 +432,15 @@ export const DashboardRedesigned: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Add Customer Modal */}
+      <AddCustomerModal
+        isOpen={addCustomerModalOpen}
+        onClose={() => setAddCustomerModalOpen(false)}
+        onSuccess={() => {
+          setAddCustomerModalOpen(false);
+        }}
+      />
     </div>
   );
 };
