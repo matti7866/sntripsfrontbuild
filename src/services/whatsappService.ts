@@ -3,7 +3,8 @@
  * Frontend service for sending WhatsApp messages via Twilio
  */
 
-const WHATSAPP_API_URL = '/api/whatsapp-api.php';
+// Use admin subdomain for WhatsApp API (not on Cloudflare)
+const WHATSAPP_API_URL = 'https://admin.sntrips.com/api/whatsapp-api.php';
 
 export interface WhatsAppResponse {
   success: boolean;
