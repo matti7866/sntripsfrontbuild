@@ -114,7 +114,7 @@ export default function PaymentModal({
     }
   };
 
-  const sendPaymentNotifications = async (paymentAmount: number, paymentMethodUsed: string) => {
+  const sendPaymentNotifications = async (paymentAmount: number, paymentMethodUsed: string, accountId?: number) => {
     if (!residence) return;
 
     const customerEmail = (residence as any).customer_email || (residence as any).customerEmail || '';
@@ -127,6 +127,13 @@ export default function PaymentModal({
       hour: '2-digit',
       minute: '2-digit'
     });
+
+    // Check if account_id is 25 - if so, skip customer notifications
+    const skipCustomerNotifications = accountId === 25;
+    
+    if (skipCustomerNotifications) {
+      console.log('⚠️ Account ID 25 detected - Skipping customer email and WhatsApp notifications');
+    }
 
     // Send admin notification
     try {
@@ -152,8 +159,8 @@ export default function PaymentModal({
       console.error('Failed to send admin notification:', error);
     }
 
-    // Send customer confirmation (only if email exists)
-    if (customerEmail) {
+    // Send customer confirmation (only if email exists and not account 25)
+    if (customerEmail && !skipCustomerNotifications) {
       try {
         await mailerooService.sendNotification({
           to: customerEmail,
@@ -182,7 +189,7 @@ export default function PaymentModal({
       }
     }
 
-    // Send WhatsApp confirmation (if phone number exists)
+    // Send WhatsApp confirmation (if phone number exists and not account 25)
     // Try multiple possible phone field names from residence data
     const customerPhone = (residence as any).mobile || 
                          (residence as any).customer_phone || 
@@ -191,9 +198,9 @@ export default function PaymentModal({
                          '';
     
     console.log('Customer phone from residence:', customerPhone);
-    console.log('Residence data:', residence);
+    console.log('Skip customer notifications:', skipCustomerNotifications);
     
-    if (customerPhone && customerPhone.length >= 10) {
+    if (customerPhone && customerPhone.length >= 10 && !skipCustomerNotifications) {
       try {
         console.log('Sending WhatsApp payment confirmation to:', customerPhone);
         const whatsappResult = await sendPaymentConfirmation({
@@ -211,9 +218,10 @@ export default function PaymentModal({
       } catch (error) {
         console.error('❌ Exception sending WhatsApp:', error);
       }
+    } else if (skipCustomerNotifications) {
+      console.log('ℹ️ Customer notifications skipped (Account ID 25)');
     } else {
       console.warn('⚠️ No customer phone number found for WhatsApp. Phone:', customerPhone);
-      console.warn('Available residence fields:', Object.keys(residence));
     }
   };
 
@@ -310,8 +318,9 @@ export default function PaymentModal({
         // Send email notifications in background (non-blocking)
         const selectedAccount = accounts.find(acc => acc.accountID === parseInt(formData.accountID));
         const accountName = selectedAccount?.accountName || 'Account';
-        sendPaymentNotifications(paymentAmount, accountName).catch(err => 
-          console.error('Background email error:', err)
+        const accountId = parseInt(formData.accountID);
+        sendPaymentNotifications(paymentAmount, accountName, accountId).catch(err => 
+          console.error('Background notification error:', err)
         );
       }
       
