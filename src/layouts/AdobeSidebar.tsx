@@ -43,6 +43,7 @@ const menuItems: MenuItem[] = [
       { path: '/residence/report', title: 'Residence Report' },
       { path: '/residence/monthly-report', title: 'Monthly Report' },
       { path: '/visa/report', title: 'Visa Report' },
+      { path: '/visa/attachments', title: 'ATTACHMENTS' },
       { path: '/visa/pending', title: 'Pending Visa' },
       { path: '/visa/supplier-prices', title: 'Supplier Visa Prices' },
       { path: '/visa/customer-prices', title: 'Customer Visa Prices' },

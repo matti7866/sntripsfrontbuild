@@ -1,31 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
+  ActivityIndicator,
+  Alert,
   Image,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
-  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { authService } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
-import storage from '../utils/storage';
+import { API_CONFIG } from '../config/api';
 import { STORAGE_KEYS } from '../config/constants';
+import { authService } from '../services/authService';
+import storage from '../utils/storage';
+
+const BACKGROUND_IMAGE = 'https://unsplash.com/photos/Fr6zexbmjmc/download?force=true&w=1600';
+const API_ORIGIN = API_CONFIG.BASE_URL.replace(/\/api\/?$/, '');
 
 export default function LoginScreen() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [loading, setLoading] = useState(false);
   const [staffInfo, setStaffInfo] = useState<{ name: string; picture?: string } | null>(null);
   const [countdown, setCountdown] = useState(0);
+
+  const otpRefs = useRef<(TextInput | null)[]>([]);
 
   useEffect(() => {
     loadRememberedEmail();
@@ -33,15 +40,57 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
       return () => clearTimeout(timer);
     }
   }, [countdown]);
 
+  useEffect(() => {
+    if (step === 'otp') {
+      const timer = setTimeout(() => otpRefs.current[0]?.focus(), 120);
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
   const loadRememberedEmail = async () => {
     const remembered = await storage.get<string>(STORAGE_KEYS.REMEMBER_EMAIL);
-    if (remembered) {
-      setEmail(remembered);
+    if (remembered) setEmail(remembered);
+  };
+
+  const maskEmail = (value: string) => {
+    const [name, domain] = value.split('@');
+    if (!name || !domain) return value;
+    if (name.length <= 2) return `${name[0]}*@${domain}`;
+    return `${name.slice(0, 2)}${'*'.repeat(Math.max(2, name.length - 2))}@${domain}`;
+  };
+
+  const normalizeImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith('https://')) return url;
+    if (url.startsWith('http://')) return url.replace('http://', 'https://');
+    if (url.startsWith('//')) return `https:${url}`;
+    if (url.startsWith('/')) return `${API_ORIGIN}${url}`;
+    return `${API_ORIGIN}/${url}`;
+  };
+
+  const verifyOtpCode = async (code: string) => {
+    if (loading) return;
+    if (!code || code.length !== 6) return;
+
+    setLoading(true);
+    try {
+      const response = await login(email, code);
+      if (!response.success) {
+        setOtp(['', '', '', '', '', '']);
+        otpRefs.current[0]?.focus();
+        Alert.alert('Error', response.message || 'Invalid OTP');
+      }
+    } catch (error: any) {
+      setOtp(['', '', '', '', '', '']);
+      otpRefs.current[0]?.focus();
+      Alert.alert('Error', error.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,9 +106,10 @@ export default function LoginScreen() {
       if (response.success) {
         setStaffInfo(response.staff || null);
         setStep('otp');
-        setCountdown(60); // 60 seconds countdown
+        setCountdown(60);
+        setOtp(['', '', '', '', '', '']);
         await storage.set(STORAGE_KEYS.REMEMBER_EMAIL, email);
-        Alert.alert('Success', response.message || 'OTP sent to your email');
+        Alert.alert('Success', response.message || 'OTP sent successfully');
       } else {
         Alert.alert('Error', response.message || 'Failed to send OTP');
       }
@@ -70,71 +120,81 @@ export default function LoginScreen() {
     }
   };
 
-  const handleVerifyOTP = async () => {
-    if (!otp || otp.length !== 6) {
-      Alert.alert('Error', 'Please enter a valid 6-digit OTP');
-      return;
+  const handleOtpChange = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, '').slice(-1);
+
+    const updated = [...otp];
+    updated[index] = digit;
+    setOtp(updated);
+
+    if (digit && index < 5) {
+      otpRefs.current[index + 1]?.focus();
     }
 
-    setLoading(true);
-    try {
-      const response = await login(email, otp);
-      if (!response.success) {
-        Alert.alert('Error', response.message || 'Invalid OTP');
-      }
-      // Navigation will happen automatically through AuthContext
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'Login failed');
-    } finally {
-      setLoading(false);
+    if (!digit && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+
+    const code = updated.join('');
+    if (code.length === 6 && !updated.includes('')) {
+      void verifyOtpCode(code);
+    }
+  };
+
+  const handleOtpKeyPress = (index: number, key: string) => {
+    if (key === 'Backspace' && !otp[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
     }
   };
 
   const handleResendOTP = async () => {
-    setOtp('');
+    setOtp(['', '', '', '', '', '']);
     await handleSendOTP();
   };
 
   const handleBack = () => {
     setStep('email');
-    setOtp('');
+    setOtp(['', '', '', '', '', '']);
     setStaffInfo(null);
   };
 
   return (
-    <LinearGradient colors={['#1e3a8a', '#3b82f6', '#60a5fa']} style={styles.container}>
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Logo */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoPlaceholder}>
-              <Text style={styles.logoText}>SN</Text>
-            </View>
-            <Text style={styles.title}>SN Travels</Text>
-            <Text style={styles.subtitle}>Emirates ID Staff Portal</Text>
-                  </View>
+    <ImageBackground source={{ uri: BACKGROUND_IMAGE }} resizeMode="cover" style={styles.backgroundImage}>
+      <LinearGradient colors={['rgba(208,0,0,0.16)', 'rgba(0,0,0,0.45)']} style={styles.overlay}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
+          <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+            <View style={styles.card}>
+              <View style={styles.logoShell}>
+                <Image source={require('../../assets/logo-white.png')} style={styles.logoImage} resizeMode="contain" />
+              </View>
 
-          {/* Form Card */}
-          <View style={styles.card}>
-            {step === 'email' ? (
-              <>
-                <Text style={styles.cardTitle}>Login with Email</Text>
-                <Text style={styles.cardSubtitle}>
-                  Enter your email to receive a one-time password
-                </Text>
+              {step === 'otp' && (
+                <View style={styles.staffWrap}>
+                  {normalizeImageUrl(staffInfo?.picture) ? (
+                    <Image
+                      source={{ uri: normalizeImageUrl(staffInfo?.picture) }}
+                      style={styles.staffPicture}
+                      onError={() => setStaffInfo((prev) => (prev ? { ...prev, picture: undefined } : prev))}
+                    />
+                  ) : (
+                    <View style={styles.staffFallback}><Text style={styles.staffFallbackText}>{staffInfo?.name?.charAt(0) || 'U'}</Text></View>
+                  )}
+                  {staffInfo?.name ? <Text style={styles.staffName}>{staffInfo.name}</Text> : null}
+                </View>
+              )}
 
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Email Address</Text>
+              <Text style={styles.cardTitle}>{step === 'email' ? 'Sign in with OTP' : 'Enter verification code'}</Text>
+              <Text style={styles.cardSubtitle}>
+                {step === 'email' ? 'Use your company email to receive one-time code.' : `Code sent to ${maskEmail(email)}`}
+              </Text>
+
+              {step === 'email' ? (
+                <>
+                  <Text style={styles.label}>Company Email</Text>
                   <TextInput
                     style={styles.input}
-                    placeholder="your.email@sntravels.com"
-                    placeholderTextColor="#9ca3af"
+                    placeholder="you@selabnadiry.com"
+                    placeholderTextColor="#8f8f8f"
                     value={email}
                     onChangeText={setEmail}
                     keyboardType="email-address"
@@ -142,240 +202,232 @@ export default function LoginScreen() {
                     autoComplete="email"
                     editable={!loading}
                   />
-                </View>
 
-                <TouchableOpacity
-                  style={[styles.button, loading && styles.buttonDisabled]}
-                  onPress={handleSendOTP}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <ActivityIndicator color="#ffffff" />
-                  ) : (
-                    <Text style={styles.buttonText}>Send OTP</Text>
-                  )}
-                </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                  <Text style={styles.backButtonText}>← Back</Text>
-                </TouchableOpacity>
-
-                {staffInfo && (
-                  <View style={styles.staffInfo}>
-                    {staffInfo.picture && (
-                      <Image source={{ uri: staffInfo.picture }} style={styles.staffPicture} />
-                    )}
-                    <Text style={styles.staffName}>{staffInfo.name}</Text>
+                  <TouchableOpacity style={[styles.button, loading && styles.buttonDisabled]} onPress={handleSendOTP} disabled={loading}>
+                    {loading ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Send OTP</Text>}
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <View style={styles.otpRow}>
+                    {otp.map((value, index) => (
+                      <TextInput
+                        key={index}
+                        ref={(ref) => {
+                          otpRefs.current[index] = ref;
+                        }}
+                        value={value}
+                        onChangeText={(text) => handleOtpChange(index, text)}
+                        onKeyPress={({ nativeEvent }) => handleOtpKeyPress(index, nativeEvent.key)}
+                        keyboardType="number-pad"
+                        maxLength={1}
+                        style={styles.otpInput}
+                        editable={!loading}
+                      />
+                    ))}
                   </View>
-                )}
 
-                <Text style={styles.cardTitle}>Enter OTP</Text>
-                <Text style={styles.cardSubtitle}>
-                  We've sent a 6-digit code to {'\n'}
-                  <Text style={styles.emailText}>{email}</Text>
-                </Text>
-
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>OTP Code</Text>
-                <TextInput
-                    style={[styles.input, styles.otpInput]}
-                  placeholder="000000"
-                    placeholderTextColor="#9ca3af"
-                  value={otp}
-                  onChangeText={setOtp}
-                  keyboardType="number-pad"
-                  maxLength={6}
-                    editable={!loading}
-                />
-                </View>
-
-                <TouchableOpacity
-                  style={[styles.button, loading && styles.buttonDisabled]}
-                  onPress={handleVerifyOTP}
-                  disabled={loading}
-                >
                   {loading ? (
-                    <ActivityIndicator color="#ffffff" />
-                  ) : (
-                    <Text style={styles.buttonText}>Verify & Login</Text>
-                  )}
-                </TouchableOpacity>
+                    <View style={styles.verifyingWrap}>
+                      <ActivityIndicator color="#d00000" size="small" />
+                      <Text style={styles.verifyingText}>Verifying code...</Text>
+                    </View>
+                  ) : null}
 
-                <View style={styles.resendContainer}>
-                  {countdown > 0 ? (
-                    <Text style={styles.resendText}>Resend OTP in {countdown}s</Text>
-                  ) : (
-                    <TouchableOpacity onPress={handleResendOTP} disabled={loading}>
-                      <Text style={styles.resendLink}>Resend OTP</Text>
-                </TouchableOpacity>
-                  )}
-              </View>
-              </>
-            )}
-          </View>
+                  <TouchableOpacity style={styles.ghostButton} onPress={handleBack} disabled={loading}>
+                    <Text style={styles.ghostButtonText}>Back</Text>
+                  </TouchableOpacity>
 
-          {/* Footer */}
-          <Text style={styles.footer}>
-            For authorized staff only{'\n'}© 2024 SN Travels
-          </Text>
-        </ScrollView>
-      </KeyboardAvoidingView>
+                  <View style={styles.resendContainer}>
+                    {countdown > 0 ? (
+                      <Text style={styles.resendText}>Resend OTP in {countdown}s</Text>
+                    ) : (
+                      <TouchableOpacity onPress={handleResendOTP} disabled={loading}>
+                        <Text style={styles.resendLink}>Resend OTP</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </>
+              )}
+
+              <Text style={styles.footer}>&copy; {new Date().getFullYear()} Selab Nadiry Travel & Tourism</Text>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </LinearGradient>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
+  flex: { flex: 1 },
+  backgroundImage: { flex: 1 },
+  overlay: { flex: 1 },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 20,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  logoPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 3,
-    borderColor: '#ffffff',
-  },
-  logoText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#ffffff',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#e0e7ff',
+    paddingHorizontal: 12,
+    paddingVertical: 12,
   },
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 18,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+    minHeight: '45%',
+    justifyContent: 'center',
   },
-  cardTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 8,
-  },
-  cardSubtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 24,
-  },
-  inputContainer: {
+  logoShell: {
+    height: 72,
+    backgroundColor: '#000000',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 20,
   },
+  logoImage: {
+    width: '95%',
+    height: 52,
+  },
+  staffWrap: {
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  staffPicture: {
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: '#ffffff',
+  },
+  staffFallback: {
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    backgroundColor: '#d00000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  staffFallbackText: {
+    color: '#ffffff',
+    fontWeight: '800',
+    fontSize: 24,
+  },
+  staffName: {
+    color: '#111111',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  cardTitle: {
+    color: '#111111',
+    fontSize: 24,
+    fontWeight: '800',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  cardSubtitle: {
+    color: '#555555',
+    fontSize: 13,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+    color: '#111111',
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f3f4f6',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
-    color: '#1f2937',
+    height: 50,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  otpInput: {
-    textAlign: 'center',
-    fontSize: 24,
-    letterSpacing: 8,
-    fontWeight: 'bold',
+    borderColor: 'rgba(0,0,0,0.16)',
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 14,
+    color: '#111111',
+    marginBottom: 14,
+    fontSize: 15,
   },
   button: {
-    backgroundColor: '#2563eb',
-    borderRadius: 8,
-    padding: 16,
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: '#d00000',
     alignItems: 'center',
-    marginTop: 8,
+    justifyContent: 'center',
   },
   buttonDisabled: {
-    opacity: 0.6,
+    opacity: 0.7,
   },
   buttonText: {
     color: '#ffffff',
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
-  backButton: {
-    marginBottom: 16,
+  otpRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 14,
   },
-  backButtonText: {
-    color: '#2563eb',
-    fontSize: 16,
-    fontWeight: '600',
+  otpInput: {
+    width: 46,
+    height: 52,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.22)',
+    backgroundColor: '#ffffff',
+    textAlign: 'center',
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111111',
   },
-  staffInfo: {
+  verifyingWrap: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
-    padding: 16,
-    backgroundColor: '#f3f4f6',
-    borderRadius: 12,
-  },
-  staffPicture: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    justifyContent: 'center',
+    gap: 8,
     marginBottom: 12,
   },
-  staffName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1f2937',
-  },
-  emailText: {
+  verifyingText: {
+    color: '#8a0000',
     fontWeight: '600',
-    color: '#2563eb',
+    fontSize: 13,
+  },
+  ghostButton: {
+    height: 46,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ghostButtonText: {
+    color: '#111111',
+    fontSize: 15,
+    fontWeight: '700',
   },
   resendContainer: {
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 12,
   },
   resendText: {
-    color: '#6b7280',
-    fontSize: 14,
+    color: '#666666',
+    fontSize: 13,
   },
   resendLink: {
-    color: '#2563eb',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#d00000',
+    fontWeight: '700',
+    fontSize: 13,
   },
   footer: {
     textAlign: 'center',
-    color: '#e0e7ff',
-    fontSize: 12,
-    marginTop: 32,
-    lineHeight: 20,
+    color: '#666666',
+    fontSize: 11,
+    marginTop: 14,
   },
 });

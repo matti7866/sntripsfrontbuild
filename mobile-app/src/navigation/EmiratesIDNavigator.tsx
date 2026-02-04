@@ -48,13 +48,13 @@ export default function EmiratesIDNavigator() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#ffffff',
   },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#111111',
   },
   tab: {
     flex: 1,
@@ -64,15 +64,15 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: '#2563eb',
+    borderBottomColor: '#dc2626',
   },
   tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#6b7280',
+    color: '#111111',
   },
   activeTabText: {
-    color: '#2563eb',
+    color: '#dc2626',
   },
   content: {
     flex: 1,

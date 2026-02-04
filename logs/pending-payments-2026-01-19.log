@@ -1,0 +1,28 @@
+[2026-01-19 14:16:10] [INFO] === Starting Pending Payments Check ===
+[2026-01-19 18:16:10] [INFO] Database connection established
+[2026-01-19 18:16:10] [ERROR] Error fetching residence records: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'sntravels_prod.companies' doesn't exist
+[2026-01-19 14:16:31] [INFO] === Starting Pending Payments Check ===
+[2026-01-19 18:16:31] [INFO] Database connection established
+[2026-01-19 18:16:31] [INFO] Found 45 residence records in step 1a
+[2026-01-19 18:16:31] [INFO] Fetching pending payments for company: 2837114
+[2026-01-19 18:16:34] [INFO] Found 25 pending payments for company 2837114
+[2026-01-19 18:16:34] [INFO] Fetching pending payments for company: 2848846
+[2026-01-19 18:16:36] [INFO] Found 65 pending payments for company 2848846
+[2026-01-19 18:16:36] [WARNING] Skipping Residence ID 1821: No company number
+[2026-01-19 18:16:36] [INFO] Fetching pending payments for company: 2525622
+[2026-01-19 18:16:38] [INFO] Found 0 pending payments for company 2525622
+[2026-01-19 18:16:38] [INFO] Fetching pending payments for company: 5545451
+[2026-01-19 18:16:40] [INFO] Found 0 pending payments for company 5545451
+[2026-01-19 18:16:40] [INFO] Fetching pending payments for company: 2797905
+[2026-01-19 18:16:42] [INFO] Found 0 pending payments for company 2797905
+[2026-01-19 18:16:42] [INFO] Fetching pending payments for company: 9554551
+[2026-01-19 18:16:44] [INFO] Found 0 pending payments for company 9554551
+[2026-01-19 18:16:44] [INFO] Fetching pending payments for company: 2719253
+[2026-01-19 18:16:47] [INFO] Found 0 pending payments for company 2719253
+[2026-01-19 18:16:47] [INFO] Fetching pending payments for company: 2770654
+[2026-01-19 18:16:49] [INFO] Found 0 pending payments for company 2770654
+[2026-01-19 18:16:49] [INFO] Fetching pending payments for company: 2689846
+[2026-01-19 18:16:51] [INFO] Found 0 pending payments for company 2689846
+[2026-01-19 18:16:51] [INFO] Fetching pending payments for company: 2731726
+[2026-01-19 18:16:54] [INFO] Found 0 pending payments for company 2731726
+[2026-01-19 18:16:54] [INFO] Fetching pending payments for company: 2718095

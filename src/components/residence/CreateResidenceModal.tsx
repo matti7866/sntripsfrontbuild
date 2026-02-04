@@ -37,6 +37,9 @@ interface CreateResidenceModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  mode?: 'create' | 'renew';
+  oldResidenceId?: number | null;
+  initialData?: Partial<FormData> | null;
   lookups: {
     customers: Array<{ customer_id: number; customer_name: string; customer_phone?: string; customer_email?: string }>;
     nationalities: Array<{ nationality_id: number; nationality_name: string }>;
@@ -45,31 +48,41 @@ interface CreateResidenceModalProps {
   };
 }
 
-export default function CreateResidenceModal({ isOpen, onClose, onSuccess, lookups }: CreateResidenceModalProps) {
+const getDefaultFormData = (): FormData => ({
+  customer_id: null,
+  ref: '',
+  insideOutside: '',
+  res_type: 'mainland',
+  uid: '',
+  salary_amount: null,
+  position: null,
+  sale_amount: null,
+  sale_currency_type: null,
+  tawjeeh_included: true,
+  insurance_included: true,
+  passengerName: '',
+  nationality: null,
+  passportNumber: '',
+  passportExpiryDate: '',
+  gender: '',
+  dob: '',
+  passportFile: null,
+  photoFile: null,
+  emiratesIdFrontFile: null,
+  emiratesIdBackFile: null,
+});
+
+export default function CreateResidenceModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  lookups,
+  mode = 'create',
+  oldResidenceId = null,
+  initialData = null
+}: CreateResidenceModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
-    customer_id: null,
-    ref: '',
-    insideOutside: '',
-    res_type: 'mainland',
-    uid: '',
-    salary_amount: null,
-    position: null,
-    sale_amount: null,
-    sale_currency_type: null,
-    tawjeeh_included: true,
-    insurance_included: true,
-    passengerName: '',
-    nationality: null,
-    passportNumber: '',
-    passportExpiryDate: '',
-    gender: '',
-    dob: '',
-    passportFile: null,
-    photoFile: null,
-    emiratesIdFrontFile: null,
-    emiratesIdBackFile: null,
-  });
+  const [formData, setFormData] = useState<FormData>(getDefaultFormData());
 
   const [saving, setSaving] = useState(false);
   const [customerSearch, setCustomerSearch] = useState('');
@@ -83,27 +96,8 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
       // Reset form when modal opens
       setCurrentStep(1);
       setFormData({
-        customer_id: null,
-        ref: '',
-        insideOutside: '',
-        res_type: 'mainland',
-        uid: '',
-        salary_amount: null,
-        position: null,
-        sale_amount: null,
-        sale_currency_type: null,
-        tawjeeh_included: true,
-        insurance_included: true,
-        passengerName: '',
-        nationality: null,
-        passportNumber: '',
-        passportExpiryDate: '',
-        gender: '',
-        dob: '',
-        passportFile: null,
-        photoFile: null,
-        emiratesIdFrontFile: null,
-        emiratesIdBackFile: null,
+        ...getDefaultFormData(),
+        ...(initialData || {}),
       });
       setCustomerSearch('');
       setOcrStatus('');
@@ -115,7 +109,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
     return () => {
       document.body.classList.remove('modal-open');
     };
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -352,6 +346,11 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
         emiratesIdBackFile: formData.emiratesIdBackFile,
       };
 
+      if (mode === 'renew' && oldResidenceId) {
+        submitData.renewType = 'renew';
+        submitData.oldResidenceID = oldResidenceId;
+      }
+
       const response = await residenceService.createResidence(submitData);
       
       await Swal.fire({
@@ -428,6 +427,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
   if (!isOpen) return null;
 
   const progressWidth = (currentStep / 3) * 100;
+  const isRenewMode = mode === 'renew';
   const stepTitles = {
     1: 'Step 1: Basic Information',
     2: 'Step 2: Documents & Passport',
@@ -444,8 +444,8 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
         {/* Header */}
         <div className="modal-header" style={{ backgroundColor: '#2563eb', borderBottom: '2px solid #1e40af' }}>
           <h3 style={{ color: '#ffffff' }}>
-            <i className="fa fa-plus-circle"></i>
-            Add New Residence - {stepTitles[currentStep as keyof typeof stepTitles]}
+            <i className={`fa ${isRenewMode ? 'fa-refresh' : 'fa-plus-circle'}`}></i>
+            {isRenewMode ? 'Renew Residence' : 'Add New Residence'} - {stepTitles[currentStep as keyof typeof stepTitles]}
           </h3>
           <button className="modal-close" onClick={onClose} style={{ color: '#ffffff' }}>
             <i className="fa fa-times"></i>
@@ -730,6 +730,12 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
                 <i className="fa fa-passport me-2"></i>
                 <strong>Step 2:</strong> Upload passport document for automatic data extraction, plus photo and Emirates ID.
               </div>
+              {isRenewMode && (
+                <div className="alert alert-warning mb-3" style={{ fontSize: '13px', padding: '10px 14px' }}>
+                  <i className="fa fa-info-circle me-2"></i>
+                  Renewal mode: old data is prefilled. Passport and photo are still required before continuing.
+                </div>
+              )}
 
               {/* OCR Status Banner */}
               {(ocrProcessing || ocrStatus) && (
@@ -912,7 +918,7 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
             <div>
               <div className="alert alert-success mb-3" style={{ fontSize: '13px' }}>
                 <i className="fa fa-check-circle me-2"></i>
-                <strong>Step 3:</strong> Review all information before creating the residence.
+                <strong>Step 3:</strong> Review all information before {isRenewMode ? 'renewing' : 'creating'} the residence.
               </div>
 
               <div className="row">
@@ -996,11 +1002,12 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
               {saving ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2"></span>
-                  Creating...
+                  {isRenewMode ? 'Renewing...' : 'Creating...'}
                 </>
               ) : (
                 <>
-                  <i className="fa fa-save me-2"></i>Create Residence
+                  <i className={`fa ${isRenewMode ? 'fa-refresh' : 'fa-save'} me-2`}></i>
+                  {isRenewMode ? 'Renew Residence' : 'Create Residence'}
                 </>
               )}
             </button>
@@ -1010,4 +1017,3 @@ export default function CreateResidenceModal({ isOpen, onClose, onSuccess, looku
     </div>
   );
 }
-

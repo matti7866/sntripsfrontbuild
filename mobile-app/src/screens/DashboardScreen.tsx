@@ -149,7 +149,7 @@ export default function DashboardScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
+        <ActivityIndicator size="large" color="#dc2626" />
         <Text style={styles.loadingText}>Loading dashboard...</Text>
       </View>
     );
@@ -169,6 +169,11 @@ export default function DashboardScreen() {
       maximumFractionDigits: 2,
     });
   };
+  const todayLabel = new Date().toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
 
   return (
     <ScrollView
@@ -177,95 +182,90 @@ export default function DashboardScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       {/* Welcome Header */}
-      <LinearGradient colors={['#2563eb', '#1d4ed8']} style={styles.welcomeCard}>
-        <Ionicons name="stats-chart" size={40} color="#ffffff" />
+      <LinearGradient colors={['#dc2626', '#111111']} style={styles.welcomeCard}>
+        <Ionicons name="stats-chart" size={36} color="#ffffff" />
         <Text style={styles.welcomeTitle}>Dashboard</Text>
         <Text style={styles.welcomeSubtitle}>Today's Statistics</Text>
+        <View style={styles.datePill}>
+          <Ionicons name="calendar-outline" size={14} color="#ffffff" />
+          <Text style={styles.datePillText}>{todayLabel}</Text>
+        </View>
       </LinearGradient>
 
-      {/* Stats Grid */}
-      <View style={styles.statsGrid}>
-        {/* Tickets Card */}
-        <View style={[styles.statCard, styles.ticketsCard]}>
-          <View style={styles.statIconContainer}>
-            <Ionicons name="airplane" size={24} color="#3b82f6" />
-          </View>
-          <Text style={styles.statNumber}>{stats.Todays_Ticket || 0}</Text>
-          <Text style={styles.statLabel}>Tickets</Text>
-          <Text style={styles.statDesc}>د.إ {formatCurrency(stats.ticket_profit)}</Text>
-        </View>
-
-        {/* Visas Card */}
-        <View style={[styles.statCard, styles.visasCard]}>
-          <View style={styles.statIconContainer}>
-            <Ionicons name="card" size={24} color="#10b981" />
-          </View>
-          <Text style={styles.statNumber}>{stats.Todays_Visa || 0}</Text>
-          <Text style={styles.statLabel}>Visas</Text>
-          <Text style={styles.statDesc}>د.إ {formatCurrency(stats.Visa_Profit)}</Text>
-        </View>
-
-        {/* Expenses Card */}
-        <View style={[styles.statCard, styles.expensesCard]}>
-          <View style={styles.statIconContainer}>
-            <Ionicons name="wallet" size={24} color="#ef4444" />
-          </View>
-          <Text style={styles.statNumber}>د.إ {formatCurrency(stats.Today_Expenses)}</Text>
-          <Text style={styles.statLabel}>Expenses</Text>
-          <Text style={styles.statDesc}>Today</Text>
-        </View>
-
-        {/* Residence Card */}
-        <View style={[styles.statCard, styles.residenceCard]}>
-          <View style={styles.statIconContainer}>
-            <Ionicons name="id-card" size={24} color="#f59e0b" />
-          </View>
-          <Text style={styles.statNumber}>{stats.Todays_residences || 0}</Text>
-          <Text style={styles.statLabel}>Residence</Text>
-          <Text style={styles.statDesc}>د.إ {formatCurrency(stats.residence_profit)}</Text>
-        </View>
-      </View>
-
-      {/* Profit & Revenue Summary */}
-      <View style={styles.balanceCard}>
-        <LinearGradient
-          colors={['#16a34a', '#15803d']}
-          style={styles.balanceGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <View style={styles.balanceContent}>
-            <Ionicons name="trending-up" size={32} color="#ffffff" />
-            <View style={styles.balanceText}>
-              <Text style={styles.balanceLabel}>Today's Profit</Text>
-              <Text style={styles.balanceAmount}>د.إ {formatCurrency(stats.Todays_Profit)}</Text>
+      {/* Stats + Footer Joint Section */}
+      <View style={styles.statsPanel}>
+        <View style={styles.statsGrid}>
+          {/* Tickets Card */}
+          <View style={[styles.statCard, styles.ticketsCard]}>
+            <View style={styles.statIconContainer}>
+              <Ionicons name="airplane" size={24} color="#ef4444" />
             </View>
+            <Text style={styles.statNumber}>{stats.Todays_Ticket || 0}</Text>
+            <Text style={styles.statLabel}>Tickets</Text>
+            <Text style={styles.statDesc}>د.إ {formatCurrency(stats.ticket_profit)}</Text>
           </View>
-        </LinearGradient>
-      </View>
 
-      <View style={styles.balanceCard}>
-        <LinearGradient
-          colors={['#2563eb', '#1d4ed8']}
-          style={styles.balanceGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <View style={styles.balanceContent}>
-            <Ionicons name="cash" size={32} color="#ffffff" />
-            <View style={styles.balanceText}>
-              <Text style={styles.balanceLabel}>Today's Revenue</Text>
-              <Text style={styles.balanceAmount}>د.إ {formatCurrency(stats.Todays_Revenue)}</Text>
+          {/* Visas Card */}
+          <View style={[styles.statCard, styles.visasCard]}>
+            <View style={styles.statIconContainer}>
+              <Ionicons name="card" size={24} color="#10b981" />
             </View>
+            <Text style={styles.statNumber}>{stats.Todays_Visa || 0}</Text>
+            <Text style={styles.statLabel}>Visas</Text>
+            <Text style={styles.statDesc}>د.إ {formatCurrency(stats.Visa_Profit)}</Text>
           </View>
-        </LinearGradient>
+
+          {/* Expenses Card */}
+          <View style={[styles.statCard, styles.expensesCard]}>
+            <View style={styles.statIconContainer}>
+              <Ionicons name="wallet" size={24} color="#ef4444" />
+            </View>
+            <Text style={styles.statNumber}>د.إ {formatCurrency(stats.Today_Expenses)}</Text>
+            <Text style={styles.statLabel}>Expenses</Text>
+            <Text style={styles.statDesc}>Today</Text>
+          </View>
+
+          {/* Residence Card */}
+          <View style={[styles.statCard, styles.residenceCard]}>
+            <View style={styles.statIconContainer}>
+              <Ionicons name="id-card" size={24} color="#f59e0b" />
+            </View>
+            <Text style={styles.statNumber}>{stats.Todays_residences || 0}</Text>
+            <Text style={styles.statLabel}>Residence</Text>
+            <Text style={styles.statDesc}>د.إ {formatCurrency(stats.residence_profit)}</Text>
+          </View>
+        </View>
+
+        <View style={styles.statsFooter}>
+          <LinearGradient
+            colors={['#111111', '#000000']}
+            style={[styles.statsFooterBlock, styles.statsFooterDivider]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Ionicons name="trending-up" size={22} color="#fca5a5" />
+            <Text style={styles.statsFooterLabel}>Today's Profit</Text>
+            <Text style={styles.statsFooterAmount}>د.إ {formatCurrency(stats.Todays_Profit)}</Text>
+          </LinearGradient>
+
+          <LinearGradient
+            colors={['#dc2626', '#7f1d1d']}
+            style={styles.statsFooterBlock}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Ionicons name="cash" size={22} color="#ffffff" />
+            <Text style={styles.statsFooterLabel}>Today's Revenue</Text>
+            <Text style={styles.statsFooterAmount}>د.إ {formatCurrency(stats.Todays_Revenue)}</Text>
+          </LinearGradient>
+        </View>
       </View>
 
       {/* Today's Entries */}
       {dailyEntries.length > 0 && (
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="list" size={20} color="#1f2937" />
+            <Ionicons name="list" size={20} color="#000000" />
             <Text style={styles.sectionTitle}>Today's Activities ({dailyEntries.length})</Text>
           </View>
           {(showAllEntries ? dailyEntries : dailyEntries.slice(0, 5)).map((entry, index) => (
@@ -292,7 +292,7 @@ export default function DashboardScreen() {
               <Ionicons 
                 name={showAllEntries ? "chevron-up" : "chevron-down"} 
                 size={16} 
-                color="#2563eb" 
+                color="#dc2626" 
               />
             </TouchableOpacity>
           )}
@@ -303,7 +303,7 @@ export default function DashboardScreen() {
       {upcomingEvents.length > 0 && (
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="calendar" size={20} color="#1f2937" />
+            <Ionicons name="calendar" size={20} color="#000000" />
             <Text style={styles.sectionTitle}>Upcoming Events</Text>
           </View>
           {upcomingEvents.map((event, index) => (
@@ -337,27 +337,30 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#ffffff',
   },
   content: {
     padding: 16,
+    paddingBottom: 100,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#ffffff',
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6b7280',
+    color: '#111111',
   },
   welcomeCard: {
     padding: 24,
-    borderRadius: 16,
+    borderRadius: 22,
     alignItems: 'center',
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#111111',
   },
   welcomeTitle: {
     fontSize: 24,
@@ -367,14 +370,44 @@ const styles = StyleSheet.create({
   },
   welcomeSubtitle: {
     fontSize: 14,
-    color: '#e0e7ff',
+    color: '#fee2e2',
     marginTop: 4,
+  },
+  datePill: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  datePillText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  statsPanel: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 14,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#111111',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   statCard: {
     width: '48%',
@@ -383,15 +416,12 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 12,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#111111',
   },
   ticketsCard: {
     borderLeftWidth: 4,
-    borderLeftColor: '#3b82f6',
+    borderLeftColor: '#ef4444',
   },
   visasCard: {
     borderLeftWidth: 4,
@@ -411,56 +441,55 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#4b5563',
+    color: '#111111',
     marginBottom: 2,
   },
   statDesc: {
     fontSize: 11,
-    color: '#9ca3af',
+    color: '#333333',
   },
-  balanceCard: {
-    marginBottom: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  balanceGradient: {
-    padding: 20,
-  },
-  balanceContent: {
+  statsFooter: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#111111',
   },
-  balanceText: {
+  statsFooterBlock: {
     flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
   },
-  balanceLabel: {
-    fontSize: 13,
+  statsFooterDivider: {
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(255,255,255,0.35)',
+  },
+  statsFooterLabel: {
+    fontSize: 12,
     color: '#fca5a5',
-    marginBottom: 4,
-    fontWeight: '500',
+    fontWeight: '600',
   },
-  balanceAmount: {
-    fontSize: 24,
+  statsFooterAmount: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#ffffff',
   },
   sectionCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#111111',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -474,17 +503,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#111111',
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
   },
   entryItem: {
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#ffffff',
   },
   entryHeader: {
     flexDirection: 'row',
@@ -493,7 +522,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   entryTypeBadge: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: '#fee2e2',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
@@ -501,16 +530,16 @@ const styles = StyleSheet.create({
   entryTypeText: {
     fontSize: 11,
     fontWeight: 'bold',
-    color: '#1e40af',
+    color: '#991b1b',
   },
   entryTime: {
     fontSize: 11,
-    color: '#6b7280',
+    color: '#111111',
   },
   entryPassenger: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#000000',
     marginBottom: 2,
   },
   entryCustomer: {
@@ -520,7 +549,7 @@ const styles = StyleSheet.create({
   },
   entryStaff: {
     fontSize: 11,
-    color: '#9ca3af',
+    color: '#333333',
     fontStyle: 'italic',
   },
   showMoreButton: {
@@ -534,14 +563,14 @@ const styles = StyleSheet.create({
   showMoreText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#2563eb',
+    color: '#dc2626',
   },
   eventItem: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#ffffff',
     gap: 12,
   },
   eventIcon: {
@@ -555,7 +584,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f59e0b',
   },
   flightIcon: {
-    backgroundColor: '#3b82f6',
+    backgroundColor: '#ef4444',
   },
   customIcon: {
     backgroundColor: '#8b5cf6',
@@ -566,11 +595,11 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#1f2937',
+    color: '#000000',
     marginBottom: 2,
   },
   eventDate: {
     fontSize: 11,
-    color: '#6b7280',
+    color: '#111111',
   },
 });

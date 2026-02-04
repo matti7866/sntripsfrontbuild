@@ -11,7 +11,7 @@ const AppContent: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#667eea" />
+        <ActivityIndicator size="large" color="#dc2626" />
       </View>
     );
   }

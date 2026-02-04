@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Email Preview - Labour Card Approved with Pending Payment</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background-color: #eee; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 0; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background-color: #dc3545; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+        .header h2 { margin: 0; }
+        .content { padding: 30px; background-color: #f8f9fa; }
+        .info-table { width: 100%; border-collapse: collapse; margin: 15px 0; background: white; border-radius: 5px; overflow: hidden; }
+        .info-table th { background-color: #007bff; color: white; padding: 12px; text-align: left; }
+        .info-table td { padding: 12px; border-bottom: 1px solid #ddd; }
+        .info-table tr:nth-child(even) { background-color: #f8f9fa; }
+        .info-table tr:last-child td { border-bottom: none; }
+        .match-reasons { background-color: #28a745; color: white; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .match-reasons ul { margin: 10px 0; padding-left: 20px; }
+        .actions { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+        .actions ol { margin: 10px 0; padding-left: 25px; }
+        .footer { padding: 20px 30px; border-top: 2px solid #ddd; color: #666; font-size: 13px; background: white; border-radius: 0 0 8px 8px; }
+        .btn { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+        h3 { color: #333; margin-top: 25px; margin-bottom: 15px; }
+        .alert-badge { background-color: #dc3545; color: white; padding: 5px 10px; border-radius: 3px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h2>⚠️ Labour Card Approved - Pending Payment Alert</h2>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">Automated System Notification</p>
+        </div>
+        
+        <div class='content'>
+            <p style="font-size: 16px; margin-bottom: 20px;">
+                <strong>⚠️ Action Required:</strong> A labour card has been approved (Step 1a) but there is a matching pending payment for the same company.
+            </p>
+            
+            <h3>📋 Residence Information</h3>
+            <table class='info-table'>
+                <tr><th style="width: 35%;">Field</th><th>Value</th></tr>
+                <tr><td><strong>Residence ID</strong></td><td><span class="alert-badge">#1829</span></td></tr>
+                <tr><td><strong>Passenger Name</strong></td><td>ABEESA BHUJEL</td></tr>
+                <tr><td><strong>Company Name</strong></td><td>United Cleaning Services LLC</td></tr>
+                <tr><td><strong>Company Number</strong></td><td>2848846</td></tr>
+                <tr><td><strong>MB Number</strong></td><td><strong style="color: #007bff;">MB308336930AE</strong></td></tr>
+                <tr><td><strong>Labour Card Number</strong></td><td>-</td></tr>
+                <tr><td><strong>Passport Number</strong></td><td>17467394</td></tr>
+                <tr><td><strong>Customer</strong></td><td>United Cleaning Services LLC</td></tr>
+                <tr><td><strong>Date Created</strong></td><td>2025-01-18</td></tr>
+            </table>
+            
+            <h3>💳 Matching Pending Payment</h3>
+            <table class='info-table'>
+                <tr><th style="width: 35%;">Field</th><th>Value</th></tr>
+                <tr><td><strong>Transaction Number</strong></td><td><strong style="color: #dc3545;">MB308336928AE</strong></td></tr>
+                <tr><td><strong>Person Name (Arabic)</strong></td><td>عبيسه بيشواكارما</td></tr>
+                <tr><td><strong>Pay Card Number</strong></td><td>0F8J8SJ60BH362</td></tr>
+                <tr><td><strong>Card Number</strong></td><td>135245317</td></tr>
+                <tr><td><strong>Card Expiry Date</strong></td><td>20/03/2026</td></tr>
+            </table>
+            
+            <div class='match-reasons'>
+                <strong>✅ Match Details (Score: 3/10)</strong>
+                <ul>
+                    <li><strong>MB Number Variation Match</strong> - System MB: MB308336930AE → Pending Payment MB: MB308336928AE</li>
+                    <li><strong>Difference:</strong> -2 (within acceptable range of ±3)</li>
+                    <li><strong>Confidence:</strong> High - MB numbers are sequential</li>
+                </ul>
+            </div>
+            
+            <p><strong>📊 Company Statistics:</strong></p>
+            <ul>
+                <li>Total Pending Payments for this Company: <strong>65</strong></li>
+                <li>This is the only match found for residence #1829</li>
+            </ul>
+            
+            <div class="actions">
+                <h3 style="margin-top: 0; color: #856404;">⚡ Recommended Actions:</h3>
+                <ol>
+                    <li><strong>Verify Identity:</strong> Check if "ABEESA BHUJEL" and "عبيسه بيشواكارما" (Abeesa Bhishowakarma) are the same person</li>
+                    <li><strong>Check Payment Status:</strong> Confirm if the pending payment should be processed</li>
+                    <li><strong>Update Records:</strong> Update the labour card status and link the payment if confirmed</li>
+                    <li><strong>Customer Contact:</strong> Contact United Cleaning Services LLC if clarification is needed</li>
+                    <li><strong>Process Payment:</strong> Clear the pending payment from MOHRE system</li>
+                </ol>
+            </div>
+            
+            <p style="text-align: center; margin: 30px 0;">
+                <a href='http://127.0.0.1:5174/residence/tasks?step=1a' class='btn'>
+                    🔍 View in System - Residence Tasks Step 1a
+                </a>
+            </p>
+        </div>
+        
+        <div class='footer'>
+            <p><strong>📧 This is an automated alert from the SN Travels Residence Management System</strong></p>
+            <p style="margin: 5px 0;">
+                <strong>Generated:</strong> <?php echo date('l, F j, Y \a\t g:i A'); ?><br>
+                <strong>Alert Type:</strong> Labour Card Approved with Pending Payment<br>
+                <strong>Priority:</strong> High - Requires Attention
+            </p>
+            <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 11px; color: #999;">
+                If you believe this email was sent in error, please check the residence record in the system.<br>
+                To stop receiving these alerts, update your notification preferences in the admin panel.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -29,6 +29,11 @@ interface DropdownData {
   currencies: Array<{ currencyID: number; currencyName: string }>;
 }
 
+const toDateInputValue = (value?: string | null): string => {
+  if (!value) return '';
+  return value.slice(0, 10);
+};
+
 export default function ResidenceReport() {
   const navigate = useNavigate();
   const [records, setRecords] = useState<Residence[]>([]);
@@ -63,6 +68,9 @@ export default function ResidenceReport() {
   const [walletPaymentsMap, setWalletPaymentsMap] = useState<Map<number, number>>(new Map());
   const [fullLookups, setFullLookups] = useState<any>(null);
   const [addCustomerModalOpen, setAddCustomerModalOpen] = useState(false);
+  const [renewMode, setRenewMode] = useState(false);
+  const [renewOldResidenceId, setRenewOldResidenceId] = useState<number | null>(null);
+  const [renewInitialData, setRenewInitialData] = useState<any>(null);
 
   useEffect(() => {
     loadDropdowns();
@@ -854,8 +862,38 @@ export default function ResidenceReport() {
     setCancelModalOpen(true);
   };
 
-  const handleRenew = (residence: Residence) => {
-    navigate(`/residence/create?type=renew&oldID=${residence.residenceID}&stp=0`);
+  const handleRenew = async (residence: Residence) => {
+    try {
+      if (!fullLookups) {
+        const lookupData = await residenceService.getLookups();
+        setFullLookups(lookupData);
+      }
+      const residenceData: any = await residenceService.getResidence(residence.residenceID, true);
+      setRenewMode(true);
+      setRenewOldResidenceId(residence.residenceID);
+      setRenewInitialData({
+        customer_id: residenceData.customer_id ? Number(residenceData.customer_id) : null,
+        ref: residenceData.ref || `Renewal of #${residence.residenceID}`,
+        insideOutside: residenceData.InsideOutside || '',
+        res_type: residenceData.res_type || 'mainland',
+        uid: residenceData.uid || '',
+        salary_amount: residenceData.salary_amount ? Number(residenceData.salary_amount) : null,
+        position: residenceData.positionID ? Number(residenceData.positionID) : null,
+        sale_amount: residenceData.sale_price ? Number(residenceData.sale_price) : null,
+        sale_currency_type: residenceData.saleCurID ? Number(residenceData.saleCurID) : null,
+        tawjeeh_included: true,
+        insurance_included: true,
+        passengerName: residenceData.passenger_name || '',
+        nationality: residenceData.Nationality ? Number(residenceData.Nationality) : null,
+        passportNumber: residenceData.passportNumber || '',
+        passportExpiryDate: toDateInputValue(residenceData.passportExpiryDate),
+        gender: residenceData.gender || '',
+        dob: toDateInputValue(residenceData.dob),
+      });
+      setCreateResidenceModalOpen(true);
+    } catch (error: any) {
+      Swal.fire('Error', error.response?.data?.message || 'Failed to load old residence data for renewal', 'error');
+    }
   };
 
   // Modal submit handlers
@@ -937,7 +975,12 @@ export default function ResidenceReport() {
               New Customer
             </button>
             <button
-              onClick={() => setCreateResidenceModalOpen(true)}
+              onClick={() => {
+                setRenewMode(false);
+                setRenewOldResidenceId(null);
+                setRenewInitialData(null);
+                setCreateResidenceModalOpen(true);
+              }}
               className="btn btn-primary btn-lg"
               style={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -1545,11 +1588,22 @@ export default function ResidenceReport() {
       {fullLookups && (
         <CreateResidenceModal
           isOpen={createResidenceModalOpen}
-          onClose={() => setCreateResidenceModalOpen(false)}
+          onClose={() => {
+            setCreateResidenceModalOpen(false);
+            setRenewMode(false);
+            setRenewOldResidenceId(null);
+            setRenewInitialData(null);
+          }}
           onSuccess={() => {
             setCreateResidenceModalOpen(false);
+            setRenewMode(false);
+            setRenewOldResidenceId(null);
+            setRenewInitialData(null);
             loadRecords();
           }}
+          mode={renewMode ? 'renew' : 'create'}
+          oldResidenceId={renewMode ? renewOldResidenceId : null}
+          initialData={renewMode ? renewInitialData : null}
           lookups={{
             customers: fullLookups.customers || [],
             nationalities: (fullLookups.nationalities || []).map((n: any) => ({

@@ -34,22 +34,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#000',
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 18,
-    color: '#666',
+    color: '#000',
     marginBottom: 30,
   },
   count: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#667eea',
+    color: '#dc2626',
     marginBottom: 20,
   },
   button: {
-    backgroundColor: '#667eea',
+    backgroundColor: '#dc2626',
     paddingHorizontal: 40,
     paddingVertical: 15,
     borderRadius: 10,
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   },
   info: {
     fontSize: 14,
-    color: '#999',
+    color: '#111',
     textAlign: 'center',
     marginTop: 20,
   },

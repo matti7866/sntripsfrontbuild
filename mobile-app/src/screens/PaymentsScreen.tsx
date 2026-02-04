@@ -95,7 +95,7 @@ const PaymentsScreen: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#667eea" />
+        <ActivityIndicator size="large" color="#dc2626" />
       </View>
     );
   }
@@ -125,7 +125,7 @@ const PaymentsScreen: React.FC = () => {
           <View style={styles.emptyContainer}>
             <Text style={{ fontSize: 64, marginBottom: 20 }}>💳</Text>
             <Text style={styles.emptyText}>No payments found</Text>
-            <Text style={{ fontSize: 14, color: '#999', marginTop: 10, textAlign: 'center' }}>
+            <Text style={{ fontSize: 14, color: '#111', marginTop: 10, textAlign: 'center' }}>
               Your payment history will appear here
             </Text>
           </View>
@@ -138,19 +138,19 @@ const PaymentsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 25,
-    backgroundColor: '#667eea',
+    backgroundColor: '#dc2626',
   },
   title: {
     fontSize: 28,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   },
   account: {
     fontSize: 14,
-    color: '#666',
+    color: '#000',
   },
   recentBadge: {
     backgroundColor: '#10b981',
@@ -239,24 +239,24 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#000',
   },
   infoValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: '#000',
   },
   remarksContainer: {
     marginTop: 5,
   },
   remarksLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#000',
     marginBottom: 5,
   },
   remarksText: {
     fontSize: 14,
-    color: '#333',
+    color: '#000',
     fontStyle: 'italic',
   },
   emptyContainer: {
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    color: '#666',
+    color: '#000',
     textAlign: 'center',
     marginTop: 20,
   },

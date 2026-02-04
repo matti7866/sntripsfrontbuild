@@ -68,6 +68,31 @@ const steps: Record<string, StepInfo> = {
   '9': { name: 'Completed', count: 0, icon: 'fa fa-hand-holding' },
 };
 
+interface CreateResidenceInitialData {
+  customer_id: number | null;
+  ref: string;
+  insideOutside: string;
+  res_type: string;
+  uid: string;
+  salary_amount: number | null;
+  position: number | null;
+  sale_amount: number | null;
+  sale_currency_type: number | null;
+  tawjeeh_included: boolean;
+  insurance_included: boolean;
+  passengerName: string;
+  nationality: number | null;
+  passportNumber: string;
+  passportExpiryDate: string;
+  gender: string;
+  dob: string;
+}
+
+const toDateInputValue = (value?: string | null): string => {
+  if (!value) return '';
+  return value.slice(0, 10);
+};
+
 export default function ResidenceTasks() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -76,6 +101,8 @@ export default function ResidenceTasks() {
   const companyId = searchParams.get('company_id') || '';
   const customerId = searchParams.get('customer_id') || '';
   const searchQuery = searchParams.get('search') || '';
+  const isRenewMode = searchParams.get('type') === 'renew';
+  const renewOldResidenceId = Number(searchParams.get('oldID') || 0);
   
   const [residences, setResidences] = useState<ResidenceTask[]>([]);
   const [loading, setLoading] = useState(false);
@@ -123,6 +150,8 @@ export default function ResidenceTasks() {
   const [selectedResidenceId, setSelectedResidenceId] = useState<number | null>(null);
   const [selectedCompanyNumber, setSelectedCompanyNumber] = useState<string>('');
   const [selectedCompanyName, setSelectedCompanyName] = useState<string>('');
+  const [renewInitialData, setRenewInitialData] = useState<Partial<CreateResidenceInitialData> | null>(null);
+  const [renewDataLoading, setRenewDataLoading] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -147,6 +176,58 @@ export default function ResidenceTasks() {
       setSelectedCustomer(customerId);
     }
   }, [companyId, customerId]);
+
+  const clearRenewSearchParams = () => {
+    const params = new URLSearchParams(searchParams);
+    params.delete('type');
+    params.delete('oldID');
+    params.delete('stp');
+    setSearchParams(params, { replace: true });
+  };
+
+  useEffect(() => {
+    const loadRenewData = async () => {
+      if (!isRenewMode || !renewOldResidenceId) {
+        setRenewInitialData(null);
+        setRenewDataLoading(false);
+        return;
+      }
+
+      setRenewDataLoading(true);
+      setShowNewResidenceModal(true);
+      try {
+        const residence: any = await residenceService.getResidence(renewOldResidenceId, true);
+        setRenewInitialData({
+          customer_id: residence.customer_id ? Number(residence.customer_id) : null,
+          ref: residence.ref || `Renewal of #${renewOldResidenceId}`,
+          insideOutside: residence.InsideOutside || '',
+          res_type: residence.res_type || 'mainland',
+          uid: residence.uid || '',
+          salary_amount: residence.salary_amount ? Number(residence.salary_amount) : null,
+          position: residence.positionID ? Number(residence.positionID) : null,
+          sale_amount: residence.sale_price ? Number(residence.sale_price) : null,
+          sale_currency_type: residence.saleCurID ? Number(residence.saleCurID) : null,
+          tawjeeh_included: true,
+          insurance_included: true,
+          passengerName: residence.passenger_name || '',
+          nationality: residence.Nationality ? Number(residence.Nationality) : null,
+          passportNumber: residence.passportNumber || '',
+          passportExpiryDate: toDateInputValue(residence.passportExpiryDate),
+          gender: residence.gender || '',
+          dob: toDateInputValue(residence.dob),
+        });
+      } catch (error: any) {
+        console.error('Failed to load residence for renewal:', error);
+        Swal.fire('Error', error.response?.data?.message || 'Failed to load old residence data for renewal', 'error');
+        clearRenewSearchParams();
+        setShowNewResidenceModal(false);
+      } finally {
+        setRenewDataLoading(false);
+      }
+    };
+
+    loadRenewData();
+  }, [isRenewMode, renewOldResidenceId]);
   
   // Calculate pagination
   const totalPages = Math.ceil(residences.length / itemsPerPage);
@@ -1012,6 +1093,28 @@ export default function ResidenceTasks() {
     }
   };
 
+  const handleOpenCreateResidence = () => {
+    setRenewInitialData(null);
+    setShowNewResidenceModal(true);
+  };
+
+  const handleCloseCreateResidenceModal = () => {
+    setShowNewResidenceModal(false);
+    setRenewInitialData(null);
+    if (isRenewMode) {
+      clearRenewSearchParams();
+    }
+  };
+
+  const handleCreateResidenceSuccess = () => {
+    setShowNewResidenceModal(false);
+    setRenewInitialData(null);
+    if (isRenewMode) {
+      clearRenewSearchParams();
+    }
+    loadTasks();
+  };
+
   return (
     <div className="residence-tasks-page-compact">
       {/* Compact Header */}
@@ -1024,7 +1127,7 @@ export default function ResidenceTasks() {
             </h1>
           </div>
           <div className="d-flex gap-2">
-            <button className="btn btn-sm btn-success" onClick={() => setShowNewResidenceModal(true)}>
+            <button className="btn btn-sm btn-success" onClick={handleOpenCreateResidence}>
               <i className="fa fa-plus me-1"></i>
               Add New
             </button>
@@ -1677,12 +1780,12 @@ export default function ResidenceTasks() {
 
       {/* Create Residence Modal */}
       <CreateResidenceModal
-        isOpen={showNewResidenceModal}
-        onClose={() => setShowNewResidenceModal(false)}
-        onSuccess={() => {
-          setShowNewResidenceModal(false);
-          loadTasks();
-        }}
+        isOpen={showNewResidenceModal && (!isRenewMode || !renewDataLoading)}
+        onClose={handleCloseCreateResidenceModal}
+        onSuccess={handleCreateResidenceSuccess}
+        mode={isRenewMode ? 'renew' : 'create'}
+        oldResidenceId={isRenewMode ? renewOldResidenceId : null}
+        initialData={isRenewMode ? renewInitialData : null}
         lookups={{
           customers: lookups.customers,
           nationalities: lookups.nationalities.map(n => ({

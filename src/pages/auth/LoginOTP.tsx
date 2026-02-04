@@ -88,6 +88,11 @@ const LoginOTP: React.FC = () => {
     if (value && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
+
+    const otpString = newOtp.join('');
+    if (otpString.length === 6 && !newOtp.includes('')) {
+      void verifyOtpCode(otpString);
+    }
   };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -107,15 +112,19 @@ const LoginOTP: React.FC = () => {
       }
       setOtp(newOtp);
       otpInputRefs.current[Math.min(pasted.length - 1, 5)]?.focus();
+
+      if (pasted.length === 6) {
+        void verifyOtpCode(newOtp.join(''));
+      }
     }
   };
 
-  const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const verifyOtpCode = async (otpString: string) => {
+    if (loading) return;
+
     setError('');
     setLoading(true);
 
-    const otpString = otp.join('');
     if (otpString.length !== 6) {
       setError('Please enter all 6 digits.');
       setLoading(false);
@@ -259,7 +268,7 @@ const LoginOTP: React.FC = () => {
                 </button>
               </form>
             ) : (
-              <form onSubmit={handleVerifyOTP} className="login-zenith-form">
+              <div className="login-zenith-form">
                 <div className="login-zenith-otp" onPaste={handlePaste}>
                   {otp.map((digit, index) => (
                     <input
@@ -279,6 +288,13 @@ const LoginOTP: React.FC = () => {
                   ))}
                 </div>
 
+                {loading ? (
+                  <div className="login-zenith-verifying">
+                    <i className="fas fa-spinner fa-spin" />
+                    <span>Verifying code...</span>
+                  </div>
+                ) : null}
+
                 <div className="login-zenith-actions">
                   <button
                     type="button"
@@ -289,15 +305,8 @@ const LoginOTP: React.FC = () => {
                     <i className="fas fa-arrow-left" />
                     <span>Back</span>
                   </button>
-                  <button type="submit" disabled={loading} className="login-zenith-btn">
-                    {loading ? (
-                      <><i className="fas fa-spinner fa-spin" /> Checking...</>
-                    ) : (
-                      <><span>Verify</span><i className="fas fa-check" /></>
-                    )}
-                  </button>
                 </div>
-              </form>
+              </div>
             )}
 
             <p className="login-zenith-footnote">

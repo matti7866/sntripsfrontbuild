@@ -199,7 +199,7 @@ export default function MarkReceivedModal({
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Ionicons name="arrow-back" size={24} color="#1f2937" />
+            <Ionicons name="arrow-back" size={24} color="#000000" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Mark as Received</Text>
           <View style={{ width: 24 }} />
@@ -207,7 +207,7 @@ export default function MarkReceivedModal({
 
         {loadingData ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#2563eb" />
+            <ActivityIndicator size="large" color="#dc2626" />
             <Text style={styles.loadingText}>Loading form data...</Text>
           </View>
         ) : (
@@ -362,7 +362,7 @@ export default function MarkReceivedModal({
                             ?.position_name || 'Select Occupation'
                         : 'Select Occupation'}
                     </Text>
-                    <Ionicons name="chevron-down" size={20} color="#6b7280" />
+                    <Ionicons name="chevron-down" size={20} color="#111111" />
                   </TouchableOpacity>
                 </View>
               )}
@@ -381,7 +381,7 @@ export default function MarkReceivedModal({
                           )?.company_name || 'Select Company'
                         : 'Select Company'}
                     </Text>
-                    <Ionicons name="chevron-down" size={20} color="#6b7280" />
+                    <Ionicons name="chevron-down" size={20} color="#111111" />
                   </TouchableOpacity>
                 </View>
               )}
@@ -422,22 +422,22 @@ export default function MarkReceivedModal({
                   setShowOccupationPicker(false);
                   setOccupationSearch('');
                 }}>
-                  <Ionicons name="close" size={24} color="#1f2937" />
+                  <Ionicons name="close" size={24} color="#000000" />
                 </TouchableOpacity>
               </View>
               <View style={styles.searchContainer}>
-                <Ionicons name="search" size={20} color="#6b7280" style={styles.searchIcon} />
+                <Ionicons name="search" size={20} color="#111111" style={styles.searchIcon} />
                 <TextInput
                   style={styles.searchInput}
                   placeholder="Search occupations..."
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#333333"
                   value={occupationSearch}
                   onChangeText={setOccupationSearch}
                   autoFocus={false}
                 />
                 {occupationSearch.length > 0 && (
                   <TouchableOpacity onPress={() => setOccupationSearch('')}>
-                    <Ionicons name="close-circle" size={20} color="#9ca3af" />
+                    <Ionicons name="close-circle" size={20} color="#333333" />
                   </TouchableOpacity>
                 )}
               </View>
@@ -460,7 +460,7 @@ export default function MarkReceivedModal({
                   >
                     <Text style={styles.pickerItemText}>{item.position_name}</Text>
                     {formData.occupation === item.position_id.toString() && (
-                      <Ionicons name="checkmark" size={20} color="#2563eb" />
+                      <Ionicons name="checkmark" size={20} color="#dc2626" />
                     )}
                   </TouchableOpacity>
                 )}
@@ -484,22 +484,22 @@ export default function MarkReceivedModal({
                   setShowCompanyPicker(false);
                   setCompanySearch('');
                 }}>
-                  <Ionicons name="close" size={24} color="#1f2937" />
+                  <Ionicons name="close" size={24} color="#000000" />
                 </TouchableOpacity>
               </View>
               <View style={styles.searchContainer}>
-                <Ionicons name="search" size={20} color="#6b7280" style={styles.searchIcon} />
+                <Ionicons name="search" size={20} color="#111111" style={styles.searchIcon} />
                 <TextInput
                   style={styles.searchInput}
                   placeholder="Search establishments..."
-                  placeholderTextColor="#9ca3af"
+                  placeholderTextColor="#333333"
                   value={companySearch}
                   onChangeText={setCompanySearch}
                   autoFocus={false}
                 />
                 {companySearch.length > 0 && (
                   <TouchableOpacity onPress={() => setCompanySearch('')}>
-                    <Ionicons name="close-circle" size={20} color="#9ca3af" />
+                    <Ionicons name="close-circle" size={20} color="#333333" />
                   </TouchableOpacity>
                 )}
               </View>
@@ -522,7 +522,7 @@ export default function MarkReceivedModal({
                   >
                     <Text style={styles.pickerItemText}>{item.company_name}</Text>
                     {formData.establishmentName === item.company_id.toString() && (
-                      <Ionicons name="checkmark" size={20} color="#2563eb" />
+                      <Ionicons name="checkmark" size={20} color="#dc2626" />
                     )}
                   </TouchableOpacity>
                 )}
@@ -543,7 +543,7 @@ export default function MarkReceivedModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#ffffff',
   },
   header: {
     flexDirection: 'row',
@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 60 : 16,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#111111',
   },
   closeButton: {
     padding: 8,
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
   },
   loadingContainer: {
     flex: 1,
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6b7280',
+    color: '#111111',
   },
   scrollView: {
     flex: 1,
@@ -588,24 +588,24 @@ const styles = StyleSheet.create({
   taskId: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#2563eb',
+    color: '#dc2626',
     marginBottom: 4,
   },
   taskName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
     marginBottom: 4,
   },
   taskPassport: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#111111',
   },
   scanButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2563eb',
+    backgroundColor: '#dc2626',
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 120,
     borderRadius: 8,
-    backgroundColor: '#e5e7eb',
+    backgroundColor: '#111111',
   },
   imageLabel: {
     position: 'absolute',
@@ -666,13 +666,13 @@ const styles = StyleSheet.create({
     color: '#dc2626',
   },
   input: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#ffffff',
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    color: '#1f2937',
+    color: '#000000',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#111111',
   },
   genderButtons: {
     flexDirection: 'row',
@@ -683,34 +683,34 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#e5e7eb',
+    borderColor: '#111111',
     alignItems: 'center',
   },
   genderButtonActive: {
-    borderColor: '#2563eb',
+    borderColor: '#dc2626',
     backgroundColor: '#eff6ff',
   },
   genderButtonText: {
     fontSize: 16,
-    color: '#6b7280',
+    color: '#111111',
     fontWeight: '600',
   },
   genderButtonTextActive: {
-    color: '#2563eb',
+    color: '#dc2626',
   },
   pickerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#ffffff',
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#111111',
   },
   pickerButtonText: {
     fontSize: 16,
-    color: '#1f2937',
+    color: '#000000',
     flex: 1,
   },
   pickerModalOverlay: {
@@ -730,12 +730,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#111111',
   },
   pickerModalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
   },
   pickerItem: {
     flexDirection: 'row',
@@ -743,23 +743,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
+    borderBottomColor: '#ffffff',
   },
   pickerItemText: {
     fontSize: 16,
-    color: '#1f2937',
+    color: '#000000',
     flex: 1,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#ffffff',
     margin: 16,
     marginBottom: 8,
     borderRadius: 8,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#111111',
   },
   searchIcon: {
     marginRight: 8,
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: '#1f2937',
+    color: '#000000',
     paddingVertical: 10,
   },
   emptyPickerContainer: {
@@ -776,7 +776,7 @@ const styles = StyleSheet.create({
   },
   emptyPickerText: {
     fontSize: 16,
-    color: '#6b7280',
+    color: '#111111',
   },
   footer: {
     flexDirection: 'row',
@@ -784,7 +784,7 @@ const styles = StyleSheet.create({
     gap: 12,
     backgroundColor: '#ffffff',
     borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
+    borderTopColor: '#111111',
   },
   cancelButton: {
     flex: 1,
@@ -797,7 +797,7 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6b7280',
+    color: '#111111',
   },
   submitButton: {
     flex: 1,

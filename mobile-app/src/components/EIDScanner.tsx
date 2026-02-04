@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
   galleryButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#2563eb',
+    backgroundColor: '#dc2626',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   closeButtonText: {
-    color: '#9ca3af',
+    color: '#333333',
     fontSize: 16,
   },
   text: {
@@ -335,6 +335,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
 });
+
 
 
 

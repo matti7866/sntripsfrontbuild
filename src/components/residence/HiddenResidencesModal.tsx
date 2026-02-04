@@ -470,7 +470,7 @@ export default function HiddenResidencesModal({ isOpen, onClose, onSuccess }: Hi
               <div className="alert alert-info mt-3" style={{ fontSize: '13px' }}>
                 <strong><i className="fa fa-info-circle me-2"></i>Information:</strong>
                 <ul className="mb-0 mt-2">
-                  <li>These residences are in <strong>Step 0, NULL, or Step 2 (Insurance)</strong>.</li>
+                  <li>These residences are in <strong>Step 0, NULL, or Step 2 (completedStep=2)</strong>.</li>
                   <li>Select one or more residences and choose a target step to move them.</li>
                   <li>Click on a row to select/deselect it, or use the checkbox in the header to select all.</li>
                 </ul>

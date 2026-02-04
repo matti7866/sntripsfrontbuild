@@ -121,13 +121,13 @@ export default function MOHREScreen() {
 
       <View style={styles.taskBody}>
         <View style={styles.infoRow}>
-          <Ionicons name="person" size={16} color="#6b7280" />
+          <Ionicons name="person" size={16} color="#111111" />
           <Text style={styles.infoLabel}>Passenger:</Text>
           <Text style={styles.infoValue}>{item.passenger_name}</Text>
         </View>
 
         <View style={styles.infoRow}>
-          <Ionicons name="business" size={16} color="#6b7280" />
+          <Ionicons name="business" size={16} color="#111111" />
           <Text style={styles.infoLabel}>Company:</Text>
           <Text style={styles.infoValue}>
             {item.company_name || 'N/A'}
@@ -137,7 +137,7 @@ export default function MOHREScreen() {
 
         {item.mb_number && (
           <View style={styles.infoRow}>
-            <Ionicons name="barcode" size={16} color="#6b7280" />
+            <Ionicons name="barcode" size={16} color="#111111" />
             <Text style={styles.infoLabel}>MB Number:</Text>
             <Text style={styles.infoValue}>{item.mb_number}</Text>
           </View>
@@ -162,14 +162,14 @@ export default function MOHREScreen() {
         )}
 
         <View style={styles.infoRow}>
-          <Ionicons name="card" size={16} color="#6b7280" />
+          <Ionicons name="card" size={16} color="#111111" />
           <Text style={styles.infoLabel}>Passport:</Text>
           <Text style={styles.infoValue}>{item.passportNumber}</Text>
         </View>
 
         {item.position && (
           <View style={styles.infoRow}>
-            <Ionicons name="briefcase" size={16} color="#6b7280" />
+            <Ionicons name="briefcase" size={16} color="#111111" />
             <Text style={styles.infoLabel}>Position:</Text>
             <Text style={styles.infoValue}>{item.position}</Text>
           </View>
@@ -177,7 +177,7 @@ export default function MOHREScreen() {
 
         {item.salary && item.salary > 0 && (
           <View style={styles.infoRow}>
-            <Ionicons name="wallet" size={16} color="#6b7280" />
+            <Ionicons name="wallet" size={16} color="#111111" />
             <Text style={styles.infoLabel}>Salary:</Text>
             <Text style={styles.infoValue}>{item.salary.toLocaleString()} AED</Text>
           </View>
@@ -185,7 +185,7 @@ export default function MOHREScreen() {
 
         {item.completedStep !== undefined && (
           <View style={styles.infoRow}>
-            <Ionicons name="layers" size={16} color="#6b7280" />
+            <Ionicons name="layers" size={16} color="#111111" />
             <Text style={styles.infoLabel}>Step:</Text>
             <Text style={styles.infoValue}>{item.completedStep}</Text>
           </View>
@@ -209,7 +209,7 @@ export default function MOHREScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Ionicons name="document-text-outline" size={64} color="#9ca3af" />
+      <Ionicons name="document-text-outline" size={64} color="#333333" />
       <Text style={styles.emptyText}>No MOHRE tasks</Text>
       <Text style={styles.emptySubtext}>Step 1A tasks will appear here</Text>
     </View>
@@ -218,7 +218,7 @@ export default function MOHREScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
+        <ActivityIndicator size="large" color="#dc2626" />
         <Text style={styles.loadingText}>Loading MOHRE tasks...</Text>
       </View>
     );
@@ -234,17 +234,17 @@ export default function MOHREScreen() {
       </View>
 
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={20} color="#6b7280" style={styles.searchIcon} />
+        <Ionicons name="search" size={20} color="#111111" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
           placeholder="Search by name, passport, company..."
           value={searchQuery}
           onChangeText={handleSearch}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor="#333333"
         />
         {searchQuery.length > 0 && (
           <TouchableOpacity onPress={() => handleSearch('')}>
-            <Ionicons name="close-circle" size={20} color="#6b7280" />
+            <Ionicons name="close-circle" size={20} color="#111111" />
           </TouchableOpacity>
         )}
       </View>
@@ -264,33 +264,33 @@ export default function MOHREScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#ffffff',
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#ffffff',
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: '#6b7280',
+    color: '#111111',
   },
   header: {
     backgroundColor: '#ffffff',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#111111',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#111111',
     marginTop: 4,
   },
   searchContainer: {
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: '#111111',
   },
   searchIcon: {
     marginRight: 8,
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#1f2937',
+    color: '#000000',
   },
   listContainer: {
     padding: 16,
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   taskIdBadge: {
-    backgroundColor: '#dbeafe',
+    backgroundColor: '#fee2e2',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   taskIdText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#1e40af',
+    color: '#991b1b',
   },
   stepBadge: {
     backgroundColor: '#fef3c7',
@@ -366,14 +366,14 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#111111',
     marginLeft: 8,
     marginRight: 4,
     fontWeight: '500',
   },
   infoValue: {
     fontSize: 14,
-    color: '#1f2937',
+    color: '#000000',
     flex: 1,
   },
   balanceRow: {
@@ -410,12 +410,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#000000',
     marginTop: 16,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#6b7280',
+    color: '#111111',
     marginTop: 8,
   },
 });

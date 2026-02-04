@@ -142,7 +142,7 @@ const TicketsScreen: React.FC = () => {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#667eea" />
+        <ActivityIndicator size="large" color="#dc2626" />
       </View>
     );
   }
@@ -164,7 +164,7 @@ const TicketsScreen: React.FC = () => {
           <View style={styles.emptyContainer}>
             <Text style={{ fontSize: 64, marginBottom: 20 }}>🎫</Text>
             <Text style={styles.emptyText}>No tickets found</Text>
-            <Text style={{ fontSize: 14, color: '#999', marginTop: 10, textAlign: 'center' }}>
+            <Text style={{ fontSize: 14, color: '#111', marginTop: 10, textAlign: 'center' }}>
               Your ticket bookings will appear here
             </Text>
           </View>
@@ -177,19 +177,19 @@ const TicketsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 25,
-    backgroundColor: '#667eea',
+    backgroundColor: '#dc2626',
   },
   title: {
     fontSize: 28,
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   },
   upcomingTicket: {
     borderLeftWidth: 4,
-    borderLeftColor: '#667eea',
+    borderLeftColor: '#dc2626',
   },
   ticketHeader: {
     flexDirection: 'row',
@@ -229,15 +229,15 @@ const styles = StyleSheet.create({
   pnrText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#000',
     marginBottom: 5,
   },
   ticketNumber: {
     fontSize: 14,
-    color: '#666',
+    color: '#000',
   },
   copyBadge: {
-    backgroundColor: '#667eea',
+    backgroundColor: '#dc2626',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
@@ -261,17 +261,17 @@ const styles = StyleSheet.create({
   airportCode: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#667eea',
+    color: '#dc2626',
   },
   arrow: {
     fontSize: 20,
-    color: '#999',
+    color: '#111',
     marginHorizontal: 15,
   },
   passengerName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#000',
     textAlign: 'center',
     marginBottom: 15,
   },
@@ -284,12 +284,12 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#000',
   },
   infoValue: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333',
+    color: '#000',
   },
   emptyContainer: {
     flex: 1,
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 18,
-    color: '#666',
+    color: '#000',
     textAlign: 'center',
     marginTop: 20,
   },

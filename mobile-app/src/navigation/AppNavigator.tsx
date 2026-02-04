@@ -4,12 +4,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { TouchableOpacity, Alert, View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 
 // Screens
 import LoginScreen from '../screens/LoginScreen';
 import DashboardScreen from '../screens/DashboardScreen';
-import MOHREScreen from '../screens/MOHREScreen';
+import MOHRENavigator from './MOHRENavigator';
 import EmiratesIDNavigator from './EmiratesIDNavigator';
 
 const Tab = createBottomTabNavigator();
@@ -17,6 +18,7 @@ const Stack = createStackNavigator();
 
 function MainTabs() {
   const { logout, user } = useAuth();
+  const insets = useSafeAreaInsets();
 
   const handleLogout = () => {
     Alert.alert(
@@ -51,22 +53,35 @@ function MainTabs() {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#2563eb',
-        tabBarInactiveTintColor: '#6b7280',
+        tabBarActiveTintColor: '#dc2626',
+        tabBarInactiveTintColor: '#111111',
         tabBarStyle: {
           backgroundColor: '#ffffff',
           borderTopWidth: 1,
-          borderTopColor: '#e5e7eb',
-          height: 60,
-          paddingBottom: 8,
+          borderTopColor: '#111111',
+          height: 64 + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
           paddingTop: 8,
+          position: 'absolute',
+          marginHorizontal: 14,
+          marginBottom: 10,
+          borderRadius: 16,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.12,
+          shadowRadius: 12,
+          elevation: 10,
+        },
+        tabBarItemStyle: {
+          borderRadius: 10,
+          marginHorizontal: 4,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
         },
         headerStyle: {
-          backgroundColor: '#2563eb',
+          backgroundColor: '#111111',
         },
         headerTintColor: '#ffffff',
         headerTitleStyle: {
@@ -93,8 +108,8 @@ function MainTabs() {
       />
       <Tab.Screen
         name="MOHRE"
-        component={MOHREScreen}
-        options={{ title: 'MOHRE', headerTitle: 'MOHRE Tasks' }}
+        component={MOHRENavigator}
+        options={{ title: 'MOHRE', headerTitle: 'MOHRE Inquiry' }}
       />
       <Tab.Screen
         name="EmiratesID"
