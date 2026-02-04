@@ -1,566 +1,460 @@
-/* Surprise Login Studio Design - OTP Version */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;700&display=swap');
 
-.login-surprise-container {
-  min-height: 100vh !important;
-  position: relative !important;
-  overflow: hidden !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 1.5rem !important;
-  background: transparent !important;
+:root {
+  --zenith-ink: #111111;
+  --zenith-sky: #d00000;
+  --zenith-teal: #8a0000;
+  --zenith-coral: #ff2a2a;
+  --zenith-paper: #ffffff;
+  --zenith-muted: #555555;
+  --zenith-line: rgba(0, 0, 0, 0.2);
 }
 
-/* Animated gradient background */
-.login-surprise-bg {
-  position: absolute !important;
-  inset: 0 !important;
-  background: linear-gradient(135deg, hsl(0 0% 5%) 0%, hsl(0 20% 10%) 50%, hsl(0 40% 15%) 100%) !important;
-  z-index: 0 !important;
-}
-
-/* Floating orbs */
-.login-surprise-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  animation: float 6s ease-in-out infinite;
-}
-
-.login-surprise-orb-1 {
-  top: 5rem;
-  left: 5rem;
-  width: 18rem;
-  height: 18rem;
-  background: hsl(0 84% 55% / 0.2);
-}
-
-.login-surprise-orb-2 {
-  bottom: 5rem;
-  right: 5rem;
-  width: 24rem;
-  height: 24rem;
-  background: hsl(0 90% 50% / 0.2);
-  animation: float-delayed 8s ease-in-out infinite;
-}
-
-.login-surprise-orb-3 {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600px;
-  height: 600px;
-  background: hsl(0 84% 55% / 0.1);
-  animation: glow-pulse 3s ease-in-out infinite;
-}
-
-/* Card wrapper */
-.login-surprise-card-wrapper {
-  position: relative !important;
-  width: 100% !important;
-  max-width: 480px !important;
-  height: auto !important;
-  animation: slide-up 0.8s ease-out !important;
-  z-index: 10 !important;
-}
-
-.login-surprise-card-glow {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, hsl(0 84% 55% / 0.2), hsl(0 90% 50% / 0.2));
-  border-radius: 1.5rem;
-  filter: blur(20px);
-}
-
-.login-surprise-card {
-  position: relative !important;
-  background: hsl(0 0% 12% / 0.4) !important;
-  backdrop-filter: blur(32px) !important;
-  -webkit-backdrop-filter: blur(32px) !important;
-  border-radius: 1.5rem !important;
-  padding: 2.5rem 2rem !important;
-  box-shadow: 0 20px 60px hsl(0 0% 0% / 0.6) !important;
-  border: 1px solid hsl(0 0% 22% / 0.5) !important;
-  transition: all 0.3s ease;
-  width: 100% !important;
-  min-height: auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-}
-
-.login-surprise-card-expanded {
-  padding: 2.5rem 2rem !important;
-  min-height: auto !important;
-}
-
-/* Header */
-.login-surprise-header {
-  text-align: center;
-  margin-bottom: 2rem;
-  animation: fade-in 0.6s ease-out;
-}
-
-
-.login-surprise-logo-img {
-  width: 8rem;
-  height: auto;
-  max-height: 8rem;
-  object-fit: contain;
-  margin-bottom: 1.5rem;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.login-surprise-logo-fallback {
-  font-size: 4rem;
-  font-weight: bold;
-  color: hsl(0 0% 100%);
-  margin-bottom: 1rem;
-  display: block;
-}
-
-/* Staff picture and name */
-.login-surprise-staff-img {
-  width: 7rem;
-  height: 7rem;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-bottom: 1rem;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  border: 3px solid hsl(0 84% 55%);
-  box-shadow: 0 0 30px hsl(0 84% 55% / 0.5);
-}
-
-.login-surprise-staff-fallback {
-  width: 7rem;
-  height: 7rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, hsl(0 84% 55%), hsl(0 100% 65%));
+.login-zenith-page {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin-bottom: 1rem;
-  margin-left: auto;
-  margin-right: auto;
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: hsl(0 0% 100%);
-  border: 3px solid hsl(0 84% 55%);
-  box-shadow: 0 0 30px hsl(0 84% 55% / 0.5);
-}
-
-.login-surprise-staff-name {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: hsl(0 0% 98%);
-  margin-bottom: 0.75rem;
-  text-align: center;
-}
-
-.login-surprise-title {
-  font-size: 1.75rem;
-  font-weight: 700;
-  background: linear-gradient(to right, hsl(0 0% 98%), hsl(0 0% 98% / 0.7));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 0.75rem;
-  line-height: 1.2;
-}
-
-.login-surprise-subtitle {
-  color: hsl(0 0% 65%);
-  font-size: 1rem;
-}
-
-/* Error message */
-.login-surprise-error {
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: hsl(0 84% 60% / 0.1);
-  border: 1px solid hsl(0 84% 60% / 0.3);
-  border-radius: 0.5rem;
-  color: hsl(0 84% 60%);
-  margin-bottom: 1.5rem;
-  animation: fade-in 0.3s ease-out;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at 10% 20%, #ffd8d8 0%, transparent 36%),
+    radial-gradient(circle at 90% 80%, #ffc6c6 0%, transparent 34%),
+    linear-gradient(140deg, #ffffff, #fff6f6 60%, #ffeaea);
+  font-family: 'Manrope', sans-serif;
 }
 
-.login-surprise-error i {
-  font-size: 1rem;
-}
-
-/* Success message */
-.login-surprise-success {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: hsl(142 76% 36% / 0.1);
-  border: 1px solid hsl(142 76% 36% / 0.3);
-  border-radius: 0.5rem;
-  color: hsl(142 76% 36%);
-  margin-bottom: 1.5rem;
-  animation: fade-in 0.3s ease-out;
-}
-
-.login-surprise-success i {
-  font-size: 1rem;
-}
-
-/* Form */
-.login-surprise-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-/* Input group */
-.login-surprise-input-group {
-  position: relative;
-}
-
-.login-surprise-input-glow {
+.login-zenith-skyline {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, hsl(0 84% 55%), hsl(0 100% 65%));
-  border-radius: 0.75rem;
-  filter: blur(8px);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  opacity: 0.62;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover, cover;
+  background-image:
+    linear-gradient(to bottom, rgba(208, 0, 0, 0.13), rgba(0, 0, 0, 0.05)),
+    url('https://unsplash.com/photos/Fr6zexbmjmc/download?force=true&w=1920');
+  background-blend-mode: multiply, normal;
 }
 
-.login-surprise-input-glow-active {
-  opacity: 0.2;
-}
-
-.login-surprise-input-wrapper {
-  position: relative;
-}
-
-.login-surprise-input-icon {
+.login-zenith-grid {
   position: absolute;
-  left: 1.25rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1.25rem;
-  height: 1.25rem;
-  font-size: 1.25rem;
-  color: hsl(0 0% 65%);
-  transition: color 0.3s ease;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.35) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.35) 1px, transparent 1px);
+  background-size: 48px 48px;
+  opacity: 0.35;
   pointer-events: none;
 }
 
-.login-surprise-input-icon-active {
-  color: hsl(0 84% 55%);
+.login-zenith-halo {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(80px);
+  animation: zenith-drift 10s ease-in-out infinite;
 }
 
-.login-surprise-input {
+.login-zenith-halo-1 {
+  width: 320px;
+  height: 320px;
+  top: -60px;
+  right: -80px;
+  background: rgba(208, 0, 0, 0.26);
+}
+
+.login-zenith-halo-2 {
+  width: 360px;
+  height: 360px;
+  left: -120px;
+  bottom: -120px;
+  background: rgba(0, 0, 0, 0.22);
+  animation-delay: 1.5s;
+}
+
+.login-zenith-shell {
   width: 100%;
-  height: 3.5rem;
-  padding-left: 3.5rem;
-  padding-right: 1.25rem;
-  background: hsl(0 0% 16% / 0.5);
-  backdrop-filter: blur(8px);
-  border: 1px solid hsl(0 0% 22% / 0.5);
-  border-radius: 0.75rem;
-  color: hsl(0 0% 98%);
-  font-size: 1rem;
-  transition: all 0.3s ease;
+  max-width: 1100px;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  animation: zenith-rise 0.7s ease;
 }
 
-.login-surprise-input:focus {
-  outline: none;
-  border-color: hsl(0 84% 55%);
-  box-shadow: 0 0 0 3px hsl(0 84% 55% / 0.1);
-}
-
-.login-surprise-input::placeholder {
-  color: hsl(0 0% 65%);
-}
-
-.login-surprise-input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* OTP Group */
-.login-surprise-otp-group {
+.login-zenith-brand {
+  background: linear-gradient(170deg, #000000 0%, #1a1a1a 55%, #2b0000 100%);
+  color: #ffffff;
+  padding: 3rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-}
-
-.login-surprise-otp-hint {
-  text-align: center;
-  color: hsl(0 0% 65%);
-  font-size: 0.9rem;
-  margin-bottom: 0.75rem;
-}
-
-.login-surprise-otp-email {
-  color: hsl(0 84% 55%);
-  font-weight: 600;
-}
-
-.login-surprise-otp-container {
-  display: flex;
-  gap: 0.75rem;
   justify-content: center;
-  margin-bottom: 1.5rem;
-}
-
-.login-surprise-otp-input {
-  width: 3.5rem;
-  height: 3.5rem;
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: 600;
-  background: hsl(0 0% 16% / 0.5);
-  backdrop-filter: blur(8px);
-  border: 2px solid hsl(0 0% 22% / 0.5);
-  border-radius: 0.75rem;
-  color: hsl(0 0% 98%);
-  transition: all 0.3s ease;
-}
-
-.login-surprise-otp-input:focus {
-  outline: none;
-  border-color: hsl(0 84% 55%);
-  box-shadow: 0 0 0 3px hsl(0 84% 55% / 0.1);
-  transform: scale(1.05);
-}
-
-.login-surprise-otp-input:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Form actions */
-.login-surprise-form-actions {
-  display: flex;
   gap: 1rem;
 }
 
-.login-surprise-form-actions .login-surprise-submit {
-  flex: 1;
+.login-zenith-badge {
+  width: fit-content;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-/* Submit button */
-.login-surprise-submit {
+.login-zenith-brand-title {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2rem, 3.5vw, 2.8rem);
+  line-height: 1.05;
+}
+
+.login-zenith-brand-copy {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.84);
+  max-width: 36ch;
+}
+
+.login-zenith-brand-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.login-zenith-brand-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.login-zenith-brand-list i {
+  color: #ff4a4a;
+}
+
+.login-zenith-card-wrap {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.login-zenith-card {
   width: 100%;
-  height: 3.5rem;
-  background: linear-gradient(to right, hsl(0 84% 55%), hsl(0 100% 65%));
-  border: none;
-  border-radius: 0.75rem;
-  color: hsl(0 0% 100%);
-  font-size: 1.125rem;
-  font-weight: 600;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px hsl(0 84% 55% / 0.3);
+  max-width: 410px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 20px;
+  box-shadow: 0 18px 40px rgba(43, 51, 77, 0.12);
+  padding: 2rem;
+}
+
+.login-zenith-card-head {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.login-zenith-logo-shell {
+  width: 100%;
+  height: 60px;
+  margin: 0 auto 0.6rem;
+  border-radius: 14px;
+  background: #000;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.32);
 }
 
-.login-surprise-submit:hover:not(:disabled) {
-  box-shadow: 0 0 60px hsl(0 84% 55% / 0.4);
-  transform: translateY(-2px);
+.login-zenith-logo {
+  width: 92%;
+  max-width: 320px;
+  height: 48px;
+  object-fit: contain;
+  margin: 0;
+  filter: drop-shadow(0 8px 14px rgba(208, 0, 0, 0.2));
 }
 
-.login-surprise-submit:disabled {
-  opacity: 0.6;
+.login-zenith-avatar,
+.login-zenith-avatar-fallback {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  margin: 0 auto 0.5rem;
+}
+
+.login-zenith-avatar {
+  object-fit: cover;
+  border: 3px solid #ffffff;
+  box-shadow: 0 10px 16px rgba(0, 0, 0, 0.2);
+}
+
+.login-zenith-avatar-fallback {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  background: linear-gradient(140deg, var(--zenith-sky), var(--zenith-coral));
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+.login-zenith-logo-shell .login-zenith-avatar-fallback {
+  width: 96px;
+  height: 96px;
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.login-zenith-staff {
+  margin: 0 0 0.2rem;
+  font-weight: 700;
+  color: var(--zenith-ink);
+}
+
+.login-zenith-card-head h2 {
+  margin: 0;
+  font-family: 'Space Grotesk', sans-serif;
+  color: var(--zenith-ink);
+  font-size: 1.55rem;
+}
+
+.login-zenith-card-head p {
+  margin: 0.5rem 0 0;
+  color: var(--zenith-muted);
+}
+
+.login-zenith-message {
+  border-radius: 12px;
+  padding: 0.8rem 0.95rem;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.92rem;
+}
+
+.login-zenith-error {
+  color: #8a0000;
+  border: 1px solid rgba(208, 0, 0, 0.24);
+  background: rgba(208, 0, 0, 0.1);
+}
+
+.login-zenith-success {
+  color: #111111;
+  border: 1px solid rgba(208, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.login-zenith-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.login-zenith-label {
+  font-size: 0.84rem;
+  color: #111111;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.login-zenith-input-wrap {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  border-radius: 13px;
+  border: 1px solid var(--zenith-line);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  transition: 0.2s ease;
+}
+
+.login-zenith-input-wrap i {
+  width: 44px;
+  text-align: center;
+  color: #8a0000;
+}
+
+.login-zenith-input-wrap input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  color: #111111;
+  font-size: 1rem;
+  padding-right: 0.8rem;
+}
+
+.login-zenith-input-wrap input::placeholder {
+  color: #777777;
+}
+
+.login-zenith-input-wrap.is-focused {
+  border-color: rgba(208, 0, 0, 0.58);
+  box-shadow: 0 0 0 4px rgba(208, 0, 0, 0.12);
+}
+
+.login-zenith-btn {
+  border: none;
+  border-radius: 13px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(130deg, var(--zenith-sky), var(--zenith-coral) 52%, var(--zenith-teal));
+  box-shadow: 0 12px 20px rgba(208, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.login-zenith-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 25px rgba(208, 0, 0, 0.34);
+}
+
+.login-zenith-btn:disabled {
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
-.login-surprise-submit-secondary {
-  background: hsl(0 0% 20%) !important;
-  box-shadow: 0 4px 20px hsl(0 0% 0% / 0.3) !important;
+.login-zenith-btn-ghost {
+  color: var(--zenith-ink);
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.98), rgba(245, 245, 245, 0.98));
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  box-shadow: none;
 }
 
-.login-surprise-submit-secondary:hover:not(:disabled) {
-  background: hsl(0 0% 25%) !important;
-  box-shadow: 0 4px 20px hsl(0 0% 0% / 0.4) !important;
+.login-zenith-otp {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(44px, 1fr));
+  gap: 0.55rem;
 }
 
-.login-surprise-submit-content {
-  position: relative;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+.login-zenith-otp-input {
+  height: 56px;
+  border-radius: 12px;
+  border: 1px solid var(--zenith-line);
+  background: rgba(255, 255, 255, 0.95);
+  text-align: center;
+  font-size: 1.3rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  color: var(--zenith-ink);
+  outline: none;
+  transition: 0.2s ease;
 }
 
-.login-surprise-submit-glow {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to right, hsl(0 100% 65%), hsl(0 84% 55%));
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.login-zenith-otp-input:focus {
+  border-color: rgba(208, 0, 0, 0.58);
+  box-shadow: 0 0 0 4px rgba(208, 0, 0, 0.12);
 }
 
-.login-surprise-submit:hover .login-surprise-submit-glow {
-  opacity: 1;
+.login-zenith-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
 }
 
-/* Footer */
-.login-surprise-footer {
-  margin-top: 1.5rem;
+.login-zenith-footnote {
+  margin: 1.2rem 0 0;
+  font-size: 0.78rem;
+  color: #666666;
   text-align: center;
 }
 
-.login-surprise-footer p {
-  color: hsl(0 0% 65%);
-  font-size: 0.75rem;
-}
-
-/* Animations */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-20px) rotate(5deg);
-  }
-}
-
-@keyframes float-delayed {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-30px) rotate(-5deg);
-  }
-}
-
-@keyframes fade-in {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slide-up {
-  0% {
+@keyframes zenith-rise {
+  from {
     opacity: 0;
     transform: translateY(20px);
   }
-  100% {
+  to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-@keyframes glow-pulse {
-  0%, 100% {
-    opacity: 0.5;
-    filter: blur(40px);
+@keyframes zenith-drift {
+  0%,
+  100% {
+    transform: translateY(0px);
   }
   50% {
-    opacity: 0.8;
-    filter: blur(60px);
+    transform: translateY(-24px);
   }
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .login-surprise-card-wrapper {
-    max-width: 95% !important;
+@media (max-width: 980px) {
+  .login-zenith-page {
+    padding: 1.15rem;
   }
-  
-  .login-surprise-card {
-    padding: 2rem 1.5rem !important;
+
+  .login-zenith-shell {
+    grid-template-columns: 1fr;
   }
-  
-  .login-surprise-title {
-    font-size: 1.5rem;
+
+  .login-zenith-brand {
+    padding: 2rem;
   }
-  
-  .login-surprise-subtitle {
-    font-size: 0.9rem;
-  }
-  
-  .login-surprise-otp-input {
-    width: 3rem;
-    height: 3rem;
-    font-size: 1.25rem;
+
+  .login-zenith-card-wrap {
+    padding: 1.2rem;
   }
 }
 
-@media (max-width: 480px) {
-  .login-surprise-container {
-    padding: 1rem !important;
-  }
-  
-  .login-surprise-card-wrapper {
-    max-width: 100% !important;
-  }
-  
-  .login-surprise-card {
-    padding: 1.5rem 1rem !important;
-    border-radius: 1rem !important;
-  }
-  
-  .login-surprise-title {
-    font-size: 1.25rem;
-  }
-  
-  .login-surprise-subtitle {
-    font-size: 0.85rem;
-  }
-  
-  .login-surprise-staff-img,
-  .login-surprise-staff-fallback {
-    width: 5rem;
-    height: 5rem;
-    font-size: 2rem;
-  }
-  
-  .login-surprise-staff-name {
-    font-size: 1rem;
-  }
-  
-  .login-surprise-orb-1,
-  .login-surprise-orb-2,
-  .login-surprise-orb-3 {
+@media (max-width: 560px) {
+  .login-zenith-brand {
     display: none;
   }
-  
-  .login-surprise-otp-container {
-    gap: 0.5rem;
+
+  .login-zenith-skyline {
+    opacity: 0.24;
   }
-  
-  .login-surprise-otp-input {
-    width: 2.5rem;
-    height: 2.5rem;
-    font-size: 1.125rem;
+
+  .login-zenith-card {
+    padding: 1.35rem;
+    border-radius: 16px;
   }
-  
-  .login-surprise-form-actions {
-    flex-direction: column;
-    gap: 0.75rem;
+
+  .login-zenith-logo-shell {
+    height: 48px;
   }
-  
-  .login-surprise-input {
-    height: 3rem;
-    font-size: 0.9rem;
+
+  .login-zenith-logo {
+    height: 36px;
   }
-  
-  .login-surprise-submit {
-    height: 3rem;
-    font-size: 1rem;
+
+  .login-zenith-card-head h2 {
+    font-size: 1.3rem;
+  }
+
+  .login-zenith-otp {
+    gap: 0.4rem;
+  }
+
+  .login-zenith-otp-input {
+    height: 50px;
+    font-size: 1.1rem;
+  }
+
+  .login-zenith-actions {
+    grid-template-columns: 1fr;
   }
 }

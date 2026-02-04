@@ -12,16 +12,16 @@ const LoginOTP: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [staffInfo, setStaffInfo] = useState<{ name: string; picture?: string } | null>(null);
-  
+  const [logoFailed, setLogoFailed] = useState(false);
+  const [staffPictureFailed, setStaffPictureFailed] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
   const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       const from = (location.state as any)?.from?.pathname || '/dashboard';
@@ -29,14 +29,18 @@ const LoginOTP: React.FC = () => {
     }
   }, [isAuthenticated, navigate, location]);
 
-  // Focus first OTP input when OTP step is shown
   useEffect(() => {
     if (step === 'otp' && otpInputRefs.current[0]) {
-      setTimeout(() => {
-        otpInputRefs.current[0]?.focus();
-      }, 100);
+      setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
     }
   }, [step]);
+
+  const maskEmail = (value: string) => {
+    const [name, domain] = value.split('@');
+    if (!name || !domain) return value;
+    if (name.length <= 2) return `${name[0]}*@${domain}`;
+    return `${name.slice(0, 2)}${'*'.repeat(Math.max(2, name.length - 2))}@${domain}`;
+  };
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,33 +49,29 @@ const LoginOTP: React.FC = () => {
     setLoading(true);
 
     try {
-      console.log('Sending OTP request for:', email);
       const result = await authService.sendOTP(email);
-      console.log('OTP Send Result:', result);
-      
+
       if (result.success) {
-        setOtpSent(true);
         if (result.staff) {
           setStaffInfo(result.staff);
         }
+
         setStep('otp');
-        // Show appropriate message based on what was sent
-        let channels = ['email'];
+
+        const channels = ['email'];
         if (result.sms_sent) channels.push('SMS');
         if (result.whatsapp_sent) channels.push('WhatsApp');
-        
-        const message = channels.length > 1
-          ? `OTP sent to your ${channels.join(', ')}! Check all channels.`
-          : result.message || 'OTP sent successfully! Check your email.';
-        setSuccess(message);
+
+        setSuccess(
+          channels.length > 1
+            ? `Code sent via ${channels.join(', ')}.`
+            : result.message || 'Code sent successfully.'
+        );
       } else {
-        const errorMsg = result.message || 'Failed to send OTP';
-        console.error('OTP Send Failed:', errorMsg);
-        setError(errorMsg);
+        setError(result.message || 'Failed to send OTP.');
       }
     } catch (err: any) {
-      console.error('OTP Send Exception:', err);
-      const errorMsg = err?.response?.data?.message || err?.message || 'An error occurred. Please try again.';
+      const errorMsg = err?.response?.data?.message || err?.message || 'Something went wrong. Please try again.';
       setError(errorMsg);
     } finally {
       setLoading(false);
@@ -79,21 +79,18 @@ const LoginOTP: React.FC = () => {
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    // Only allow digits
     if (value && !/^\d$/.test(value)) return;
 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto-focus next input
     if (value && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
   };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Handle backspace
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       otpInputRefs.current[index - 1]?.focus();
     }
@@ -101,16 +98,15 @@ const LoginOTP: React.FC = () => {
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').slice(0, 6);
-    if (/^\d+$/.test(pastedData)) {
+    const pasted = e.clipboardData.getData('text').slice(0, 6);
+
+    if (/^\d+$/.test(pasted)) {
       const newOtp = [...otp];
-      for (let i = 0; i < 6; i++) {
-        newOtp[i] = pastedData[i] || '';
+      for (let i = 0; i < 6; i += 1) {
+        newOtp[i] = pasted[i] || '';
       }
       setOtp(newOtp);
-      // Focus the last filled input or the last input
-      const lastIndex = Math.min(pastedData.length - 1, 5);
-      otpInputRefs.current[lastIndex]?.focus();
+      otpInputRefs.current[Math.min(pasted.length - 1, 5)]?.focus();
     }
   };
 
@@ -121,28 +117,25 @@ const LoginOTP: React.FC = () => {
 
     const otpString = otp.join('');
     if (otpString.length !== 6) {
-      setError('Please enter the complete 6-digit OTP');
+      setError('Please enter all 6 digits.');
       setLoading(false);
       return;
     }
 
     try {
       const result = await authService.verifyOTP(email, otpString);
-      
+
       if (result.success) {
-        // Update auth context
         const from = (location.state as any)?.from?.pathname || '/dashboard';
         navigate(from, { replace: true });
-        // Reload to update auth state
         window.location.reload();
       } else {
-        setError(result.message || 'Invalid OTP');
-        // Clear OTP on error
+        setError(result.message || 'Invalid code.');
         setOtp(['', '', '', '', '', '']);
         otpInputRefs.current[0]?.focus();
       }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
+    } catch {
+      setError('Unable to verify OTP right now.');
       setOtp(['', '', '', '', '', '']);
       otpInputRefs.current[0]?.focus();
     } finally {
@@ -155,216 +148,163 @@ const LoginOTP: React.FC = () => {
     setOtp(['', '', '', '', '', '']);
     setError('');
     setSuccess('');
-    setOtpSent(false);
     setStaffInfo(null);
+    setStaffPictureFailed(false);
   };
 
   return (
-    <div className="login-surprise-container">
-      {/* Animated gradient background */}
-      <div className="login-surprise-bg" />
-      
-      {/* Floating shapes */}
-      <div className="login-surprise-orb login-surprise-orb-1" />
-      <div className="login-surprise-orb login-surprise-orb-2" />
-      <div className="login-surprise-orb login-surprise-orb-3" />
-      
-      {/* Glass morphism container */}
-      <div className="login-surprise-card-wrapper">
-        <div className="login-surprise-card-glow" />
-        
-        <div className={cn("login-surprise-card", step === 'otp' && "login-surprise-card-expanded")}>
-          {/* Logo/Header */}
-          <div className="login-surprise-header">
-            {step === 'email' ? (
-              <>
-                <img 
-                  src="/assets/logo-white.png" 
-                  alt="Selab Nadiry Logo" 
-                  className="login-surprise-logo-img"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent && !parent.querySelector('.login-surprise-logo-fallback')) {
-                      const fallback = document.createElement('div');
-                      fallback.className = 'login-surprise-logo-fallback';
-                      fallback.textContent = 'SN';
-                      parent.appendChild(fallback);
-                    }
-                  }}
-                />
-                <div className="login-surprise-logo-fallback" style={{ display: 'none' }}>SN</div>
-              </>
-            ) : (
-              <>
-                {staffInfo?.picture && staffInfo.picture !== 'null' && staffInfo.picture !== '' ? (
-                  <img 
-                    src={staffInfo.picture} 
-                    alt={staffInfo.name}
-                    className="login-surprise-staff-img"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const parent = target.parentElement;
-                      if (parent && !parent.querySelector('.login-surprise-staff-fallback')) {
-                        const fallback = document.createElement('div');
-                        fallback.className = 'login-surprise-staff-fallback';
-                        fallback.textContent = staffInfo?.name?.charAt(0) || 'U';
-                        parent.appendChild(fallback);
-                      }
-                    }}
-                  />
-                ) : (
-                  <div className="login-surprise-staff-fallback">
-                    {staffInfo?.name?.charAt(0) || 'U'}
+    <div className="login-zenith-page">
+      <div className="login-zenith-halo login-zenith-halo-1" />
+      <div className="login-zenith-halo login-zenith-halo-2" />
+      <div className="login-zenith-grid" />
+      <div className="login-zenith-skyline" />
+
+      <div className="login-zenith-shell">
+        <aside className="login-zenith-brand">
+          <div className="login-zenith-badge">Selab Nadiry</div>
+          <h1 className="login-zenith-brand-title">Orbit Control Login</h1>
+          <p className="login-zenith-brand-copy">
+            A fresh sign-in flow with quick OTP delivery and cleaner focus for your daily operations.
+          </p>
+          <ul className="login-zenith-brand-list">
+            <li><i className="fas fa-bolt" /> Fast secure OTP delivery</li>
+            <li><i className="fas fa-shield-alt" /> Device-aware verification</li>
+            <li><i className="fas fa-layer-group" /> Built for desktop and mobile</li>
+          </ul>
+        </aside>
+
+        <section className="login-zenith-card-wrap">
+          <div className="login-zenith-card">
+            <div className="login-zenith-card-head">
+              {step === 'email' ? (
+                <>
+                  <div className="login-zenith-logo-shell">
+                    {!logoFailed ? (
+                      <img
+                        src="/assets/logo-white.png"
+                        alt="Selab Nadiry Logo"
+                        className="login-zenith-logo"
+                        onError={() => setLogoFailed(true)}
+                      />
+                    ) : (
+                      <div className="login-zenith-avatar-fallback">SN</div>
+                    )}
                   </div>
-                )}
-                {staffInfo?.name && (
-                  <h2 className="login-surprise-staff-name">{staffInfo.name}</h2>
-                )}
-              </>
-            )}
-            <h1 className="login-surprise-title">
-              {step === 'email' ? 'Welcome Back' : 'Enter OTP'}
-            </h1>
-            <p className="login-surprise-subtitle">
-              {step === 'email' ? 'Sign in to continue your journey' : 'We sent a code to your email and phone'}
-            </p>
-          </div>
+                </>
+              ) : (
+                <>
+                  {staffInfo?.picture && !staffPictureFailed ? (
+                    <img
+                      src={staffInfo.picture}
+                      alt={staffInfo.name}
+                      className="login-zenith-avatar"
+                      onError={() => setStaffPictureFailed(true)}
+                    />
+                  ) : (
+                    <div className="login-zenith-avatar-fallback">
+                      {staffInfo?.name?.charAt(0) || 'U'}
+                    </div>
+                  )}
+                  {staffInfo?.name ? <p className="login-zenith-staff">{staffInfo.name}</p> : null}
+                </>
+              )}
 
-          {/* Error Message */}
-          {error && (
-            <div className="login-surprise-error">
-              <i className="fas fa-exclamation-circle"></i>
-              <span>{error}</span>
+              <h2>{step === 'email' ? 'Sign in with OTP' : 'Enter verification code'}</h2>
+              <p>
+                {step === 'email'
+                  ? 'Use your company email and we will send a one-time code.'
+                  : `We sent a secure 6-digit code to ${maskEmail(email)}.`}
+              </p>
             </div>
-          )}
 
-          {/* Success Message */}
-          {success && (
-            <div className="login-surprise-success">
-              <i className="fas fa-check-circle"></i>
-              <span>{success}</span>
-            </div>
-          )}
+            {error ? (
+              <div className="login-zenith-message login-zenith-error">
+                <i className="fas fa-circle-exclamation" />
+                <span>{error}</span>
+              </div>
+            ) : null}
 
-          {/* Email Step */}
-          {step === 'email' && (
-            <form onSubmit={handleSendOTP} className="login-surprise-form">
-              <div className="login-surprise-input-group">
-                <div className={cn(
-                  "login-surprise-input-glow",
-                  emailFocused && "login-surprise-input-glow-active"
-                )} />
-                <div className="login-surprise-input-wrapper">
-                  <i className={cn(
-                    "fas fa-envelope login-surprise-input-icon",
-                    emailFocused && "login-surprise-input-icon-active"
-                  )} />
+            {success ? (
+              <div className="login-zenith-message login-zenith-success">
+                <i className="fas fa-circle-check" />
+                <span>{success}</span>
+              </div>
+            ) : null}
+
+            {step === 'email' ? (
+              <form onSubmit={handleSendOTP} className="login-zenith-form">
+                <label htmlFor="email" className="login-zenith-label">Company Email</label>
+                <div className={cn('login-zenith-input-wrap', emailFocused && 'is-focused')}>
+                  <i className="fas fa-envelope" />
                   <input
                     id="email"
                     type="email"
-                    placeholder="Email Address"
                     value={email}
+                    placeholder="you@selabnadiry.com"
                     onChange={(e) => setEmail(e.target.value)}
                     onFocus={() => setEmailFocused(true)}
                     onBlur={() => setEmailFocused(false)}
-                    className="login-surprise-input"
                     required
                     disabled={loading}
                     autoFocus
                   />
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="login-surprise-submit"
-              >
-                <span className="login-surprise-submit-content">
+                <button type="submit" disabled={loading} className="login-zenith-btn">
                   {loading ? (
-                    <>
-                      <i className="fas fa-spinner fa-spin"></i>
-                      Sending OTP...
-                    </>
+                    <><i className="fas fa-spinner fa-spin" /> Sending code...</>
                   ) : (
-                    <>
-                      Send OTP
-                      <i className="fas fa-arrow-right ml-2"></i>
-                    </>
+                    <><span>Send OTP</span><i className="fas fa-arrow-right" /></>
                   )}
-                </span>
-                <div className="login-surprise-submit-glow" />
-              </button>
-            </form>
-          )}
-
-          {/* OTP Step */}
-          {step === 'otp' && (
-            <form onSubmit={handleVerifyOTP} className="login-surprise-form">
-              <div className="login-surprise-otp-group">
-                <p className="login-surprise-otp-hint">
-                  OTP sent to <span className="login-surprise-otp-email">{email}</span>
-                </p>
-                <div className="login-surprise-otp-container" onPaste={handlePaste}>
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleVerifyOTP} className="login-zenith-form">
+                <div className="login-zenith-otp" onPaste={handlePaste}>
                   {otp.map((digit, index) => (
                     <input
                       key={index}
-                      ref={(el) => (otpInputRefs.current[index] = el)}
+                      ref={(el) => {
+                        otpInputRefs.current[index] = el;
+                      }}
                       type="text"
                       inputMode="numeric"
                       maxLength={1}
                       value={digit}
                       onChange={(e) => handleOtpChange(index, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      className="login-surprise-otp-input"
                       disabled={loading}
+                      className="login-zenith-otp-input"
                     />
                   ))}
                 </div>
-              </div>
 
-              <div className="login-surprise-form-actions">
-                <button
-                  type="button"
-                  onClick={handleBackToEmail}
-                  disabled={loading}
-                  className="login-surprise-submit login-surprise-submit-secondary"
-                >
-                  <i className="fas fa-arrow-left mr-2"></i>
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="login-surprise-submit"
-                >
-                  <span className="login-surprise-submit-content">
+                <div className="login-zenith-actions">
+                  <button
+                    type="button"
+                    onClick={handleBackToEmail}
+                    disabled={loading}
+                    className="login-zenith-btn login-zenith-btn-ghost"
+                  >
+                    <i className="fas fa-arrow-left" />
+                    <span>Back</span>
+                  </button>
+                  <button type="submit" disabled={loading} className="login-zenith-btn">
                     {loading ? (
-                      <>
-                        <i className="fas fa-spinner fa-spin"></i>
-                        Verifying...
-                      </>
+                      <><i className="fas fa-spinner fa-spin" /> Checking...</>
                     ) : (
-                      <>
-                        Verify OTP
-                        <i className="fas fa-check ml-2"></i>
-                      </>
+                      <><span>Verify</span><i className="fas fa-check" /></>
                     )}
-                  </span>
-                  <div className="login-surprise-submit-glow" />
-                </button>
-              </div>
-            </form>
-          )}
+                  </button>
+                </div>
+              </form>
+            )}
 
-          {/* Footer */}
-          <div className="login-surprise-footer">
-            <p>&copy; {new Date().getFullYear()} Selab Nadiry Travel & Tourism. All rights reserved.</p>
+            <p className="login-zenith-footnote">
+              &copy; {new Date().getFullYear()} Selab Nadiry Travel & Tourism
+            </p>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );
