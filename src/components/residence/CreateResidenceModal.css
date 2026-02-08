@@ -1,0 +1,59 @@
+.create-residence-modal .modal-body .row {
+  row-gap: 10px;
+}
+
+.create-residence-modal .modal-body .form-label {
+  min-height: 20px;
+  margin-bottom: 6px !important;
+}
+
+.create-residence-modal .modal-body .form-control,
+.create-residence-modal .modal-body .form-select,
+.create-residence-modal .modal-body input[type="file"] {
+  height: 42px !important;
+  min-height: 42px !important;
+  font-size: 14px !important;
+  line-height: 1.3 !important;
+  border-width: 1px !important;
+  border-color: #d1d5db !important;
+  box-shadow: none !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+.create-residence-modal .modal-body .form-control:hover,
+.create-residence-modal .modal-body .form-select:hover,
+.create-residence-modal .modal-body input[type="file"]:hover,
+.create-residence-modal .modal-body .form-control:focus,
+.create-residence-modal .modal-body .form-select:focus,
+.create-residence-modal .modal-body input[type="file"]:focus {
+  border-color: #d1d5db !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+.create-residence-modal .modal-body .form-select {
+  appearance: auto !important;
+}
+
+.create-residence-modal .modal-body input[type="file"]::file-selector-button {
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  color: #111827;
+  padding: 6px 10px;
+  margin-right: 10px;
+  border-radius: 6px;
+  transition: none;
+}
+
+.create-residence-modal .modal-body .card {
+  border-radius: 8px !important;
+}
+
+.create-residence-modal .modal-body .card-body {
+  padding: 12px !important;
+}

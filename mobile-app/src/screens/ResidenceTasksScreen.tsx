@@ -16,6 +16,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import { api } from '../services/api';
 import { API_CONFIG } from '../config/api';
@@ -129,6 +130,9 @@ export default function ResidenceTasksScreen() {
     creditCards: [],
   });
   const [offerLetterErrors, setOfferLetterErrors] = useState<Record<string, string>>({});
+  const [autoReadingOfferPdf, setAutoReadingOfferPdf] = useState(false);
+  const [showCompanyPicker, setShowCompanyPicker] = useState(false);
+  const [companySearchQuery, setCompanySearchQuery] = useState('');
 
   useFocusEffect(
     useCallback(() => {
@@ -572,6 +576,101 @@ export default function ResidenceTasksScreen() {
     setShowOfferLetterModal(true);
   };
 
+  const normalizeCompanyName = (value: string) => value.toUpperCase().replace(/\s+/g, ' ').trim();
+
+  const autoFillOfferLetterFromPdf = async (fileUri: string) => {
+    try {
+      setAutoReadingOfferPdf(true);
+
+      const base64Pdf = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      const atobFn = (globalThis as any).atob;
+      if (typeof atobFn !== 'function') {
+        Alert.alert('Info', 'File selected. Please enter MB Number and Establishment manually.');
+        return;
+      }
+
+      const pdfTextRaw = atobFn(base64Pdf);
+      const pdfText = pdfTextRaw.replace(/[\r\n\t]+/g, ' ');
+
+      const transactionNumberMatch = pdfText.match(/Transaction Number\s*[:\-]?\s*([A-Za-z0-9]+)/i);
+      const extractedMb = transactionNumberMatch?.[1]?.trim();
+
+      const establishmentMatch = pdfText.match(/Establishment Name\s*([A-Za-z\s&]+)/i);
+      let extractedEstablishment = establishmentMatch?.[1]?.trim() || '';
+      const establishmentNoIndex = extractedEstablishment.toLowerCase().indexOf('establishment no');
+      if (establishmentNoIndex !== -1) {
+        extractedEstablishment = extractedEstablishment.substring(0, establishmentNoIndex).trim();
+      }
+
+      const normalizedExtractedEstablishment = normalizeCompanyName(extractedEstablishment);
+      const matchedCompany =
+        lookups.companies.find((company) => {
+          const companyNameOnly = normalizeCompanyName(company.company_name.split(' (')[0]);
+          return companyNameOnly === normalizedExtractedEstablishment;
+        }) ||
+        lookups.companies.find((company) => {
+        const companyNameOnly = normalizeCompanyName(company.company_name.split(' (')[0]);
+          return (
+            companyNameOnly.includes(normalizedExtractedEstablishment) ||
+            normalizedExtractedEstablishment.includes(companyNameOnly)
+          );
+        });
+
+      if (extractedMb || matchedCompany) {
+        setOfferLetterData((prev) => ({
+          ...prev,
+          mbNumber: extractedMb || prev.mbNumber,
+          company_id: matchedCompany ? String(matchedCompany.company_id) : prev.company_id,
+        }));
+        setOfferLetterErrors((prev) => ({
+          ...prev,
+          mbNumber: extractedMb ? '' : prev.mbNumber,
+          company_id: matchedCompany ? '' : prev.company_id,
+        }));
+
+        Alert.alert(
+          'Auto-filled',
+          `${extractedMb ? `MB: ${extractedMb}` : 'MB not detected'}\n${matchedCompany ? `Company: ${matchedCompany.company_name}` : 'Company not detected'}`
+        );
+      } else {
+        Alert.alert('Info', 'PDF selected, but MB/Company were not detected automatically. Please enter manually.');
+      }
+    } catch (error) {
+      console.warn('Offer letter auto-read failed:', error);
+      Alert.alert('Info', 'PDF selected. Could not auto-read details, please enter MB and Establishment manually.');
+    } finally {
+      setAutoReadingOfferPdf(false);
+    }
+  };
+
+  const handlePickOfferLetterFile = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf'],
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+
+      if (result.canceled || !result.assets?.[0]) return;
+
+      const pickedFile = result.assets[0];
+      setOfferLetterData((prev) => ({
+        ...prev,
+        offerLetterFile: pickedFile,
+      }));
+
+      const isPdf = pickedFile.mimeType === 'application/pdf' || pickedFile.name?.toLowerCase().endsWith('.pdf');
+      if (isPdf) {
+        await autoFillOfferLetterFromPdf(pickedFile.uri);
+      }
+    } catch (error) {
+      console.error('Error picking offer letter file:', error);
+      Alert.alert('Error', 'Failed to pick file');
+    }
+  };
+
   const handleOfferLetterSubmit = async () => {
     if (!selectedTaskForOffer) return;
     
@@ -618,10 +717,12 @@ export default function ResidenceTasksScreen() {
       );
       
       if (offerLetterData.offerLetterFile) {
+        const selectedFileName = offerLetterData.offerLetterFile.name || offerLetterData.offerLetterFile.uri.split('/').pop() || 'offer_letter.pdf';
+        const selectedFileType = offerLetterData.offerLetterFile.mimeType || 'application/pdf';
         formData.append('offerLetterFile', {
           uri: offerLetterData.offerLetterFile.uri,
-          name: offerLetterData.offerLetterFile.uri.split('/').pop() || 'offer_letter.pdf',
-          type: 'application/pdf',
+          name: selectedFileName,
+          type: selectedFileType,
         } as any);
       }
       
@@ -924,6 +1025,9 @@ export default function ResidenceTasksScreen() {
 
   const closeOfferLetterModal = () => {
     setShowOfferLetterModal(false);
+    setAutoReadingOfferPdf(false);
+    setShowCompanyPicker(false);
+    setCompanySearchQuery('');
     setSelectedTaskForOffer(null);
     setOfferLetterData({
       company_id: '',
@@ -937,6 +1041,10 @@ export default function ResidenceTasksScreen() {
     });
     setOfferLetterErrors({});
   };
+
+  const filteredCompanies = lookups.companies.filter((company) =>
+    company.company_name.toLowerCase().includes(companySearchQuery.toLowerCase())
+  );
 
   const renderAttachmentsModal = () => (
     <Modal
@@ -1135,21 +1243,8 @@ export default function ResidenceTasksScreen() {
                 <TouchableOpacity
                   style={[styles.formInput, offerLetterErrors.company_id && styles.formInputError]}
                   onPress={() => {
-                    // Simple picker - in real app you'd use a proper picker component
-                    Alert.alert(
-                      'Select Establishment',
-                      'Choose from list',
-                      [
-                        { text: 'Cancel' },
-                        ...lookups.companies.map(company => ({
-                          text: `${company.company_name} (${(company.starting_quota || 0) - (company.totalEmployees || 0)})`,
-                          onPress: () => {
-                            setOfferLetterData({...offerLetterData, company_id: company.company_id.toString()});
-                            setOfferLetterErrors({...offerLetterErrors, company_id: ''});
-                          }
-                        }))
-                      ]
-                    );
+                    setCompanySearchQuery('');
+                    setShowCompanyPicker(true);
                   }}
                 >
                   <Text style={[
@@ -1192,24 +1287,19 @@ export default function ResidenceTasksScreen() {
               <Text style={styles.formLabel}>Offer Letter File</Text>
               <TouchableOpacity
                 style={styles.fileUploadButton}
-                onPress={async () => {
-                  const result = await ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.All,
-                    allowsEditing: false,
-                  });
-                  if (!result.canceled && result.assets[0]) {
-                    setOfferLetterData({...offerLetterData, offerLetterFile: result.assets[0]});
-                  }
-                }}
+                onPress={handlePickOfferLetterFile}
               >
                 <Ionicons name="document-attach" size={20} color="#dc2626" />
                 <Text style={styles.fileUploadText}>
                   {offerLetterData.offerLetterFile ? 'Change File' : 'Choose PDF File'}
                 </Text>
               </TouchableOpacity>
+              {autoReadingOfferPdf && (
+                <Text style={styles.selectedFileText}>Reading PDF and auto-filling MB/Company...</Text>
+              )}
               {offerLetterData.offerLetterFile && (
                 <Text style={styles.selectedFileText}>
-                  ✓ {offerLetterData.offerLetterFile.uri.split('/').pop()}
+                  ✓ {offerLetterData.offerLetterFile.name || offerLetterData.offerLetterFile.uri.split('/').pop()}
                 </Text>
               )}
             </View>
@@ -1449,6 +1539,64 @@ export default function ResidenceTasksScreen() {
               <Text style={styles.submitButtonText}>Submit</Text>
             </TouchableOpacity>
           </ScrollView>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showCompanyPicker}
+        animationType="fade"
+        transparent
+        onRequestClose={() => {
+          setShowCompanyPicker(false);
+          setCompanySearchQuery('');
+        }}
+      >
+        <View style={styles.companyPickerOverlay}>
+          <View style={styles.companyPickerContainer}>
+            <View style={styles.companyPickerHeader}>
+              <Text style={styles.companyPickerTitle}>Select Establishment</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowCompanyPicker(false);
+                  setCompanySearchQuery('');
+                }}
+              >
+                <Ionicons name="close" size={24} color="#000000" />
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={styles.companySearchInput}
+              value={companySearchQuery}
+              onChangeText={setCompanySearchQuery}
+              placeholder="Search establishment..."
+              placeholderTextColor="#333333"
+            />
+
+            <ScrollView style={styles.companyList}>
+              {filteredCompanies.length === 0 ? (
+                <Text style={styles.noCompanyText}>No establishment found</Text>
+              ) : (
+                filteredCompanies.map((company) => (
+                  <TouchableOpacity
+                    key={company.company_id}
+                    style={styles.companyItem}
+                    onPress={() => {
+                      setOfferLetterData({ ...offerLetterData, company_id: company.company_id.toString() });
+                      setOfferLetterErrors({ ...offerLetterErrors, company_id: '' });
+                      setShowCompanyPicker(false);
+                      setCompanySearchQuery('');
+                    }}
+                  >
+                    <Text style={styles.companyItemName}>{company.company_name}</Text>
+                    <Text style={styles.companyItemMeta}>
+                      Available: {(company.starting_quota || 0) - (company.totalEmployees || 0)}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              )}
+            </ScrollView>
+          </View>
         </View>
       </Modal>
 
@@ -1904,6 +2052,69 @@ const styles = StyleSheet.create({
   },
   pickerContainer: {
     maxHeight: 200,
+  },
+  companyPickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    padding: 16,
+  },
+  companyPickerContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    maxHeight: '75%',
+    borderWidth: 1,
+    borderColor: '#111111',
+  },
+  companyPickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#111111',
+  },
+  companyPickerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000000',
+  },
+  companySearchInput: {
+    margin: 12,
+    borderWidth: 1,
+    borderColor: '#111111',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: '#000000',
+    backgroundColor: '#f9fafb',
+  },
+  companyList: {
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+  },
+  companyItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e5e7eb',
+  },
+  companyItemName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000000',
+  },
+  companyItemMeta: {
+    marginTop: 2,
+    fontSize: 12,
+    color: '#111111',
+  },
+  noCompanyText: {
+    padding: 16,
+    textAlign: 'center',
+    color: '#111111',
   },
   pickerValue: {
     fontSize: 16,

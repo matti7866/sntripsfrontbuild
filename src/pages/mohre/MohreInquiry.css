@@ -187,16 +187,6 @@
 }
 
 /* Info grid styling */
-.row > div {
-  transition: all 0.3s ease;
-}
-
-.row > div:hover {
-  background-color: #f8f9fa;
-  border-radius: 5px;
-  padding: 5px;
-}
-
 strong.text-muted {
   display: block;
   margin-bottom: 5px;

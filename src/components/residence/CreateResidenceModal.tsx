@@ -3,6 +3,7 @@ import residenceService from '../../services/residenceService';
 import Swal from 'sweetalert2';
 import config from '../../utils/config';
 import '../modals/Modal.css';
+import './CreateResidenceModal.css';
 
 interface FormData {
   // Step 1: Basic Information
@@ -234,6 +235,85 @@ export default function CreateResidenceModal({
     }
   };
 
+  const normalizeValue = (value: string | number | null | undefined): string =>
+    String(value || '')
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, ' ');
+
+  const extractFirstAndLastName = (fullName: string) => {
+    const cleanName = normalizeValue(fullName);
+    const parts = cleanName.split(' ').filter(Boolean);
+
+    return {
+      firstName: parts[0] || '',
+      lastName: parts.length > 1 ? parts[parts.length - 1] : ''
+    };
+  };
+
+  const getRecordPassport = (record: any): string =>
+    normalizeValue(
+      record?.passportNumber ||
+      record?.passport_no ||
+      record?.passportNum ||
+      record?.passport_number
+    ).replace(/[\s-]/g, '');
+
+  const getRecordName = (record: any): string =>
+    normalizeValue(
+      record?.passenger_name ||
+      record?.passengerName ||
+      record?.passenger_name_eng
+    );
+
+  const checkDuplicateResidence = async (): Promise<any | null> => {
+    const passportNumber = normalizeValue(formData.passportNumber).replace(/[\s-]/g, '');
+    const passengerName = normalizeValue(formData.passengerName);
+
+    if (!passportNumber || !passengerName) {
+      return null;
+    }
+
+    const [passportSearchResponse, nameSearchResponse] = await Promise.all([
+      residenceService.getResidences({ search: passportNumber, page: 1, limit: 200 }),
+      residenceService.getResidences({ search: passengerName, page: 1, limit: 200 })
+    ]);
+
+    const combinedRecords = [
+      ...(passportSearchResponse?.data || []),
+      ...(nameSearchResponse?.data || [])
+    ];
+
+    const uniqueRecords = Array.from(
+      new Map(
+        combinedRecords.map((record: any, index: number) => {
+          const idKey = record?.residenceID || record?.residence_id || record?.id;
+          const fallbackKey = `${getRecordPassport(record)}-${getRecordName(record)}-${index}`;
+          return [idKey ?? fallbackKey, record];
+        })
+      ).values()
+    );
+
+    const inputNames = extractFirstAndLastName(formData.passengerName);
+
+    return uniqueRecords.find((record: any) => {
+      const residenceId = record?.residenceID || record?.residence_id || record?.id;
+
+      if (mode === 'renew' && oldResidenceId && Number(residenceId) === Number(oldResidenceId)) {
+        return false;
+      }
+
+      const recordPassport = getRecordPassport(record);
+      const recordNames = extractFirstAndLastName(getRecordName(record));
+
+      return (
+        recordPassport === passportNumber &&
+        recordNames.firstName === inputNames.firstName &&
+        recordNames.lastName === inputNames.lastName
+      );
+    }) || null;
+  };
+
   const validateStep1 = (): boolean => {
     if (!formData.customer_id) {
       Swal.fire('Validation Error', 'Please select a customer', 'error');
@@ -321,6 +401,20 @@ export default function CreateResidenceModal({
     setSaving(true);
 
     try {
+      const duplicateRecord = await checkDuplicateResidence();
+      if (duplicateRecord) {
+        const existingId = duplicateRecord?.residenceID || duplicateRecord?.residence_id || duplicateRecord?.id || 'N/A';
+        const existingName = duplicateRecord?.passenger_name || duplicateRecord?.passengerName || formData.passengerName;
+
+        await Swal.fire({
+          title: 'Duplicate Record Not Allowed',
+          html: `A record with the same first name, last name and passport number already exists:<br><strong>${existingName}</strong> (ID: ${existingId})<br><br>Please renew this residence instead of creating a new one.`,
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
+        return;
+      }
+
       const submitData: any = {
         customer_id: formData.customer_id,
         ref: formData.ref,
@@ -371,7 +465,7 @@ export default function CreateResidenceModal({
         const existingName = parts[2];
         Swal.fire({
           title: 'Duplicate Record',
-          html: `A residence record already exists for this passport:<br><strong>${existingName}</strong> (ID: ${existingId})`,
+          html: `A residence record already exists with the same first name, last name and passport number:<br><strong>${existingName}</strong> (ID: ${existingId})<br><br>Please renew this residence instead of creating a new one.`,
           icon: 'warning',
           confirmButtonText: 'OK'
         });
@@ -437,7 +531,7 @@ export default function CreateResidenceModal({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div 
-        className="modal-container" 
+        className="modal-container modal-content create-residence-modal" 
         style={{ maxWidth: '1800px', width: '95vw', maxHeight: '95vh' }}
         onClick={(e) => e.stopPropagation()}
       >
